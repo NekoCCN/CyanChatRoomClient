@@ -22,8 +22,13 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+
 public class LoginController implements Initializable
 {
+    @FXML
+    private Label username_warning_message_;
+    @FXML
+    private Label password_warning_message_;
     @FXML
     private Tab login_tab_;
     @FXML
@@ -67,10 +72,61 @@ public class LoginController implements Initializable
     public void initialize(URL url, ResourceBundle resource_bundle)
     {
         view_model_ = new LoginViewModel();
-
         bindControlsToViewModel();
         setupUi();
+        setupWarning();
     }
+
+
+
+    private void setupWarning(){  // 检测用户名和密码的输入格式检错
+        login_username_.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
+                username_warning_message_.setVisible(false);
+                login_username_.setStyle("-fx-border-color: light; -fx-border-width: 1px;");
+                return change;
+            }
+            else{
+            username_warning_message_.setVisible(true);
+            login_username_.setStyle("-fx-border-color: red;");
+            return null;  // 拒绝修改
+                }
+        }));
+        login_password_.setTextFormatter(new TextFormatter<String>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty()) {
+                if(login_password_.getText().length() > 5 && login_password_.getText().length() < 19)
+                    password_warning_message_.setVisible(false);
+                return change;
+            }
+            else{
+                password_warning_message_.setText("密码不能包含非法字符");
+                password_warning_message_.setVisible(true);
+                login_password_.setStyle("-fx-border-color: red;");
+                return null;  // 拒绝修改
+            }
+            }));
+        login_password_.setOnKeyReleased(e->{ // 密码长度检测
+            if(login_password_.getText().length() < 6){
+                password_warning_message_.setVisible(true);
+                password_warning_message_.setText("密码长度不能小于6位。");
+                login_password_.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+            }
+            else if(login_password_.getText().length() > 20){
+                password_warning_message_.setVisible(true);
+                password_warning_message_.setText("密码长度不能多于20位。");
+                login_password_.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+            }
+            else{
+                password_warning_message_.setVisible(false);
+                login_password_.setStyle("-fx-border-color: light; -fx-border-width: 2px;");
+            }
+        });
+
+    }
+    
+
 
     private void bindControlsToViewModel()
     {
@@ -94,7 +150,11 @@ public class LoginController implements Initializable
         initButtonStyle();
         populateClientTypeChoiceBox();
 
-        login_button_.setOnAction(e -> view_model_.login());
+        login_button_.setOnAction(e -> {
+
+
+            view_model_.login();
+        });
         register_client_register_button_.setOnAction(e -> view_model_.register());
 
         login_clear_button_.setOnAction(e -> {
