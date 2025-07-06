@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.animation.turnToChatPage">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.animation.turnToChatPage">
    <children>
-      <AnchorPane fx:id="stack_pane_" prefHeight="200.0" prefWidth="200.0">
+      <Pane fx:id="pack_pane_" prefHeight="200.0" prefWidth="200.0">
          <children>
-            <Rectangle fx:id="stack_rect_" fill="#6bb4f8" height="400.0" layoutX="-3.0" layoutY="-8.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-            <Label fx:id="welcome_label" layoutX="65.0" layoutY="95.0" prefHeight="65.0" prefWidth="241.0" text="Welcome" textFill="#00ff0e" AnchorPane.topAnchor="95.0">
+            <Rectangle fx:id="stack_rect_" fill="#6bb4f8" height="600.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="800.0" />
+            <Label fx:id="welcome_label" layoutX="82.0" layoutY="89.0" prefHeight="65.0" prefWidth="241.0" text="Welcome" textFill="#00ff0e">
                <font>
                   <Font name="Microsoft YaHei UI Bold" size="43.0" />
                </font>
             </Label>
-            <Label fx:id="username_label" layoutX="283.0" layoutY="206.0" prefHeight="65.0" prefWidth="241.0" textFill="#00ff14">
+            <Label fx:id="username_label" contentDisplay="CENTER" layoutX="532.0" layoutY="235.0" prefHeight="65.0" prefWidth="312.0" textFill="#00ff14">
                <font>
                   <Font name="Microsoft YaHei UI Bold" size="43.0" />
                </font>
             </Label>
          </children>
-      </AnchorPane>
+      </Pane>
    </children>
 </StackPane>
