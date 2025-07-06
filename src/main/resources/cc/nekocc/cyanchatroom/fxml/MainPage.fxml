@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.mainpage.MainPageController">
+   <children>
+      <VBox layoutX="24.0" layoutY="25.0" prefHeight="106.0" prefWidth="270.0" spacing="4.0" AnchorPane.leftAnchor="24.0" AnchorPane.rightAnchor="306.0" AnchorPane.topAnchor="20.0">
+         <children>
+            <Label fx:id="user_greetings_" prefHeight="41.0" prefWidth="244.0" text="你好，">
+               <font>
+                  <Font name="Microsoft YaHei UI Bold" size="35.0" />
+               </font>
+            </Label>
+            <Label fx:id="unpaid_orders_num_" prefHeight="20.0" prefWidth="243.0" text="Label">
+               <font>
+                  <Font name="Microsoft YaHei UI" size="15.0" />
+               </font>
+            </Label>
+            <Label fx:id="transit_orders_num_" prefHeight="15.0" prefWidth="275.0" text="Label">
+               <font>
+                  <Font name="Microsoft YaHei UI" size="15.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+      <PieChart fx:id="pie_chart_" layoutX="321.3333333333333" layoutY="25.0" prefHeight="150.0" prefWidth="257.0" AnchorPane.leftAnchor="321.0" AnchorPane.rightAnchor="22.0" AnchorPane.topAnchor="20.0" />
+      <TableView fx:id="order_list_" layoutX="24.0" layoutY="176.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="24.0" AnchorPane.leftAnchor="24.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="176.0">
+         <columns>
+            <TableColumn fx:id="col_order_id_" prefWidth="77.3333740234375" text="编号" />
+            <TableColumn fx:id="col_sender_name_" minWidth="0.0" prefWidth="86.6666259765625" text="寄件人姓名" />
+            <TableColumn fx:id="col_receiver_name_" prefWidth="89.33331298828125" text="收件人姓名" />
+            <TableColumn fx:id="col_receiver_address_" prefWidth="100.0" text="收件人地址" />
+            <TableColumn fx:id="col_action_" prefWidth="75.0" text="详细信息" />
+         </columns>
+      </TableView>
+      <HBox layoutX="24.0" layoutY="134.0" prefHeight="35.0" prefWidth="231.0" spacing="12.0" AnchorPane.leftAnchor="24.0">
+         <children>
+            <Button fx:id="new_order_button_" mnemonicParsing="false" prefHeight="40.0" prefWidth="80.0" text="下订单" />
+            <Button fx:id="refresh_button_" mnemonicParsing="false" prefHeight="40.0" prefWidth="80.0" text="刷新" />
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>

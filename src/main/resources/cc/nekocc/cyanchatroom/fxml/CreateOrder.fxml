@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.addorder.AddOrderController">
+   <children>
+      <AnchorPane fx:id="stack1_pane_" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <Rectangle fx:id="stack1_rect_" arcHeight="20.0" arcWidth="20.0" fill="#6bb4f8" height="400.0" layoutX="-31.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="198.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-31.0" AnchorPane.topAnchor="0.0" />
+            <Label layoutX="23.0" layoutY="26.0" prefHeight="39.0" prefWidth="135.0" text="在此之前" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="26.0">
+               <font>
+                  <Font name="Microsoft YaHei UI Bold" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="23.0" layoutY="65.0" prefHeight="39.0" prefWidth="135.0" text="请核对您的信息" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="441.9999999999999" AnchorPane.topAnchor="65.0">
+               <font>
+                  <Font name="Microsoft YaHei UI" size="18.0" />
+               </font>
+            </Label>
+            <Button fx:id="stack1_next_" layoutX="31.0" layoutY="267.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="下一步" AnchorPane.bottomAnchor="93.66666666666669" />
+            <Button fx:id="stack1_cancel" layoutX="31.0" layoutY="326.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="取消" AnchorPane.bottomAnchor="34.666666666666686" />
+            <VBox layoutX="167.0" layoutY="5.0" prefHeight="394.0" prefWidth="432.0" spacing="12.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="167.0" AnchorPane.rightAnchor="0.6666666666666288" AnchorPane.topAnchor="4.666666666666686">
+               <children>
+                  <Label prefWidth="53.0" text="发件名称">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="stack1_sender_name_" editable="false" prefHeight="42.0" prefWidth="392.0">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </TextField>
+                  <Label fx:id="stack1_sender_phone_" text="发件人手机号">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="stack1_sender_phone_field_" editable="false" prefHeight="42.0" prefWidth="392.0" />
+                  <Label fx:id="stack1_sender_address_" text="发件地址">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="stack1_sender_address_field_" editable="false" prefHeight="42.0" prefWidth="392.0" />
+                  <Label fx:id="stack1_sender_type_" text="用户类型">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="stack1_sender_type_field_" editable="false" prefHeight="42.0" prefWidth="392.0" />
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </VBox>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="stack2_pane_" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <Rectangle fx:id="stack2_rect_" arcHeight="20.0" arcWidth="20.0" fill="#6bb4f8" height="400.0" layoutX="-31.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="198.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-31.0" AnchorPane.topAnchor="0.0" />
+            <Label layoutX="23.0" layoutY="26.0" prefHeight="39.0" prefWidth="135.0" text="现在" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="26.0">
+               <font>
+                  <Font name="Microsoft YaHei UI Bold" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="23.0" layoutY="65.0" prefHeight="39.0" prefWidth="135.0" text="请输入订单信息" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="441.9999999999999" AnchorPane.topAnchor="65.0">
+               <font>
+                  <Font name="Microsoft YaHei UI" size="18.0" />
+               </font>
+            </Label>
+            <Button fx:id="stack2_next_" layoutX="31.0" layoutY="267.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="下一步" AnchorPane.bottomAnchor="93.66666666666669" />
+            <Button fx:id="stack2_back_" layoutX="31.0" layoutY="326.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="返回" AnchorPane.bottomAnchor="34.666666666666686" />
+            <VBox layoutX="167.0" layoutY="5.0" prefHeight="394.0" prefWidth="432.0" spacing="12.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="167.0" AnchorPane.rightAnchor="0.6666666666666288" AnchorPane.topAnchor="4.666666666666686">
+               <children>
+                  <TextField fx:id="stack2_receiver_name_" prefHeight="42.0" prefWidth="392.0" promptText="收货人名称">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="16.0" />
+                     </font>
+                  </TextField>
+                  <TextField fx:id="stack2_receiver_address_" prefHeight="42.0" prefWidth="392.0" promptText="收货人地址">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="16.0" />
+                     </font>
+                  </TextField>
+                  <TextField fx:id="stack2_receiver_phone_" prefHeight="42.0" prefWidth="392.0" promptText="收货人手机号">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="16.0" />
+                     </font>
+                  </TextField>
+                  <Button fx:id="stack2_empty_" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="清空" />
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </VBox>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="stack3_pane_" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <Rectangle fx:id="stack3_rect_" arcHeight="20.0" arcWidth="20.0" fill="#6bb4f8" height="400.0" layoutX="-31.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="198.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-31.0" AnchorPane.topAnchor="0.0" />
+            <Label layoutX="23.0" layoutY="26.0" prefHeight="39.0" prefWidth="135.0" text="最后一步" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="26.0">
+               <font>
+                  <Font name="Microsoft YaHei UI Bold" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="23.0" layoutY="65.0" prefHeight="39.0" prefWidth="135.0" text="请添加货物" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="441.9999999999999" AnchorPane.topAnchor="65.0">
+               <font>
+                  <Font name="Microsoft YaHei UI" size="18.0" />
+               </font>
+            </Label>
+            <Button fx:id="stack3_next_" layoutX="31.0" layoutY="267.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="下一步" AnchorPane.bottomAnchor="93.66666666666669" />
+            <Button fx:id="stack3_back_" layoutX="31.0" layoutY="326.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="90.0" text="返回" AnchorPane.bottomAnchor="34.666666666666686" />
+            <VBox layoutX="167.0" layoutY="5.0" prefHeight="394.0" prefWidth="432.0" spacing="12.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="167.0" AnchorPane.rightAnchor="0.6666666666666288" AnchorPane.topAnchor="4.666666666666686">
+               <children>
+                  <TextField fx:id="stack3_good_name_" prefHeight="40.0" prefWidth="392.0" promptText="货物名称">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="16.0" />
+                     </font>
+                  </TextField>
+                  <TextField fx:id="stack3_good_weight_" prefHeight="40.0" prefWidth="392.0" promptText="货物质量">
+                     <font>
+                        <Font name="Microsoft YaHei UI" size="16.0" />
+                     </font>
+                  </TextField>
+                  <HBox prefHeight="42.0" prefWidth="200.0" spacing="15.0">
+                     <children>
+                        <TextField fx:id="stack3_good_lengh_" prefHeight="40.0" prefWidth="125.0" promptText="货物长度">
+                           <font>
+                              <Font name="Microsoft YaHei UI" size="16.0" />
+                           </font>
+                        </TextField>
+                        <TextField fx:id="stack3_good_width_" prefHeight="40.0" prefWidth="125.0" promptText="货物宽度">
+                           <font>
+                              <Font name="Microsoft YaHei UI" size="16.0" />
+                           </font>
+                        </TextField>
+                        <TextField fx:id="stack3_good_height_" prefHeight="40.0" prefWidth="125.0" promptText="货物高度">
+                           <font>
+                              <Font name="Microsoft YaHei UI" size="16.0" />
+                           </font>
+                        </TextField>
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="40.0" prefWidth="200.0" spacing="15.0">
+                     <children>
+                        <ChoiceBox fx:id="stack3_good_type_" prefHeight="40.0" prefWidth="211.0" />
+                        <Button fx:id="stack3_add_" mnemonicParsing="false" prefHeight="46.0" prefWidth="75.0" text="添加" />
+                        <Button fx:id="stack3_empty_" mnemonicParsing="false" prefHeight="53.0" prefWidth="75.0" text="清空" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="stack3_goods_" prefHeight="141.0" prefWidth="392.0">
+                    <columns>
+                      <TableColumn fx:id="stack3_goods_name_" prefWidth="75.0" text="名称" />
+                      <TableColumn fx:id="stack3_goods_type_" prefWidth="75.0" text="类型" />
+                        <TableColumn fx:id="stack3_goods_volume_" prefWidth="75.0" text="体积" />
+                        <TableColumn fx:id="stack3_goods_weight_" prefWidth="75.0" text="质量" />
+                    </columns>
+                  </TableView>
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </VBox>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="stack4_pane_" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <Rectangle fx:id="stack4_rect_" fill="#6bb4f8" height="400.0" layoutX="-3.0" layoutY="-8.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <Label layoutX="179.0" layoutY="87.0" prefHeight="65.0" prefWidth="241.0" text="All Done!!!" AnchorPane.topAnchor="87.0">
+               <font>
+                  <Font name="Microsoft YaHei UI Bold" size="43.0" />
+               </font>
+            </Label>
+            <Button fx:id="stack4_pay_" layoutX="132.0" layoutY="200.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="90.0" text="支付" AnchorPane.bottomAnchor="158.0" />
+            <Button fx:id="stack4_save_" layoutX="378.0" layoutY="200.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="90.0" text="保存" AnchorPane.bottomAnchor="158.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</StackPane>

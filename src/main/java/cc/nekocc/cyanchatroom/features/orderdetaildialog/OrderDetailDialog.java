@@ -1,0 +1,50 @@
+package cc.nekocc.cyanchatroom.features.orderdetaildialog;
+
+import cc.nekocc.cyanchatroom.domain.order.Order;
+import cc.nekocc.cyanchatroom.model.OrderRepository;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+
+import java.io.IOException;
+
+public class OrderDetailDialog extends Dialog<Boolean>
+{
+    private final OrderDetailViewModel view_model_;
+
+    public OrderDetailDialog(Order order, OrderRepository order_repository)
+    {
+        view_model_ = new OrderDetailViewModel(order, order_repository);
+
+        try
+        {
+            FXMLLoader fxml_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/flightguisystem/fxml/OrderDetailDialog.fxml"));
+
+            Parent content_root = fxml_loader.load();
+
+            OrderDetailDialogController controller = fxml_loader.getController();
+            controller.setViewModel(this.view_model_);
+
+            setTitle("订单详情");
+            getDialogPane().setContent(content_root);
+
+            ButtonType pay_button_type = new ButtonType("支付", ButtonBar.ButtonData.OK_DONE);
+            getDialogPane().getButtonTypes().addAll(pay_button_type, ButtonType.CLOSE);
+
+            final Button pay_button = (Button) getDialogPane().lookupButton(pay_button_type);
+            pay_button.disableProperty().bind(view_model_.can_pay_.not());
+
+            setResultConverter(dialog_button -> {
+                if (dialog_button == pay_button_type) {
+                    return view_model_.pay();
+                }
+                return false;
+            });
+
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+}
