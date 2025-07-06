@@ -62,7 +62,8 @@ public class LoginViewModel
         if (is_success)
         {
             UserSession.getInstance().loginUser(user_repository_.findByUsername(login_username_.get()).get());
-            Navigator.navigateTo("fxml/MainPage.fxml", Navigator.AnimationType.JACK_IN_THE_BOX);
+            Navigator.navigateTo("fxml/turnToChatPage.fxml",Navigator.AnimationType.FADE);
+
         }
         else
         {

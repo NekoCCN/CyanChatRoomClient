@@ -63,7 +63,7 @@ public class MainPageViewModel
 
     public void createNewOrder()
     {
-        Navigator.navigateTo("fxml/CreateOrder.fxml", Navigator.AnimationType.SLIDE_UP);
+        Navigator.navigateTo("fxml/turnToChatPage.fxml", Navigator.AnimationType.SLIDE_UP);
     }
 
     public void viewOrderDetails(Order order)

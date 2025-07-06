@@ -22,7 +22,8 @@ public class Navigator
         SLIDE_DOWN,
         ZOOM,
         FLIP,
-        JACK_IN_THE_BOX
+        JACK_IN_THE_BOX,
+        NONE
     }
 
     public static void setPrimaryStage(Stage stage)
@@ -32,7 +33,31 @@ public class Navigator
 
     public static void navigateTo(String fxml_file)
     {
-        navigateTo(fxml_file, AnimationType.FADE);
+        try {
+            Parent new_root = FXMLLoader.load(Objects.requireNonNull(Navigator.class.getResource(fxml_file)));
+            Scene current_scene = primary_stage_.getScene();
+
+            if (current_scene == null) {
+                primary_stage_.setScene(new Scene(new_root));
+
+                primary_stage_.show();
+
+
+
+                return;
+            }
+
+            Scene new_scene = new Scene(new_root, current_scene.getWidth(), current_scene.getHeight());
+
+            primary_stage_.setScene(new_scene);
+            primary_stage_.show();
+
+        }
+        catch (IOException e)
+        {
+            System.err.println("无法加载页面: " + fxml_file);
+            e.printStackTrace();
+        }
     }
 
     public static void navigateToSlideLeft(String fxml_file)
@@ -104,6 +129,7 @@ public class Navigator
 
         transitionTo(fxml_file, out_animation, in_animation);
     }
+
 
     private static void transitionTo(String fxml_file, AnimationFX out_animation, AnimationFX in_animation)
     {

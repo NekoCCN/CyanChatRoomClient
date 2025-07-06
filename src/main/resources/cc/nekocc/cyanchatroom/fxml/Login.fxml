@@ -105,7 +105,7 @@
                            </HBox>
                         </children>
                      </VBox>
-                     <VBox fx:id="register_user_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0" visible="false">
+                     <VBox fx:id="register_user_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0">
                         <children>
                            <Label prefHeight="50.0" text="Register">
                               <font>

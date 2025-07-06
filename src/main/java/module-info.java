@@ -13,6 +13,8 @@ module cc.nekocc.cyanchatroom
     opens cc.nekocc.cyanchatroom.features.login to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.mainpage to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.addorder to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.chatpage to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.animation to javafx.fxml;
     opens cc.nekocc.cyanchatroom to javafx.fxml;
     exports cc.nekocc.cyanchatroom;
 

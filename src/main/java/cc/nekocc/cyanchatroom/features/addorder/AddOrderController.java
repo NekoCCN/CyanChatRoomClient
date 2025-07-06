@@ -192,11 +192,9 @@ public class AddOrderController implements Initializable
                     if (old_window == null && new_window != null)
                     {
                         Stage stage = (Stage) new_window;
-
                         stack1_rect_.heightProperty().bind(stage.getScene().heightProperty());
                         stack2_rect_.heightProperty().bind(stage.getScene().heightProperty());
                         stack3_rect_.heightProperty().bind(stage.getScene().heightProperty());
-
                         stack4_rect_.widthProperty().bind(stack4_pane_.widthProperty());
                         stack4_rect_.heightProperty().bind(stack4_pane_.heightProperty());
                     }
