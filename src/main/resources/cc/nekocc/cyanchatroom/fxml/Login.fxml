@@ -13,28 +13,43 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
-         prefWidth="689.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="200.0"
-         xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-         fx:controller="cc.nekocc.cyanchatroom.features.login.LoginController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="689.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.login.LoginController">
    <Tab fx:id="login_tab_" text="登录(Login)">
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-         <VBox layoutX="75.0" layoutY="49.0" prefHeight="272.0" prefWidth="449.0" spacing="14.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="165.00000000000006" AnchorPane.topAnchor="50.0">
+         <VBox layoutX="75.0" layoutY="49.0" prefHeight="272.0" prefWidth="449.0" spacing="14.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="50.0">
             <Label text="Login">
                <font>
                   <Font name="Arial" size="44.0" />
                </font>
             </Label>
-            <TextField fx:id="login_username_" prefHeight="50.0" prefWidth="449.0" promptText="用户名">
-               <font>
-                  <Font name="Microsoft YaHei Light" size="24.0" />
-               </font>
-            </TextField>
-            <PasswordTextField fx:id="login_password_" prefHeight="50.0" prefWidth="449.0" promptText="密码">
-               <font>
-                  <Font name="Microsoft YaHei Light" size="24.0" />
-               </font>
-            </PasswordTextField>
+            <HBox prefHeight="52.0" prefWidth="485.0">
+               <children>
+                  <TextField fx:id="login_username_" prefHeight="50.0" prefWidth="342.0" promptText="用户名">
+                     <font>
+                        <Font name="Microsoft YaHei Light" size="24.0" />
+                     </font>
+                  </TextField>
+                  <Label fx:id="username_warning_message_" prefHeight="37.0" prefWidth="145.0" text="用户名中只能有子母和数字" textFill="#ff000e" visible="false">
+                     <font>
+                        <Font name="Microsoft YaHei Bold" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <PasswordTextField fx:id="login_password_" prefHeight="50.0" prefWidth="342.0" promptText="密码">
+                     <font>
+                        <Font name="Microsoft YaHei Light" size="24.0" />
+                     </font>
+                  </PasswordTextField>
+                  <Label fx:id="password_warning_message_" prefHeight="37.0" prefWidth="145.0" text="密码中不能有非法符号" textFill="#ff000e" visible="false">
+                     <font>
+                        <Font name="Microsoft YaHei Bold" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
             <HBox prefHeight="79.0" prefWidth="449.0" spacing="30.0">
                <Button fx:id="login_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="登入">
                   <font>
@@ -48,76 +63,95 @@
                </Button>
             </HBox>
          </VBox>
-         <Label fx:id="username_warning_message_" layoutX="529.0" layoutY="120.0" prefHeight="37.0" prefWidth="145.0" text="用户名中只能有子母和数字" textFill="#ff000e" visible="false" AnchorPane.bottomAnchor="213.33333333333334" AnchorPane.leftAnchor="529.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="120.0">
-            <font>
-               <Font name="Microsoft YaHei Bold" size="12.0" />
-            </font>
-         </Label>
-         <Label fx:id="password_warning_message_" layoutX="529.0" layoutY="185.0" prefHeight="37.0" prefWidth="145.0" text="密码中不能有非法符号" textFill="#ff000e" visible="false">
-            <font>
-               <Font name="Microsoft YaHei Bold" size="12.0" />
-            </font>
-         </Label>
       </AnchorPane>
    </Tab>
    <Tab fx:id="register_tab_" text="注册(Register)">
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-         <StackPane fx:id="register_stack_pane_" prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="75.0" AnchorPane.topAnchor="50.0">
-            <VBox fx:id="register_next_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0">
-               <TextField fx:id="register_phone_" prefHeight="50.0" prefWidth="449.0" promptText="手机号码">
-                  <font>
-                     <Font name="Microsoft YaHei Light" size="24.0" />
-                  </font>
-               </TextField>
-               <TextField fx:id="register_address_" prefHeight="50.0" prefWidth="449.0" promptText="地址">
-                  <font>
-                     <Font name="Microsoft YaHei Light" size="24.0" />
-                  </font>
-               </TextField>
-               <ChoiceBox fx:id="register_client_type_" prefHeight="50.0" prefWidth="449.0" />
-               <HBox prefHeight="57.0" prefWidth="449.0" spacing="30.0">
-                  <Button fx:id="register_client_register_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="注册">
-                     <font>
-                        <Font name="Microsoft YaHei UI" size="20.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="register_client_back_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="返回 ">
-                     <font>
-                        <Font name="Microsoft YaHei UI" size="20.0" />
-                     </font>
-                  </Button>
-               </HBox>
-            </VBox>
-            <VBox fx:id="register_user_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0">
-               <Label prefHeight="50.0" text="Register">
-                  <font>
-                     <Font name="Arial" size="44.0" />
-                  </font>
-               </Label>
-               <TextField fx:id="register_username_" prefHeight="50.0" prefWidth="449.0" promptText="用户名">
-                  <font>
-                     <Font name="Microsoft YaHei Light" size="24.0" />
-                  </font>
-               </TextField>
-               <PasswordTextField fx:id="register_password_" prefHeight="50.0" prefWidth="449.0" promptText="密码">
-                  <font>
-                     <Font name="Microsoft YaHei Light" size="24.0" />
-                  </font>
-               </PasswordTextField>
-               <HBox prefHeight="57.0" prefWidth="449.0" spacing="30.0">
-                  <Button fx:id="register_username_next_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="下一步">
-                     <font>
-                        <Font name="Microsoft YaHei UI" size="20.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="register_username_clear_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="清空">
-                     <font>
-                        <Font name="Microsoft YaHei UI" size="20.0" />
-                     </font>
-                  </Button>
-               </HBox>
-            </VBox>
-         </StackPane>
-      </AnchorPane>
+      <content>
+         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+               <StackPane fx:id="register_stack_pane_" prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="75.0" AnchorPane.topAnchor="50.0">
+                  <children>
+                     <VBox fx:id="register_next_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0">
+                        <children>
+                           <HBox prefHeight="51.0" prefWidth="539.0" spacing="10.0">
+                              <children>
+                                 <TextField fx:id="register_phone_" prefHeight="50.0" prefWidth="449.0" promptText="手机号码">
+                                    <font>
+                                       <Font name="Microsoft YaHei Light" size="24.0" />
+                                    </font>
+                                 </TextField>
+                                 <Label fx:id="phonenumber_error_" prefHeight="45.0" prefWidth="203.0" text="手机号只能为数字" textFill="#ff0300" visible="false" />
+                              </children>
+                           </HBox>
+                           <TextField fx:id="register_address_" prefHeight="50.0" prefWidth="449.0" promptText="地址">
+                              <font>
+                                 <Font name="Microsoft YaHei Light" size="24.0" />
+                              </font>
+                           </TextField>
+                           <ChoiceBox fx:id="register_client_type_" prefHeight="50.0" prefWidth="449.0" />
+                           <HBox prefHeight="57.0" prefWidth="449.0" spacing="30.0">
+                              <children>
+                                 <Button fx:id="register_client_register_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="注册">
+                                    <font>
+                                       <Font name="Microsoft YaHei UI" size="20.0" />
+                                    </font>
+                                 </Button>
+                                 <Button fx:id="register_client_back_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="返回 ">
+                                    <font>
+                                       <Font name="Microsoft YaHei UI" size="20.0" />
+                                    </font>
+                                 </Button>
+                              </children>
+                           </HBox>
+                        </children>
+                     </VBox>
+                     <VBox fx:id="register_user_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0" visible="false">
+                        <children>
+                           <Label prefHeight="50.0" text="Register">
+                              <font>
+                                 <Font name="Arial" size="44.0" />
+                              </font>
+                           </Label>
+                           <HBox prefHeight="45.0" prefWidth="539.0" spacing="10.0">
+                              <children>
+                                 <TextField fx:id="register_username_" prefHeight="50.0" prefWidth="371.0" promptText="用户名">
+                                    <font>
+                                       <Font name="Microsoft YaHei Light" size="24.0" />
+                                    </font>
+                                 </TextField>
+                                 <Label fx:id="username_register_error_" prefHeight="48.0" prefWidth="199.0" text="用户名不能包含非法字符" textFill="#ff0300" visible="false" />
+                              </children>
+                           </HBox>
+                           <HBox prefHeight="70.0" prefWidth="539.0" spacing="10.0">
+                              <children>
+                                 <PasswordTextField fx:id="register_password_" prefHeight="50.0" prefWidth="372.0" promptText="密码">
+                                    <font>
+                                       <Font name="Microsoft YaHei Light" size="24.0" />
+                                    </font>
+                                 </PasswordTextField>
+                                 <Label fx:id="password_register_error_" prefHeight="47.0" prefWidth="196.0" textFill="#ff0300" />
+                              </children>
+                           </HBox>
+                           <HBox prefHeight="57.0" prefWidth="449.0" spacing="30.0">
+                              <children>
+                                 <Button fx:id="register_username_next_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="下一步">
+                                    <font>
+                                       <Font name="Microsoft YaHei UI" size="20.0" />
+                                    </font>
+                                 </Button>
+                                 <Button fx:id="register_username_clear_button_" mnemonicParsing="false" prefHeight="60.0" prefWidth="100.0" text="清空">
+                                    <font>
+                                       <Font name="Microsoft YaHei UI" size="20.0" />
+                                    </font>
+                                 </Button>
+                              </children>
+                           </HBox>
+                        </children>
+                     </VBox>
+                  </children>
+               </StackPane>
+            </children>
+         </AnchorPane>
+      </content>
    </Tab>
 </TabPane>

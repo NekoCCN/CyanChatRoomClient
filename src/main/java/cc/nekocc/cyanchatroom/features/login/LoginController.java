@@ -37,9 +37,10 @@ public class LoginController implements Initializable
     private TextField login_username_;
     @FXML
     private PasswordTextField login_password_;
-
-    private String login_password_buffer_ = "";
-
+    @FXML
+    private Label username_register_error_;
+    @FXML
+    private Label password_register_error_;
     @FXML
     private Button login_button_;
     @FXML
@@ -68,6 +69,8 @@ public class LoginController implements Initializable
     private Button register_client_register_button_;
     @FXML
     private Button register_client_back_button_;
+    @FXML
+    private Label phonenumber_error_;
 
     private LoginViewModel view_model_;
 
@@ -96,6 +99,34 @@ public class LoginController implements Initializable
             return null;  // 拒绝修改
                 }
         }));
+        register_username_.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
+                username_register_error_.setVisible(false);
+                register_username_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                return change;
+            }
+            else{
+                username_register_error_.setVisible(true);
+                register_username_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return null;  // 拒绝修改
+            }
+        }));
+
+        register_phone_.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if (newText.matches("^[0-9]+$") || newText.isEmpty()) {
+                phonenumber_error_.setVisible(false);
+                register_phone_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                return change;
+            }
+            else{
+                phonenumber_error_.setVisible(true);
+                register_phone_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return null;  // 拒绝修改
+            }
+        }));
+
     }
     
 
@@ -130,7 +161,6 @@ public class LoginController implements Initializable
             {
                 if (login_password_.getPassword().length() > 5 && login_password_.getText().length() < 19)
                     password_warning_message_.setVisible(false);
-                login_password_buffer_ = login_password_.getPassword();
             } else
             {
                 password_warning_message_.setText("密码不能包含非法字符");
@@ -172,7 +202,39 @@ public class LoginController implements Initializable
 
         register_user_box_.setVisible(true);
         register_next_box_.setVisible(false);
-        register_username_next_button_.setOnAction(e -> switchPanes(register_user_box_, register_next_box_));
+        register_username_next_button_.setOnAction(e ->
+                {
+                    String newText = register_password_.getPassword();  // 获取输入后的完整文本
+                    if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty())
+                    {
+                        if (register_password_.getPassword().length() > 6 && register_password_.getText().length() < 20)
+                            password_register_error_.setVisible(false);
+                    } else
+                    {
+                        password_register_error_.setText("密码不能包含非法字符");
+                        password_register_error_.setVisible(true);
+                        register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                        return;
+                    }
+
+                    if (register_password_.getPassword().length() < 6)
+                    {
+                        password_register_error_.setVisible(true);
+                        password_register_error_.setText("密码长度不能小于6位。");
+                        register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                        return;
+                    } else if (register_password_.getPassword().length() > 20)
+                    {
+                        password_register_error_.setVisible(true);
+                        password_register_error_.setText("密码长度不能多于20位。");
+                        register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                        return;
+                    } else
+                    {
+                        password_register_error_.setVisible(false);
+                        register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                    }
+                switchPanes(register_user_box_, register_next_box_);});
         register_client_back_button_.setOnAction(e -> switchPanes(register_next_box_, register_user_box_));
     }
 
