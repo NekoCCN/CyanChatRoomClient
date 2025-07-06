@@ -13,7 +13,10 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="689.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.login.LoginController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
+         prefWidth="689.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="200.0"
+         xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="cc.nekocc.cyanchatroom.features.login.LoginController">
    <Tab fx:id="login_tab_" text="登录(Login)">
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <VBox layoutX="75.0" layoutY="49.0" prefHeight="272.0" prefWidth="449.0" spacing="14.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="165.00000000000006" AnchorPane.topAnchor="50.0">
@@ -22,12 +25,12 @@
                   <Font name="Arial" size="44.0" />
                </font>
             </Label>
-            <TextField fx:id="login_username_" prefHeight="50.0" prefWidth="449.0" promptText="用户名" style="-fx-border-color: lightblue; -fx-border-width: 2px;">
+            <TextField fx:id="login_username_" prefHeight="50.0" prefWidth="449.0" promptText="用户名">
                <font>
                   <Font name="Microsoft YaHei Light" size="24.0" />
                </font>
             </TextField>
-            <PasswordTextField fx:id="login_password_" prefHeight="50.0" prefWidth="449.0" promptText="密码" style="-fx-border-color: lightblue; -fx-border-image-width: 2px;">
+            <PasswordTextField fx:id="login_password_" prefHeight="50.0" prefWidth="449.0" promptText="密码">
                <font>
                   <Font name="Microsoft YaHei Light" size="24.0" />
                </font>

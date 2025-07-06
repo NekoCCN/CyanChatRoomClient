@@ -37,6 +37,9 @@ public class LoginController implements Initializable
     private TextField login_username_;
     @FXML
     private PasswordTextField login_password_;
+
+    private String login_password_buffer_ = "";
+
     @FXML
     private Button login_button_;
     @FXML
@@ -81,49 +84,18 @@ public class LoginController implements Initializable
 
     private void setupWarning(){  // 检测用户名和密码的输入格式检错
         login_username_.setTextFormatter(new TextFormatter<>(change -> {
-            String newText = change.getControlNewText();
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
             if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
                 username_warning_message_.setVisible(false);
-                login_username_.setStyle("-fx-border-color: lightblue; -fx-border-width: 1px;");
+                login_username_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                 return change;
             }
             else{
             username_warning_message_.setVisible(true);
-            login_username_.setStyle("-fx-border-color: red;");
+            login_username_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
             return null;  // 拒绝修改
                 }
         }));
-        login_password_.setTextFormatter(new TextFormatter<String>(change -> {
-            String newText = change.getControlNewText();
-            if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty()) {
-                if(login_password_.getText().length() > 5 && login_password_.getText().length() < 19)
-                    password_warning_message_.setVisible(false);
-                return change;
-            }
-            else{
-                password_warning_message_.setText("密码不能包含非法字符");
-                password_warning_message_.setVisible(true);
-                login_password_.setStyle("-fx-border-color: red;");
-                return null;  // 拒绝修改
-            }
-            }));
-        login_password_.setOnKeyReleased(e->{ // 密码长度检测
-            if(login_password_.getText().length() < 6){
-                password_warning_message_.setVisible(true);
-                password_warning_message_.setText("密码长度不能小于6位。");
-                login_password_.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-            }
-            else if(login_password_.getText().length() > 20){
-                password_warning_message_.setVisible(true);
-                password_warning_message_.setText("密码长度不能多于20位。");
-                login_password_.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-            }
-            else{
-                password_warning_message_.setVisible(false);
-                login_password_.setStyle("-fx-border-color: lightblue; -fx-border-width: 2px;");
-            }
-        });
-
     }
     
 
@@ -150,7 +122,41 @@ public class LoginController implements Initializable
         initButtonStyle();
         populateClientTypeChoiceBox();
 
-        login_button_.setOnAction(e -> {
+        login_button_.setOnAction(e ->
+        {
+
+            String newText = login_password_.getPassword();  // 获取输入后的完整文本
+            if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty())
+            {
+                if (login_password_.getPassword().length() > 5 && login_password_.getText().length() < 19)
+                    password_warning_message_.setVisible(false);
+                login_password_buffer_ = login_password_.getPassword();
+            } else
+            {
+                password_warning_message_.setText("密码不能包含非法字符");
+                password_warning_message_.setVisible(true);
+                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return;
+            }
+
+            if (login_password_.getPassword().length() < 6)
+            {
+                password_warning_message_.setVisible(true);
+                password_warning_message_.setText("密码长度不能小于6位。");
+                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return;
+            } else if (login_password_.getPassword().length() > 20)
+            {
+                password_warning_message_.setVisible(true);
+                password_warning_message_.setText("密码长度不能多于20位。");
+                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return;
+            } else
+            {
+                password_warning_message_.setVisible(false);
+                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+            }
+
             view_model_.login();
         });
         register_client_register_button_.setOnAction(e -> view_model_.register());

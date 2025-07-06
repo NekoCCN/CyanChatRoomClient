@@ -115,6 +115,7 @@ public class Navigator
             if (current_scene == null)
             {
                 primary_stage_.setScene(new Scene(new_root));
+
                 primary_stage_.show();
                 return;
             }
