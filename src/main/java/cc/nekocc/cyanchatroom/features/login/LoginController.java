@@ -81,7 +81,7 @@ public class LoginController implements Initializable
 
     private void setupWarning(){  // 检测用户名和密码的输入格式检错
         login_username_.setTextFormatter(new TextFormatter<>(change -> {
-            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            String newText = change.getControlNewText();
             if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
                 username_warning_message_.setVisible(false);
                 login_username_.setStyle("-fx-border-color: light; -fx-border-width: 1px;");
@@ -94,7 +94,7 @@ public class LoginController implements Initializable
                 }
         }));
         login_password_.setTextFormatter(new TextFormatter<String>(change -> {
-            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            String newText = change.getControlNewText();
             if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty()) {
                 if(login_password_.getText().length() > 5 && login_password_.getText().length() < 19)
                     password_warning_message_.setVisible(false);
