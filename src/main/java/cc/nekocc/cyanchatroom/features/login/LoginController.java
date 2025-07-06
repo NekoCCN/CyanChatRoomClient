@@ -84,7 +84,7 @@ public class LoginController implements Initializable
             String newText = change.getControlNewText();
             if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
                 username_warning_message_.setVisible(false);
-                login_username_.setStyle("-fx-border-color: light; -fx-border-width: 1px;");
+                login_username_.setStyle("-fx-border-color: lightblue; -fx-border-width: 1px;");
                 return change;
             }
             else{
@@ -120,7 +120,7 @@ public class LoginController implements Initializable
             }
             else{
                 password_warning_message_.setVisible(false);
-                login_password_.setStyle("-fx-border-color: light; -fx-border-width: 2px;");
+                login_password_.setStyle("-fx-border-color: lightblue; -fx-border-width: 2px;");
             }
         });
 
@@ -151,8 +151,6 @@ public class LoginController implements Initializable
         populateClientTypeChoiceBox();
 
         login_button_.setOnAction(e -> {
-
-
             view_model_.login();
         });
         register_client_register_button_.setOnAction(e -> view_model_.register());
