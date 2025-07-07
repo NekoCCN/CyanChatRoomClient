@@ -1,17 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.ChatPageController">
     <AnchorPane fx:id="main_pane" prefHeight="600.0" prefWidth="800.0">
-      <children>
-         <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" layoutX="601.0" layoutY="67.0" prefHeight="506.0" prefWidth="199.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
-           <content>
-             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="532.0" prefWidth="200.0" />
-           </content>
-         </ScrollPane>
-         <AnchorPane layoutX="601.0" prefHeight="95.0" prefWidth="199.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      </children>
+        <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" layoutX="601.0" layoutY="67.0" prefHeight="506.0" prefWidth="199.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="532.0" prefWidth="200.0" />
+        </ScrollPane>
+        <AnchorPane layoutX="601.0" layoutY="-0.6666666666666666" prefHeight="96.0" prefWidth="199.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <StackPane layoutX="6.0" layoutY="7.0" prefHeight="53.0" prefWidth="61.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="10.0">
+                <children>
+                    <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE" strokeWidth="0.0" />
+                    <Label fx:id="username_title_label_" alignment="CENTER" prefHeight="69.0" prefWidth="61.0" text="G">
+                        <font>
+                            <Font name="Microsoft YaHei Bold" size="29.0" />
+                        </font>
+                    </Label>
+                </children>
+            </StackPane>
+            <Label alignment="CENTER" layoutX="61.0" prefHeight="43.0" prefWidth="135.0" text="Geonstar">
+                <font>
+                    <Font name="Segoe UI Symbol" size="23.0" />
+                </font>
+            </Label>
+            <ChoiceBox fx:id="user_status_" layoutX="75.0" layoutY="48.0" prefHeight="17.0" prefWidth="89.0" />
+        </AnchorPane>
     </AnchorPane>
 </AnchorPane>

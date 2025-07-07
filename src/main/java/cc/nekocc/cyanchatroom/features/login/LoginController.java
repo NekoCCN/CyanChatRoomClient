@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
@@ -81,6 +82,16 @@ public class LoginController implements Initializable
         bindControlsToViewModel();
         setupUi();
         setupWarning();
+        setupEnter();
+    }
+
+
+    // 检测enter键直接登录
+    private void setupEnter(){
+        login_password_.setOnKeyPressed(event->{
+            if(event.getCode() == KeyCode.ENTER)
+                checkLogin();
+        });
     }
 
 
@@ -147,6 +158,41 @@ public class LoginController implements Initializable
         register_client_register_button_.disableProperty().bind(view_model_.registerButtonDisabledProperty());
     }
 
+    private void checkLogin(){
+        String newText = login_password_.getPassword();  // 获取输入后的完整文本
+        if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty())
+        {
+            if (login_password_.getPassword().length() > 5 && login_password_.getText().length() < 19)
+                password_warning_message_.setVisible(false);
+        } else
+        {
+            password_warning_message_.setText("密码不能包含非法字符");
+            password_warning_message_.setVisible(true);
+            login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+            return;
+        }
+
+        if (login_password_.getPassword().length() < 6)
+        {
+            password_warning_message_.setVisible(true);
+            password_warning_message_.setText("密码长度不能小于6位。");
+            login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+            return;
+        } else if (login_password_.getPassword().length() > 20)
+        {
+            password_warning_message_.setVisible(true);
+            password_warning_message_.setText("密码长度不能多于20位。");
+            login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+            return;
+        } else
+        {
+            password_warning_message_.setVisible(false);
+            login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+        }
+
+        view_model_.login();
+    }
+
     private void setupUi()
     {
         initPasswordFieldStyle();
@@ -155,54 +201,22 @@ public class LoginController implements Initializable
 
         login_button_.setOnAction(e ->
         {
-
-            String newText = login_password_.getPassword();  // 获取输入后的完整文本
-            if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty())
-            {
-                if (login_password_.getPassword().length() > 5 && login_password_.getText().length() < 19)
-                    password_warning_message_.setVisible(false);
-            } else
-            {
-                password_warning_message_.setText("密码不能包含非法字符");
-                password_warning_message_.setVisible(true);
-                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
-                return;
-            }
-
-            if (login_password_.getPassword().length() < 6)
-            {
-                password_warning_message_.setVisible(true);
-                password_warning_message_.setText("密码长度不能小于6位。");
-                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
-                return;
-            } else if (login_password_.getPassword().length() > 20)
-            {
-                password_warning_message_.setVisible(true);
-                password_warning_message_.setText("密码长度不能多于20位。");
-                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
-                return;
-            } else
-            {
-                password_warning_message_.setVisible(false);
-                login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
-            }
-
-            view_model_.login();
+            checkLogin();
         });
-        register_client_register_button_.setOnAction(e -> view_model_.register());
+        register_client_register_button_.setOnAction(_ -> view_model_.register());
 
-        login_clear_button_.setOnAction(e -> {
+        login_clear_button_.setOnAction(_ -> {
             view_model_.loginUsernameProperty().set("");
             view_model_.loginPasswordProperty().set("");
         });
-        register_username_clear_button_.setOnAction(e -> {
+        register_username_clear_button_.setOnAction(_ -> {
             view_model_.registerUsernameProperty().set("");
             view_model_.registerPasswordProperty().set("");
         });
 
         register_user_box_.setVisible(true);
         register_next_box_.setVisible(false);
-        register_username_next_button_.setOnAction(e ->
+        register_username_next_button_.setOnAction(_ ->
                 {
                     String newText = register_password_.getPassword();  // 获取输入后的完整文本
                     if (newText.matches("^[a-zA-Z0-9!.,@#$%^&*]+$") || newText.isEmpty())
@@ -235,7 +249,7 @@ public class LoginController implements Initializable
                         register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                     }
                 switchPanes(register_user_box_, register_next_box_);});
-        register_client_back_button_.setOnAction(e -> switchPanes(register_next_box_, register_user_box_));
+        register_client_back_button_.setOnAction(_ -> switchPanes(register_next_box_, register_user_box_));
     }
 
     private void populateClientTypeChoiceBox()
