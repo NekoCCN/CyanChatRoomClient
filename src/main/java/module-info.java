@@ -9,6 +9,7 @@ module cc.nekocc.cyanchatroom
     requires org.kordamp.ikonli.feather;
     requires org.kordamp.ikonli.javafx;
     requires AnimateFX;
+    requires java.sql;
 
     opens cc.nekocc.cyanchatroom.features.login to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.mainpage to javafx.fxml;
