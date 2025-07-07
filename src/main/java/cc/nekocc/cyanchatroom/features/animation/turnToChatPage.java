@@ -64,11 +64,12 @@ public class turnToChatPage implements Initializable {
         rotate.setFromAngle(0);
         rotate.setToAngle(360);
         rotate.setDuration(Duration.millis(300));
-        rotate.setCycleCount(20);
+        rotate.setCycleCount(12);
         rotate.setInterpolator(Interpolator.EASE_BOTH);
         rotate.setOnFinished(_ ->{
             Navigator.navigateTo("fxml/ChatPage.fxml",Navigator.AnimationType.FADE);
             Navigator.getStage().getScene().getWindow().removeEventHandler(WindowEvent.WINDOW_SHOWN,windowShownHandler);
+            Navigator.getStage().setResizable(true);
         });
         username_animation = new FadeTransition(Duration.millis(1000),username_label);
         username_animation.setFromValue(0);

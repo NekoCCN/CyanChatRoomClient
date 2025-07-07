@@ -16,7 +16,7 @@ public class Entry extends Application
 
         Navigator.setPrimaryStage(stage);
         Navigator.navigateTo("fxml/Login.fxml");
-
+        stage.setResizable(false);
         stage.show();
     }
 
