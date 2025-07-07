@@ -29,7 +29,7 @@ public class turnToChatPage implements Initializable {
     private Label username_label;
     private RotateTransition rotate;
     private FadeTransition username_animation;
-
+    // 需要用到的windows的事件钩子
     private final EventHandler<WindowEvent> windowShownHandler = _ -> {
         rotate.playFromStart();
         username_animation.playFromStart();
@@ -41,6 +41,7 @@ public class turnToChatPage implements Initializable {
         setupAnimation();
     }
 
+    // 设置自适应大小
     private void setupResponsiveLayout()
     {
 
@@ -58,6 +59,8 @@ public class turnToChatPage implements Initializable {
             }
         });
     }
+
+    // 动画设置
     private void setupAnimation(){
         username_label.setText("示例");
         rotate = new RotateTransition(Duration.seconds(1), welcome_label);
