@@ -49,15 +49,25 @@ public class turnToChatPage implements Initializable {
 
     public turnToChatPage(){}
     public void initialize(URL var1, ResourceBundle var2) {
+        sysnotifydata();
         setupStyle();
         setupResponsiveLayout();
         setupAnimation();
         setupTips();
 
     }
+
+    // 同步系统数据
+    private void sysnotifydata()
+    {
+        username_label.setText("Geonstar");
+        Navigator.getStage().setTitle("欢迎使用聊天室 "+username_label.getText());
+    }
     // 样式设置
     private void setupStyle()
     {
+
+
         loading_icon_.getStyleClass().addAll(Styles.ACCENT);
         loading_text_.getStyleClass().addAll(Styles.TEXT_NORMAL);
         welcome_text_.getStyleClass().addAll(Styles.TEXT_NORMAL);
@@ -89,7 +99,7 @@ public class turnToChatPage implements Initializable {
     private void setupResponsiveLayout()
     {
 
-        username_label.setText("示例");
+
         pack_pane_.sceneProperty().addListener((scene_observable, old_scene, new_scene) ->
         {
             if (old_scene == null && new_scene != null)
@@ -113,9 +123,8 @@ public class turnToChatPage implements Initializable {
         rotate.setOnFinished(_ -> {
             Navigator.navigateTo("fxml/ChatPage.fxml", Navigator.AnimationType.FADE);
             Navigator.getStage().getScene().getWindow().removeEventHandler(WindowEvent.WINDOW_SHOWN, windowShownHandler);
-            Navigator.getStage().setResizable(true);  // 这里打开了窗口的调节大小
+          //  Navigator.getStage().setResizable(true);  现在窗口大小的调节还是有问题，先关掉了
         });
-        username_label.setText("示例");
         username_animation = new FadeTransition(Duration.millis(1000),username_label);
         username_animation.setFromValue(0);
         username_animation.setToValue(1);

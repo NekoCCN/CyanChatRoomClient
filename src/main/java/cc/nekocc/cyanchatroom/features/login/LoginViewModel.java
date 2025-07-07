@@ -1,9 +1,7 @@
 package cc.nekocc.cyanchatroom.features.login;
 
 import cc.nekocc.cyanchatroom.Navigator;
-import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
-import cc.nekocc.cyanchatroom.domain.client.CorporationClient;
 import cc.nekocc.cyanchatroom.domain.client.IndividualClient;
 import cc.nekocc.cyanchatroom.model.UserRepository;
 import cc.nekocc.cyanchatroom.model.UserSession;
@@ -14,6 +12,8 @@ public class LoginViewModel
 {
     private final UserRepository user_repository_;
 
+
+    private final IntegerProperty version_slider_property_ = new SimpleIntegerProperty(1);
     private final StringProperty login_username_ = new SimpleStringProperty("");
     private final StringProperty login_password_ = new SimpleStringProperty("");
 
@@ -51,7 +51,7 @@ public class LoginViewModel
         register_button_disabled_.bind(
                 register_phone_.isEmpty()
                         .or(register_address_.isEmpty())
-                        .or(register_client_type_.isNull())
+                        .or(version_slider_property_.isNotEqualTo( 200) )
         );
     }
 
@@ -78,10 +78,10 @@ public class LoginViewModel
             String phone = register_phone_.get();
             String address = register_address_.get();
 
-            AbstractClient client_prototype = register_client_type_.get();
-            AbstractClient client_data;
+//            AbstractClient client_prototype = register_client_type_.get();  因为废除了choicebox故这里要简单修改一下
+            AbstractClient client_data =new IndividualClient(username, phone, address);
 
-            if (client_prototype instanceof IndividualClient)
+  /*          if (client_prototype instanceof IndividualClient)
             {
                 client_data = new IndividualClient(username, phone, address);
             }
@@ -94,6 +94,7 @@ public class LoginViewModel
                 throw new IllegalStateException("未知的客户类型");
             }
 
+   */
             user_repository_.registerUser(username, password, client_data);
             showAlert(Alert.AlertType.INFORMATION, "注册成功", "用户 " + username + " 已成功注册！");
         }
@@ -142,11 +143,6 @@ public class LoginViewModel
         return register_address_;
     }
 
-    public ObjectProperty<AbstractClient> registerClientTypeProperty()
-    {
-        return register_client_type_;
-    }
-
     public BooleanProperty loginButtonDisabledProperty()
     {
         return login_button_disabled_;
@@ -160,5 +156,11 @@ public class LoginViewModel
     public BooleanProperty registerButtonDisabledProperty()
     {
         return register_button_disabled_;
+    }
+
+
+
+    public IntegerProperty version_slider_property() {
+        return version_slider_property_;
     }
 }

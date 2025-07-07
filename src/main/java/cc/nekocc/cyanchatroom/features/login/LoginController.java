@@ -3,9 +3,7 @@ package cc.nekocc.cyanchatroom.features.login;
 import atlantafx.base.controls.PasswordTextField;
 import atlantafx.base.theme.Styles;
 import atlantafx.base.util.Animations;
-import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
-import cc.nekocc.cyanchatroom.domain.client.CorporationClient;
-import cc.nekocc.cyanchatroom.domain.client.IndividualClient;
+import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -15,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.util.Duration;
@@ -65,15 +62,21 @@ public class LoginController implements Initializable
     @FXML
     private TextField register_address_;
     @FXML
-    private ChoiceBox<AbstractClient> register_client_type_;
-    @FXML
     private Button register_client_register_button_;
     @FXML
     private Button register_client_back_button_;
     @FXML
     private Label phonenumber_error_;
+    @FXML
+    private Label verification_message_label_;
+    @FXML
+    private Slider verification_slider_;
 
     private LoginViewModel view_model_;
+
+    private Timeline returnAnimation;
+    private boolean isAnimating = false;
+
 
     @Override
     public void initialize(URL url, ResourceBundle resource_bundle)
@@ -83,6 +86,7 @@ public class LoginController implements Initializable
         setupUi();
         setupWarning();
         setupEnter();
+
     }
 
 
@@ -152,8 +156,9 @@ public class LoginController implements Initializable
         register_password_.textProperty().bindBidirectional(view_model_.registerPasswordProperty());
         register_phone_.textProperty().bindBidirectional(view_model_.registerPhoneProperty());
         register_address_.textProperty().bindBidirectional(view_model_.registerAddressProperty());
-        view_model_.registerClientTypeProperty().bind(register_client_type_.getSelectionModel().selectedItemProperty());
 
+
+        verification_slider_.valueProperty().bindBidirectional(view_model_.version_slider_property());
         register_username_next_button_.disableProperty().bind(view_model_.registerNextButtonDisabledProperty());
         register_client_register_button_.disableProperty().bind(view_model_.registerButtonDisabledProperty());
     }
@@ -197,8 +202,7 @@ public class LoginController implements Initializable
     {
         initPasswordFieldStyle();
         initButtonStyle();
-        populateClientTypeChoiceBox();
-
+        initSliderEvent();
         login_button_.setOnAction(e ->
         {
             checkLogin();
@@ -248,35 +252,63 @@ public class LoginController implements Initializable
                         password_register_error_.setVisible(false);
                         register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                     }
+                    verification_slider_.setValue(0);
+                    verification_slider_.setDisable(false);
+                    verification_message_label_.setStyle("-fx-text-fill: #AAAAAA");
+                    verification_message_label_.setText("滑动以完成验证");
                 switchPanes(register_user_box_, register_next_box_);});
         register_client_back_button_.setOnAction(_ -> switchPanes(register_next_box_, register_user_box_));
     }
 
-    private void populateClientTypeChoiceBox()
-    {
-        register_client_type_.getItems().addAll(new IndividualClient(), new CorporationClient());
-        register_client_type_.setConverter(new StringConverter<>()
-        {
-            @Override
-            public String toString(AbstractClient client)
-            {
-                return switch (client)
-                {
-                    case null -> null;
-                    case IndividualClient individualClient -> "个人客户";
-                    case CorporationClient corporationClient -> "公司客户";
-                    default -> client.getClass().getSimpleName();
-                };
-            }
+    // 初始化滑块格式
+    private void initSliderEvent() {
 
-            @Override
-            public AbstractClient fromString(String string)
-            {
-                return null;
+        verification_slider_.setMax(200);
+        verification_slider_.setMin(0);
+        verification_slider_.setValue(0);
+        // 初始化动画
+        returnAnimation = new Timeline(
+                new KeyFrame(Duration.millis(20), e -> {
+                    if (!isAnimating) return;
+
+                    double currentValue = verification_slider_.getValue();
+                    double progress = 0.1; // 调整这个值可以改变返回速度
+                    double newValue = currentValue + (2 - currentValue) * progress;
+                    verification_slider_.setValue(newValue);
+                    // 当接近初始值时停止动画
+                    if (Math.abs(newValue - 2) < 0.5) {
+                        verification_slider_.setValue(0);
+                        isAnimating = false;
+                        returnAnimation.stop();
+                        verification_slider_.setDisable(false);
+                        verification_message_label_.setText("滑动以完成验证");
+                        verification_message_label_.setStyle("-fx-text-fill: #AAAAAA;");
+                    }
+                }));
+
+        returnAnimation.setCycleCount(Timeline.INDEFINITE);
+        verification_slider_.setPrefSize(200, 40);
+
+        verification_slider_.setOnMouseReleased(event -> {
+            if (isAnimating) return; // 如果正在动画中，不处理释放事件
+            if (verification_slider_.getValue() >= verification_slider_.getMax() - 5 && (Math.random() * 10 >= 1)) {
+                // 验证成功
+                verification_message_label_.setText("验证成功");
+                verification_message_label_.setStyle("-fx-text-fill: green;");
+                verification_slider_.setDisable(true);
+                isAnimating = false;
+            } else {
+                // 验证失败，启动返回动画
+                verification_message_label_.setText("验证失败");
+                verification_message_label_.setStyle("-fx-text-fill: red;");
+                isAnimating = true;
+                verification_slider_.setDisable(true);
+                returnAnimation.playFromStart();
             }
         });
-        register_client_type_.getSelectionModel().selectFirst();
     }
+
+
 
     private void initPasswordFieldStyle()
     {

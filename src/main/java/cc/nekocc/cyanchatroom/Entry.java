@@ -11,9 +11,7 @@ public class Entry extends Application
     public void start(Stage stage) throws IOException
     {
         Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
-
         stage.setTitle("Hello!");
-
         Navigator.setPrimaryStage(stage);
         Navigator.navigateTo("fxml/Login.fxml");
         stage.setResizable(false);

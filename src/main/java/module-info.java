@@ -16,6 +16,7 @@ module cc.nekocc.cyanchatroom
     opens cc.nekocc.cyanchatroom.features.addorder to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.chatpage to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.animation to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.setting to javafx.fxml;
     opens cc.nekocc.cyanchatroom to javafx.fxml;
     exports cc.nekocc.cyanchatroom;
 
@@ -23,5 +24,7 @@ module cc.nekocc.cyanchatroom
     opens cc.nekocc.cyanchatroom.domain.client to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.goods to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.order to com.google.gson;
+    opens cc.nekocc.cyanchatroom.domain.userstatus to com.google.gson;
+    opens cc.nekocc.cyanchatroom.domain.chatwindow to com.google.gson;
     opens cc.nekocc.cyanchatroom.features.orderdetaildialog to javafx.fxml;
 }

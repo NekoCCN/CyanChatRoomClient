@@ -1,6 +1,10 @@
 package cc.nekocc.cyanchatroom.domain;
 
 import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
+import cc.nekocc.cyanchatroom.domain.userstatus.Status;
+
+
+// User我修改了下，可以接入我那个聊天界面
 
 public class User
 {
@@ -8,6 +12,7 @@ public class User
     private String hashed_password_;
     private boolean is_locked_;
     private AbstractClient client_data_;
+    private Status status_;
 
     public User()
     {
@@ -20,6 +25,13 @@ public class User
         hashed_password_ = hashedPassword;
         client_data_ = clientData;
         is_locked_ = false;
+    }
+
+    public User(String username,  Status status)
+    {
+        username_ = username;
+        is_locked_ = false;
+        status_ = status;
     }
 
     public String getUsername()
@@ -35,5 +47,13 @@ public class User
     public AbstractClient getClientData()
     {
         return client_data_;
+    }
+
+    public Status getStatus_() {
+        return status_;
+    }
+
+    public void setStatus_(Status status_) {
+        this.status_ = status_;
     }
 }

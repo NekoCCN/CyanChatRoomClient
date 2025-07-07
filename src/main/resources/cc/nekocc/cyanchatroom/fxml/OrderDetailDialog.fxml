@@ -13,73 +13,82 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefWidth="450.0" spacing="15.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.orderdetaildialog.OrderDetailDialogController">
+<VBox prefWidth="450.0" spacing="15.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="cc.nekocc.cyanchatroom.features.orderdetaildialog.OrderDetailDialogController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
-    <children>
-        <GridPane hgap="10.0" vgap="8.0">
-            <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="300.0" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="10.0"/>
-                <RowConstraints minHeight="10.0"/>
-                <RowConstraints minHeight="10.0"/>
-                <RowConstraints minHeight="10.0"/>
-                <RowConstraints minHeight="10.0"/>
-            </rowConstraints>
-            <children>
-                <Label text="订单编号:">
-                    <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
-                </Label>
-                <Label fx:id="order_id_label_" text="-" GridPane.columnIndex="1" />
-                <Label text="订单状态:" GridPane.rowIndex="1">
-                    <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
-                </Label>
-                <Label fx:id="order_status_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <Label text="发件人:" GridPane.rowIndex="2">
-                    <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
-                </Label>
-                <Label fx:id="sender_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label text="收件人:" GridPane.rowIndex="3">
-                    <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
-                </Label>
-                <Label fx:id="receiver_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <Label text="最终费用:" GridPane.rowIndex="4">
-                    <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
-                </Label>
-                <Label fx:id="cost_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            </children>
-        </GridPane>
-        <Label text="货物列表:">
-            <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
+    <GridPane hgap="10.0" vgap="8.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="300.0"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0"/>
+            <RowConstraints minHeight="10.0"/>
+            <RowConstraints minHeight="10.0"/>
+            <RowConstraints minHeight="10.0"/>
+            <RowConstraints minHeight="10.0"/>
+        </rowConstraints>
+        <Label text="订单编号:">
+            <font>
+                <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+            </font>
         </Label>
-        <TableView fx:id="goods_table_" prefHeight="150.0">
-            <columns>
-                <TableColumn fx:id="col_goods_name_" prefWidth="150.0" text="名称" />
-                <TableColumn fx:id="col_goods_type_" prefWidth="120.0" text="类型" />
-                <TableColumn fx:id="col_goods_price_" prefWidth="120.0" text="价格" />
-            </columns>
-        </TableView>
-        <VBox fx:id="payment_pane_" managed="false" spacing="8.0" visible="false">
-            <children>
-                <Label text="支付方式:">
-                    <font><Font name="Microsoft YaHei UI Bold" size="14.0" /></font>
-                </Label>
-                <HBox spacing="15.0">
-                    <children>
-                        <RadioButton fx:id="alipay_radio_" mnemonicParsing="false" text="支付宝">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="payment_toggle_group_" />
-                            </toggleGroup>
-                        </RadioButton>
-                        <RadioButton fx:id="wechat_radio_" mnemonicParsing="false" text="微信支付" toggleGroup="$payment_toggle_group_" />
-                        <RadioButton fx:id="cash_radio_" mnemonicParsing="false" text="现金" toggleGroup="$payment_toggle_group_" />
-                    </children>
-                </HBox>
-            </children>
-        </VBox>
-    </children>
+        <Label fx:id="order_id_label_" text="-" GridPane.columnIndex="1"/>
+        <Label text="订单状态:" GridPane.rowIndex="1">
+            <font>
+                <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+            </font>
+        </Label>
+        <Label fx:id="order_status_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="发件人:" GridPane.rowIndex="2">
+            <font>
+                <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+            </font>
+        </Label>
+        <Label fx:id="sender_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="收件人:" GridPane.rowIndex="3">
+            <font>
+                <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+            </font>
+        </Label>
+        <Label fx:id="receiver_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label text="最终费用:" GridPane.rowIndex="4">
+            <font>
+                <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+            </font>
+        </Label>
+        <Label fx:id="cost_label_" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+    </GridPane>
+    <Label text="货物列表:">
+        <font>
+            <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+        </font>
+    </Label>
+    <TableView fx:id="goods_table_" prefHeight="150.0">
+        <columns>
+            <TableColumn fx:id="col_goods_name_" prefWidth="150.0" text="名称"/>
+            <TableColumn fx:id="col_goods_type_" prefWidth="120.0" text="类型"/>
+            <TableColumn fx:id="col_goods_price_" prefWidth="120.0" text="价格"/>
+        </columns>
+    </TableView>
+    <VBox fx:id="payment_pane_" managed="false" spacing="8.0" visible="false">
+        <Label text="支付方式:">
+            <font>
+                <Font name="Microsoft YaHei UI Bold" size="14.0"/>
+            </font>
+        </Label>
+        <HBox spacing="15.0">
+            <RadioButton fx:id="alipay_radio_" mnemonicParsing="false" text="支付宝">
+                <toggleGroup>
+                    <ToggleGroup fx:id="payment_toggle_group_"/>
+                </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="wechat_radio_" mnemonicParsing="false" text="微信支付"
+                         toggleGroup="$payment_toggle_group_"/>
+            <RadioButton fx:id="cash_radio_" mnemonicParsing="false" text="现金"
+                         toggleGroup="$payment_toggle_group_"/>
+        </HBox>
+    </VBox>
 </VBox>
