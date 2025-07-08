@@ -32,7 +32,7 @@ public class ChatPageController implements Initializable {
     @FXML
     private Rectangle user_background_rectangle_;
     @FXML
-    private Pane chat_windows_hbox_;
+    private Pane chat_window_pane_;
     @FXML
     private VBox user_list_vbox_;
     @FXML

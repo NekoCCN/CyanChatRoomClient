@@ -12,12 +12,14 @@ import javafx.scene.Parent;
 public class ChatTab {
     private final ObjectProperty<Parent> chat_window_pane_ = new SimpleObjectProperty<>();
     private final User user;
-
-
+    private final ChatTabViewModel view_model = new ChatTabViewModel();
 
     public ChatTab(){
         this.user = new User("示例用户"+(int)(Math.random()*10), Status.getRandomStatus());
     }
+
+
+
     public User getUser() {
         return user;
     }

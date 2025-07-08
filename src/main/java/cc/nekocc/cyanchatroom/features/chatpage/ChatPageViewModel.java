@@ -4,6 +4,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTab;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
@@ -23,8 +24,6 @@ public class ChatPageViewModel {
 
     private ArrayList<ChatTab> user_list_ = new ArrayList<>();
     private final StringProperty username_title_property_ = new SimpleStringProperty();
-
-
 
 
 

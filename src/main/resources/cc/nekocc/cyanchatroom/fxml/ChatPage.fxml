@@ -6,7 +6,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
@@ -38,11 +38,13 @@
             </ScrollPane>
         </VBox>
         <VBox prefHeight="600.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="200.0" AnchorPane.topAnchor="0.0">
-            <HBox fx:id="chat_windows_hbox_" prefHeight="400.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 2; -fx-border-radius: 5;" />
+         <Pane fx:id="chat_window_pane_" maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" />
          <AnchorPane>
             <children>
                   <StackPane>
-                      <TextArea prefHeight="200.0" prefWidth="600.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 2; -fx-border-radius: 5;" />
+                  <children>
+                         <TextArea prefHeight="200.0" prefWidth="600.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 2; -fx-border-radius: 5;" />
+                  </children>
                   </StackPane>
                <Button fx:id="enter_button_" mnemonicParsing="false" prefHeight="37.0" prefWidth="80.0" text="Enter" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="15.0">
                   <font>
