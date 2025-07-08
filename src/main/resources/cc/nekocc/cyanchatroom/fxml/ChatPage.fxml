@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -13,46 +14,52 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.ChatPageController">
-    <AnchorPane fx:id="main_pane" prefHeight="600.0" prefWidth="800.0">
-        <VBox layoutX="592.0" layoutY="-1.0" prefHeight="600.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <AnchorPane>
-                <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4" height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" width="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                <StackPane layoutX="6.0" layoutY="7.0" prefHeight="53.0" prefWidth="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
-                    <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE" strokeWidth="0.0" />
-                    <Label fx:id="username_title_label_" alignment="CENTER" prefHeight="69.0" prefWidth="61.0" text="G">
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.ChatPageController">
+
+    <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <VBox HBox.hgrow="ALWAYS">
+
+            <ScrollPane prefHeight="400.0" prefWidth="600.0" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                <Pane fx:id="chat_window_pane_" />
+            </ScrollPane>
+
+
+            <AnchorPane prefHeight="150.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1 0 0 0;">
+                <TextArea fx:id="message_input" style="-fx-border-color: #bbbbbb; -fx-border-width: 1; -fx-border-radius: 5;" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0" />
+                <Button fx:id="enter_button_" mnemonicParsing="false" prefHeight="30.0" prefWidth="70.0" text="发送" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                    <font>
+                        <Font name="Arial Narrow Bold" size="14.0" />
+                    </font>
+                </Button>
+            </AnchorPane>
+        </VBox>
+
+
+        <VBox minWidth="200.0" prefWidth="200.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 0 0 0 1;">
+
+            <AnchorPane prefHeight="80.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 0 0 1 0;">
+                <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4" height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" width="200.0" />
+                <StackPane layoutX="10.0" layoutY="10.0">
+                    <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE" />
+                    <Label fx:id="username_title_label_" alignment="CENTER" text="G">
                         <font>
                             <Font name="Microsoft YaHei Bold" size="29.0" />
                         </font>
                     </Label>
                 </StackPane>
-                <Label fx:id="username_label_" alignment="CENTER" layoutX="61.0" prefHeight="43.0" prefWidth="135.0" text="Geonstar">
+                <Label fx:id="username_label_" layoutX="81.0" layoutY="-3.0" text="Geonstar">
                     <font>
                         <Font name="Segoe UI Symbol" size="23.0" />
                     </font>
                 </Label>
-                <ChoiceBox fx:id="user_status_" layoutX="80.0" layoutY="36.0" prefHeight="13.0" prefWidth="93.0" />
+                <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
             </AnchorPane>
-            <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" style="-fx-border-color: #bbbbbb; -fx-border-width: 1; -fx-border-radius: 5;">
-                <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" spacing="3.0" />
+
+
+            <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
             </ScrollPane>
         </VBox>
-        <VBox prefHeight="600.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="200.0" AnchorPane.topAnchor="0.0">
-         <Pane fx:id="chat_window_pane_" maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" />
-         <AnchorPane>
-            <children>
-                  <StackPane>
-                  <children>
-                         <TextArea prefHeight="200.0" prefWidth="600.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 2; -fx-border-radius: 5;" />
-                  </children>
-                  </StackPane>
-               <Button fx:id="enter_button_" mnemonicParsing="false" prefHeight="37.0" prefWidth="80.0" text="Enter" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="15.0">
-                  <font>
-                     <Font name="Arial Narrow Bold" size="20.0" />
-                  </font>
-               </Button>
-            </children>
-         </AnchorPane>
-        </VBox>
-    </AnchorPane>
+    </HBox>
 </AnchorPane>

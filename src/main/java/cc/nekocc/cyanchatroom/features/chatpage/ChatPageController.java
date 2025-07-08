@@ -5,10 +5,7 @@ import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import javafx.fxml.FXML;
 import atlantafx.base.theme.Styles;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 
@@ -20,11 +17,11 @@ import java.net.URL;
 public class ChatPageController implements Initializable {
 
     @FXML
+    public TextArea message_input;
+    @FXML
     private Label username_title_label_;   // 用户名
     @FXML
     private Label username_label_;
-    @FXML
-    private AnchorPane main_pane;
     @FXML
     private ScrollPane list_scrollPane_;
     @FXML

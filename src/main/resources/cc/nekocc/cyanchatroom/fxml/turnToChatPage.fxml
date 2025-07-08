@@ -10,7 +10,7 @@
 
 <AnchorPane fx:id="pack_pane_" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="cc.nekocc.cyanchatroom.features.animation.turnToChatPage">
+            fx:controller="cc.nekocc.cyanchatroom.features.turntochatpage.turnToChatPage">
    <ImageView fx:id="loading_backgound_" fitHeight="600.0" fitWidth="800.0" layoutY="-1.0" pickOnBounds="true"
               preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

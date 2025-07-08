@@ -1,4 +1,4 @@
-package cc.nekocc.cyanchatroom.features.animation;
+package cc.nekocc.cyanchatroom.features.turntochatpage;
 
 
 
@@ -119,11 +119,11 @@ public class turnToChatPage implements Initializable {
         rotate.setFromAngle(0);
         rotate.setToAngle(360);
         rotate.setDuration(Duration.millis(800));
-        rotate.setCycleCount(6);
+        rotate.setCycleCount(1);
         rotate.setOnFinished(_ -> {
             Navigator.navigateTo("fxml/ChatPage.fxml", Navigator.AnimationType.FADE);
             Navigator.getStage().getScene().getWindow().removeEventHandler(WindowEvent.WINDOW_SHOWN, windowShownHandler);
-          //  Navigator.getStage().setResizable(true);  现在窗口大小的调节还是有问题，先关掉了
+            Navigator.getStage().setResizable(true);
         });
         username_animation = new FadeTransition(Duration.millis(1000),username_label);
         username_animation.setFromValue(0);
