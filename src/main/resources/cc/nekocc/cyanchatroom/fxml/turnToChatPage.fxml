@@ -7,43 +7,31 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
-<AnchorPane fx:id="pack_pane_" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="cc.nekocc.cyanchatroom.features.turntochatpage.turnToChatPage">
-   <ImageView fx:id="loading_backgound_" fitHeight="600.0" fitWidth="800.0" layoutY="-1.0" pickOnBounds="true"
-              preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-      <Image url="@../../../../Image/summer_background.png"/>
+<AnchorPane fx:id="pack_pane_" prefHeight="600.0" prefWidth="840.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.turntochatpage.turnToChatPage">
+   <ImageView fx:id="loading_backgound_" fitHeight="664.0" fitWidth="885.0" layoutX="-10.0" layoutY="-52.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="-11.75" AnchorPane.leftAnchor="-10.0" AnchorPane.rightAnchor="-34.66666666666663" AnchorPane.topAnchor="-52.0">
+      <Image url="@../../../../Image/summer_background.png" />
    </ImageView>
-   <Label fx:id="username_label" contentDisplay="CENTER" layoutX="474.0" layoutY="281.0" prefHeight="65.0"
-          prefWidth="312.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 2, 0, 2, -2);"
-          textFill="#f5b919">
+   <Label fx:id="username_label" contentDisplay="CENTER" layoutX="474.0" layoutY="281.0" prefHeight="65.0" prefWidth="312.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 2, 0, 2, -2);" textFill="#f5b919">
       <font>
-         <Font name="Microsoft YaHei UI Bold" size="43.0"/>
+         <Font name="Microsoft YaHei UI Bold" size="43.0" />
       </font>
    </Label>
-   <Label fx:id="tip_label_" layoutX="14.0" layoutY="561.0" prefHeight="15.0" prefWidth="615.0"
-          style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.9), 2, 0, 0, 0);" text="TIp:" textFill="#f5fee6"
-          AnchorPane.bottomAnchor="23.66666666666663">
+   <Label fx:id="tip_label_" layoutX="14.0" layoutY="561.0" prefHeight="36.0" prefWidth="649.0" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.9), 2, 0, 0, 0);" text="TIp:" textFill="#f5fee6" AnchorPane.bottomAnchor="23.0">
       <font>
-         <Font name="Microsoft YaHei UI" size="16.0"/>
+         <Font name="Microsoft YaHei UI" size="17.0" />
       </font>
    </Label>
-   <Text fx:id="welcome_text_" fill="#f5b919" layoutX="31.0" layoutY="259.0" strokeType="OUTSIDE" strokeWidth="0.0"
-         text="Welcome">
+   <Text fx:id="welcome_text_" fill="#f5b919" layoutX="31.0" layoutY="259.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome">
       <font>
-         <Font name="Berlin Sans FB Bold" size="63.0"/>
+         <Font name="Berlin Sans FB Bold" size="63.0" />
       </font>
    </Text>
-   <ImageView fx:id="loading_icon_" fitHeight="65.0" fitWidth="61.0" layoutX="683.0" layoutY="482.0" pickOnBounds="true"
-              preserveRatio="true">
-      <Image url="@../../../../Image/loading_icon_.png"/>
+   <ImageView fx:id="loading_icon_" fitHeight="65.0" fitWidth="61.0" layoutX="736.0" layoutY="476.0" pickOnBounds="true" preserveRatio="true">
+      <Image url="@../../../../Image/loading_icon_.png" />
    </ImageView>
-   <Text fx:id="loading_text_" layoutX="677.0" layoutY="570.0" strokeType="OUTSIDE" strokeWidth="0.0"
-         text="Loading......" wrappingWidth="89.573486328125">
+   <Text fx:id="loading_text_" layoutX="721.0" layoutY="575.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Loading......" wrappingWidth="89.573486328125">
       <font>
-         <Font size="16.0"/>
+         <Font size="16.0" />
       </font>
    </Text>
 </AnchorPane>

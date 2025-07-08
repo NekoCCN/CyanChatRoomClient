@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
@@ -34,32 +35,38 @@
                 </Button>
             </AnchorPane>
         </VBox>
-
-
-        <VBox minWidth="200.0" prefWidth="200.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 0 0 0 1;">
-
-            <AnchorPane prefHeight="80.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 0 0 1 0;">
-                <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4" height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" width="200.0" />
-                <StackPane layoutX="10.0" layoutY="10.0">
-                    <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE" />
-                    <Label fx:id="username_title_label_" alignment="CENTER" text="G">
-                        <font>
-                            <Font name="Microsoft YaHei Bold" size="29.0" />
-                        </font>
-                    </Label>
-                </StackPane>
-                <Label fx:id="username_label_" layoutX="81.0" layoutY="-3.0" text="Geonstar">
-                    <font>
-                        <Font name="Segoe UI Symbol" size="23.0" />
-                    </font>
-                </Label>
-                <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
-            </AnchorPane>
-
-
-            <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-                <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
-            </ScrollPane>
-        </VBox>
+      <HBox fx:id="user_tool_pane_" style="-fx-border-color: #CDCDCD; -fx-border-width: 2; -fx-background-radius: 5; -fx-border-radius: 5;">
+         <children>
+      
+      
+              <VBox minWidth="200.0" prefWidth="200.0">
+      
+                  <AnchorPane prefHeight="80.0">
+                      <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4" height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" visible="false" width="200.0" />
+                      <StackPane layoutX="10.0" layoutY="10.0">
+                          <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE" />
+                          <Label fx:id="username_title_label_" alignment="CENTER" text="G">
+                              <font>
+                                  <Font name="Microsoft YaHei Bold" size="29.0" />
+                              </font>
+                          </Label>
+                      </StackPane>
+                      <Label fx:id="username_label_" layoutX="81.0" layoutY="-3.0" text="Geonstar">
+                          <font>
+                              <Font name="Segoe UI Symbol" size="23.0" />
+                          </font>
+                      </Label>
+                      <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
+                  </AnchorPane>
+               <Line endX="100.0" startX="-100.0" stroke="#cdcdcd" strokeWidth="2.0" />
+      
+      
+                  <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                      <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
+                  </ScrollPane>
+              </VBox>
+            <VBox maxWidth="40.0" minWidth="40.0" prefHeight="200.0" prefWidth="40.0" style="-fx-background-color: #CDCDCD;" />
+         </children>
+      </HBox>
     </HBox>
 </AnchorPane>

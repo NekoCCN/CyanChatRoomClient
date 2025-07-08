@@ -29,6 +29,8 @@ public class ChatPageController implements Initializable {
     @FXML
     private Rectangle user_background_rectangle_;
     @FXML
+    private HBox user_tool_pane_;
+    @FXML
     private Pane chat_window_pane_;
     @FXML
     private VBox user_list_vbox_;
@@ -60,6 +62,7 @@ public class ChatPageController implements Initializable {
         username_title_label_.getStyleClass().addAll(Styles.TEXT_MUTED);
         username_label_.getStyleClass().addAll(Styles.TITLE_1);
         list_scrollPane_.getStyleClass().addAll(Styles.CENTER_PILL);
+        user_tool_pane_.getStyleClass().addAll(Styles.ROUNDED);
     }
 
     // 数据同步
