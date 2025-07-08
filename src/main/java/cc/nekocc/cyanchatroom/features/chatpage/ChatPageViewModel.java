@@ -2,9 +2,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 
 import atlantafx.base.theme.Styles;
-import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTab;
-import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
@@ -52,11 +50,11 @@ public class ChatPageViewModel {
             StackPane tab_circle = new StackPane(circle,username_label_title_);
             VBox tab_data_ = new VBox(username_label_,user_status_label_);
             HBox tab = new HBox(tab_circle,tab_data_);
-            tab.setStyle("-fx-border-color: #bbbbbb;-fx-border-width: 2;-fx-border-radius: 5");
-            tab_circle.setPrefHeight(100);
+
+            tab_circle.setPrefHeight(60);
             tab_circle.setPrefWidth(60);
-            tab.setPrefHeight(100);
-            tab.setPrefWidth(190);
+            tab.setPrefHeight(160);
+            tab.setPrefWidth(194);
             tab.setSpacing(10);
             circle.setStyle("-fx-fill: #dbdbdb;");
             circle.setCenterX(40);
@@ -68,10 +66,16 @@ public class ChatPageViewModel {
             username_label_title_.setLayoutY(40);
             username_label_.setFont(Font.font("Microsoft YaHei", 18));
             username_label_.setStyle("-fx-text-fill: black;");
-            user_status_label_.setFont(Font.font("Microsoft YaHei", 13));
+            user_status_label_.setFont(Font.font("Microsoft YaHei",FontWeight.BOLD,14));
             user_status_label_.setStyle("-fx-text-fill:"+user.getUser().getStatus_().getColor() );
             tab.getStyleClass().addAll(Styles.ACCENT);
             vBox.getChildren().add(tab);
+            tab.setOnMouseEntered(e->{
+                tab.setStyle("-fx-background-color: #E7E7E7");
+            });
+            tab.setOnMouseExited(e->{
+                tab.setStyle("-fx-background-color: transparent");
+            });
         }
     }
     public StringProperty getUsername_title_property() {
