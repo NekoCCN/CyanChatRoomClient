@@ -10,6 +10,8 @@ module cc.nekocc.cyanchatroom
     requires org.kordamp.ikonli.javafx;
     requires AnimateFX;
     requires java.sql;
+    requires com.zaxxer.hikari;
+    requires org.mybatis;
 
     opens cc.nekocc.cyanchatroom.features.login to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.chatpage to javafx.fxml;
@@ -23,4 +25,5 @@ module cc.nekocc.cyanchatroom
     opens cc.nekocc.cyanchatroom.domain.goods to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.order to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.userstatus to com.google.gson;
+    opens cc.nekocc.cyanchatroom.domain.messages to com.google.gson;
 }
