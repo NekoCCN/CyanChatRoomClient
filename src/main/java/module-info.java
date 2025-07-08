@@ -25,6 +25,5 @@ module cc.nekocc.cyanchatroom
     opens cc.nekocc.cyanchatroom.domain.goods to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.order to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.userstatus to com.google.gson;
-    opens cc.nekocc.cyanchatroom.domain.chatwindow to com.google.gson;
     opens cc.nekocc.cyanchatroom.features.orderdetaildialog to javafx.fxml;
 }

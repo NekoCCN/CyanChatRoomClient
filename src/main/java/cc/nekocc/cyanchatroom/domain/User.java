@@ -2,6 +2,9 @@ package cc.nekocc.cyanchatroom.domain;
 
 import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Parent;
 
 
 // User我修改了下，可以接入我那个聊天界面
@@ -14,9 +17,11 @@ public class User
     private AbstractClient client_data_;
     private Status status_;
 
+
     public User()
     {
-        is_locked_ = false;
+        this.username_ = "示例用户"+(int)(Math.random()*10);
+        status_ = Status.getRandomStatus();
     }
 
     public User(String username, String hashedPassword, AbstractClient clientData)

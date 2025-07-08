@@ -1,4 +1,4 @@
-package cc.nekocc.cyanchatroom.domain.chatwindow;
+package cc.nekocc.cyanchatroom.features.chatpage.chattab;
 
 import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
@@ -11,7 +11,8 @@ import javafx.scene.Parent;
 // 聊天界面中右侧聊天窗口的索引窗
 public class ChatTab {
     private final ObjectProperty<Parent> chat_window_pane_ = new SimpleObjectProperty<>();
-    private User user;
+    private final User user;
+
 
 
     public ChatTab(){
@@ -21,7 +22,5 @@ public class ChatTab {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+
 }

@@ -6,7 +6,7 @@ public enum Status {
     ONLINE,
     BUSY,
     AWAY,
-    DoNotDisturb,
+    DO_NOT_DISTURB,
     OFFLINE,
     INVISIBLE;
 
@@ -16,10 +16,23 @@ public enum Status {
             case ONLINE -> "在线";
             case BUSY -> "忙碌";
             case AWAY -> "离开";
-            case DoNotDisturb -> "请勿打扰";
-            case OFFLINE, INVISIBLE -> "离线";
+            case DO_NOT_DISTURB -> "请勿打扰";
+            case OFFLINE -> "离线";
+            case INVISIBLE -> "隐身";
         };
 
+    }
+
+    // 用于好友栏显示
+    public String toStringshow(){
+        return switch (this)
+                {
+                    case ONLINE -> "在线";
+                    case BUSY -> "忙碌";
+                    case AWAY -> "离开";
+                    case DO_NOT_DISTURB -> "请勿打扰";
+                    case OFFLINE, INVISIBLE -> "离线";
+                };
     }
 
     public String getColor() {
@@ -28,7 +41,7 @@ public enum Status {
                     case ONLINE -> "#00FF00";
                     case BUSY -> "#696969";
                     case AWAY -> "#9400D3";
-                    case DoNotDisturb -> "#191970";
+                    case DO_NOT_DISTURB -> "#191970";
                     case OFFLINE, INVISIBLE -> "#A52A2A";
                 };
     }
