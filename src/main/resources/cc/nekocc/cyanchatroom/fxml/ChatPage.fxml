@@ -17,14 +17,14 @@
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.ChatPageController">
 
     <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <!-- 主聊天区域 (自适应宽度) -->
+
         <VBox HBox.hgrow="ALWAYS">
-            <!-- 聊天消息显示区域 -->
+
             <ScrollPane prefHeight="400.0" prefWidth="600.0" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
                 <Pane fx:id="chat_window_pane_" />
             </ScrollPane>
 
-            <!-- 输入区域 -->
+
             <AnchorPane prefHeight="150.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1 0 0 0;">
                 <TextArea fx:id="message_input" style="-fx-border-color: #bbbbbb; -fx-border-width: 1; -fx-border-radius: 5;" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0" />
                 <Button fx:id="enter_button_" mnemonicParsing="false" prefHeight="30.0" prefWidth="70.0" text="发送" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
@@ -35,9 +35,9 @@
             </AnchorPane>
         </VBox>
 
-        <!-- 用户列表区域 (固定宽度) -->
+
         <VBox minWidth="200.0" prefWidth="200.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 0 0 0 1;">
-            <!-- 用户信息面板 -->
+
             <AnchorPane prefHeight="80.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 0 0 1 0;">
                 <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4" height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" width="200.0" />
                 <StackPane layoutX="10.0" layoutY="10.0">
@@ -56,7 +56,7 @@
                 <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
             </AnchorPane>
 
-            <!-- 用户列表 -->
+
             <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
                 <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
             </ScrollPane>
