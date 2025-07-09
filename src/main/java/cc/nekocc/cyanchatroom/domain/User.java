@@ -41,6 +41,10 @@ public class User
         is_locked_ = false;
         status_ = status;
     }
+    public void setUsername(String username_)
+    {
+        this.username_ = username_;
+    }
 
     public String getUsername()
     {
