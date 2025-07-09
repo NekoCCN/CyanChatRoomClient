@@ -15,6 +15,8 @@ module cc.nekocc.cyanchatroom
 
     opens cc.nekocc.cyanchatroom.features.login to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.chatpage to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.chatpage.chattab to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.chatpage.chatwindow to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.turntochatpage to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.setting to javafx.fxml;
     opens cc.nekocc.cyanchatroom to javafx.fxml;

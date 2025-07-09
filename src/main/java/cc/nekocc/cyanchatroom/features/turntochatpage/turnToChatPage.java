@@ -77,7 +77,7 @@ public class turnToChatPage implements Initializable {
     // 小提示
     private void setupTips()
     {
-        int tips_index = (int)(Math.random() * 10);
+        int tips_index = (int)(Math.random() * 11);
         String tips_text = switch (tips_index) {
             case 0 -> "重构是程序员的主力技能。";
             case 1 -> "普通程序员+google=超级程序员。";
@@ -85,10 +85,11 @@ public class turnToChatPage implements Initializable {
             case 3 -> "程序员是写代码的，不是写文档的。";
             case 4 -> "重构/优化/修复Bug，同时只能作一件。";
             case 5 -> "最好的工具是纸笔；其次好的是markdown。";
-            case 6 -> "你也许不知道，这个加载动画没有加载任何东西,时间是4.8s。";
+            case 6 -> "你也许不知道：这个加载动画没有加载任何东西,时间是4.8s。";
             case 7 -> "不知怎么选技术书时就挑薄的。起码不会太贵，且你能看完。";
             case 8 -> "造轮子是很好的锻炼方法。前提是你见过别的轮子。";
             case 9 -> "至少半数时间将花在集成上。时间，时间，时间总是不够。";
+            case 10 -> "你也许不知道：在前面的滑块验证中，有10%的概率即便你滑对了也会失败";
             default -> "不要定过大、过远、过细的计划。即使定了也没有用。";
         };
         tip_label_.setText("Tip:"+tips_text);
@@ -119,7 +120,7 @@ public class turnToChatPage implements Initializable {
         rotate.setFromAngle(0);
         rotate.setToAngle(360);
         rotate.setDuration(Duration.millis(800));
-        rotate.setCycleCount(1);
+        rotate.setCycleCount(2);
         rotate.setOnFinished(_ -> {
             Navigator.navigateTo("fxml/ChatPage.fxml", Navigator.AnimationType.FADE);
             Navigator.getStage().getScene().getWindow().removeEventHandler(WindowEvent.WINDOW_SHOWN, windowShownHandler);

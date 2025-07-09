@@ -6,6 +6,7 @@ import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTab;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -25,8 +26,6 @@ public class ChatPageViewModel {
 
 
 
-
-
     public ChatPageViewModel(){
         initialize();
     }
@@ -38,37 +37,9 @@ public class ChatPageViewModel {
 
     }
 
-    public void loadUserList(VBox vBox){
+    public void loadUserList(VBox vBox, AnchorPane anchorPane){
         for(ChatTab user : user_list_){
-            String name = user.getUser().getUsername();
-            if(name.isEmpty())
-                throw new IllegalArgumentException("用户名不能为空");
-            Label username_label_title_ = new Label(String.valueOf(name.charAt(0)));
-            Label username_label_ = new Label(name);
-            Label user_status_label_ = new Label(user.getUser().getStatus_().toStringshow());
-            Circle circle = new Circle();
-            StackPane tab_circle = new StackPane(circle,username_label_title_);
-            VBox tab_data_ = new VBox(username_label_,user_status_label_);
-            HBox tab = new HBox(tab_circle,tab_data_);
-
-            tab_circle.setPrefHeight(60);
-            tab_circle.setPrefWidth(60);
-            tab.setPrefHeight(160);
-            tab.setPrefWidth(194);
-            tab.setSpacing(10);
-            circle.setStyle("-fx-fill: #dbdbdb;");
-            circle.setCenterX(40);
-            circle.setRadius(22);
-            circle.setCenterY(35);
-            username_label_title_.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,20));
-            username_label_title_.setStyle("-fx-text-fill: #57606A");
-            username_label_title_.setLayoutX(10);
-            username_label_title_.setLayoutY(40);
-            username_label_.setFont(Font.font("Microsoft YaHei", 18));
-            username_label_.setStyle("-fx-text-fill: black;");
-            user_status_label_.setFont(Font.font("Microsoft YaHei",FontWeight.BOLD,14));
-            user_status_label_.setStyle("-fx-text-fill:"+user.getUser().getStatus_().getColor() );
-            tab.getStyleClass().addAll(Styles.ACCENT);
+            HBox tab = user.getChatTabPane();
             vBox.getChildren().add(tab);
             tab.setOnMouseEntered(e->{
                 tab.setStyle("-fx-background-color: #E7E7E7");
@@ -76,11 +47,22 @@ public class ChatPageViewModel {
             tab.setOnMouseExited(e->{
                 tab.setStyle("-fx-background-color: transparent");
             });
+            tab.setOnMouseClicked(e->{
+                tab.setStyle("-fx-background-color: #3574F0");
+                anchorPane.getChildren().clear();
+                anchorPane.getChildren().add(user.switchChatPane());
+                AnchorPane.setTopAnchor(tab, 0.0);    // 距顶部10像素
+                AnchorPane.setBottomAnchor(tab, 0.0); // 距底部10像素
+                AnchorPane.setLeftAnchor(tab, 0.0);   // 距左侧10像素
+                AnchorPane.setRightAnchor(tab, 0.0);
+            });
+
         }
     }
     public StringProperty getUsername_title_property() {
         return username_title_property_;
     }
+
 
 
 }

@@ -2,6 +2,7 @@ package cc.nekocc.cyanchatroom;
 
 import animatefx.animation.*;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -176,6 +177,7 @@ public class Navigator
 
         transitionTo(fxml_file, out_animation, in_animation);
     }
+
 
 
     private static void transitionTo(String fxml_file, AnimationFX out_animation, AnimationFX in_animation)

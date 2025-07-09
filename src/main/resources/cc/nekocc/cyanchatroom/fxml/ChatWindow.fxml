@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.chatwindow.ChatWindowsController">
+<AnchorPane fx:id="root_pane_" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.chatwindow.ChatWindowsController">
     <ScrollPane hbarPolicy="NEVER" prefHeight="400.0" prefWidth="600.0" vbarPolicy="ALWAYS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0">
             <VBox prefHeight="400.0" prefWidth="587.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="13.0" AnchorPane.topAnchor="0.0">
-                <HBox prefHeight="46.0" prefWidth="587.0" />
+                <AnchorPane>
+               <ImageView fx:id="personal_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="10.0">
+                  <image>
+                     <Image url="@../../../../Image/personal.png" />
+                  </image>
+               </ImageView>
+                    <HBox minHeight="46.0" prefHeight="46.0" prefWidth="587.0" style="-fx-background-color: #E0E0E0;">
+                        <Label prefHeight="66.0" prefWidth="15.0" visible="false" />
+                        <Label maxWidth="200.0" minHeight="46.0" prefHeight="46.0" text="Username" textFill="#1e1f22">
+                            <font>
+                                <Font name="Microsoft YaHei UI" size="20.0" />
+                            </font>
+                        </Label>
+                    </HBox>
+                </AnchorPane>
             </VBox>
         </AnchorPane>
     </ScrollPane>

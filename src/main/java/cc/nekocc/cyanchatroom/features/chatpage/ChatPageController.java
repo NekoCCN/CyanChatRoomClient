@@ -1,6 +1,7 @@
 package cc.nekocc.cyanchatroom.features.chatpage;
 
 
+import cc.nekocc.cyanchatroom.Navigator;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import javafx.fxml.FXML;
 import atlantafx.base.theme.Styles;
@@ -31,7 +32,7 @@ public class ChatPageController implements Initializable {
     @FXML
     private HBox user_tool_pane_;
     @FXML
-    private Pane chat_window_pane_;
+    private AnchorPane chat_windows_pane_;
     @FXML
     private VBox user_list_vbox_;
     @FXML
@@ -48,7 +49,8 @@ public class ChatPageController implements Initializable {
         setupStyle();
         synchronizeData();
         setupUI();
-        view_model_.loadUserList(user_list_vbox_);
+
+        view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
 
 
     }
@@ -71,6 +73,7 @@ public class ChatPageController implements Initializable {
         //username_title_label_.textProperty().bindBidirectional(view_model_.getUsername_title_property());
 
     }
+
 
     private void setupUI(){
         user_status_.getItems().addAll(Status.ONLINE, Status.BUSY, Status.DO_NOT_DISTURB, Status.INVISIBLE,Status.AWAY,Status.OFFLINE);

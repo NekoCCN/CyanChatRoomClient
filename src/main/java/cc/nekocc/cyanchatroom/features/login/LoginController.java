@@ -76,7 +76,7 @@ public class LoginController implements Initializable
 
     private Timeline returnAnimation;
     private boolean isAnimating = false;
-
+    private int version_slider_value = 0;
 
     @Override
     public void initialize(URL url, ResourceBundle resource_bundle)
@@ -252,13 +252,19 @@ public class LoginController implements Initializable
                         password_register_error_.setVisible(false);
                         register_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                     }
-                    verification_slider_.setValue(0);
-                    verification_slider_.setDisable(false);
-                    verification_message_label_.setStyle("-fx-text-fill: #AAAAAA");
-                    verification_message_label_.setText("滑动以完成验证");
+                    reinitSlider();
                 switchPanes(register_user_box_, register_next_box_);});
         register_client_back_button_.setOnAction(_ -> switchPanes(register_next_box_, register_user_box_));
     }
+    // 重置滑块
+    private void reinitSlider() {
+        verification_slider_.setValue(0);
+        verification_slider_.setDisable(false);
+        verification_message_label_.setStyle("-fx-text-fill: #AAAAAA");
+        version_slider_value = (int)(Math.random()*160+40);
+        verification_message_label_.setText("请滑动到"+String.format("%d",version_slider_value/2)+"%处完成验证");
+    }
+
 
     // 初始化滑块格式
     private void initSliderEvent() {
@@ -281,7 +287,7 @@ public class LoginController implements Initializable
                         isAnimating = false;
                         returnAnimation.stop();
                         verification_slider_.setDisable(false);
-                        verification_message_label_.setText("滑动以完成验证");
+                        verification_message_label_.setText("请滑动到"+String.format("%d",version_slider_value/2)+"%处完成验证");
                         verification_message_label_.setStyle("-fx-text-fill: #AAAAAA;");
                     }
                 }));
@@ -291,7 +297,7 @@ public class LoginController implements Initializable
 
         verification_slider_.setOnMouseReleased(event -> {
             if (isAnimating) return; // 如果正在动画中，不处理释放事件
-            if (verification_slider_.getValue() >= verification_slider_.getMax() - 5 && (Math.random() * 10 >= 1)) {
+            if (verification_slider_.getValue() >= version_slider_value - 6 && verification_slider_.getValue() <= version_slider_value + 6 && (Math.random() * 10 >= 1)) {
                 // 验证成功
                 verification_message_label_.setText("验证成功");
                 verification_message_label_.setStyle("-fx-text-fill: green;");
@@ -365,4 +371,7 @@ public class LoginController implements Initializable
         pane_to_fade_in.toFront();
         fade_out_animation.play();
     }
+
+
+
 }

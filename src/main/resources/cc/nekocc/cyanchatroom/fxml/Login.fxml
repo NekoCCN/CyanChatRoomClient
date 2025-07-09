@@ -90,12 +90,11 @@
                </HBox>
                <VBox prefHeight="71.0" prefWidth="569.0">
                   <HBox prefHeight="36.0" prefWidth="369.0">
-                     <Slider fx:id="verification_slider_" prefHeight="36.0" prefWidth="316.0"/>
+                     <Slider fx:id="verification_slider_" prefHeight="36.0" prefWidth="316.0" />
                   </HBox>
-                  <Label fx:id="verification_message_label_" prefHeight="29.0" prefWidth="232.0" text="滑动以完成验证"
-                         textFill="#aaaaaa">
+                  <Label fx:id="verification_message_label_" prefHeight="32.0" prefWidth="407.0" text="滑动以完成验证" textFill="#aaaaaa">
                      <font>
-                        <Font size="24.0"/>
+                        <Font size="24.0" />
                      </font>
                   </Label>
                </VBox>
