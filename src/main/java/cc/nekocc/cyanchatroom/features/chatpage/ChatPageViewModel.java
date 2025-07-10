@@ -2,6 +2,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -22,14 +23,16 @@ public class ChatPageViewModel {
 
 
     private void initialize(){
-        for(int i = 0;  i <10 ;i++)
-            user_list_.add(new ChatTabController());
+        ChatTabViewModel copy_info_ = new ChatTabViewModel();
+        for(int i =0 ; i< 20; i ++)
+            user_list_.add(new ChatTabController(copy_info_));
+
 
     }
 
     public void loadUserList(VBox vBox, AnchorPane anchorPane){
         for(ChatTabController user : user_list_){
-            HBox tab = user.getUserTab();
+            AnchorPane tab = user.getUserTab();
             tab.setOnMouseClicked(_ ->{
                 if(!user.isActive()) {
                     tab.setStyle("-fx-background-color: #3574F0");

@@ -37,8 +37,18 @@ public class ChatTabViewModel {
         }
     }
 
+    public ChatTabViewModel(ChatTabViewModel copy_){
+        this.user = new User("示例用户"+(int)(Math.random()*10), Status.getRandomStatus());
+        chat_windows_controller = copy_.getChatWindowCopy();
+        if (chat_windows_controller != null) {
+            chat_windows_property_.set(chat_windows_controller.getRoot_pane_());
+        }else{
+            throw new NullPointerException("聊天窗加载失败");
+        }
+    }
+
     // 创建聊天标签
-    public HBox getChatTabPane(ChatTabController chattab){
+    public AnchorPane getChatTabPane(ChatTabController chattab){
         String name = chattab.getUser().getUsername();
         if(name.isEmpty())
             throw new IllegalArgumentException("用户名不能为空");
@@ -48,16 +58,12 @@ public class ChatTabViewModel {
         Circle circle = new Circle();
         StackPane tab_circle = new StackPane(circle,username_label_title_);
         VBox tab_data_ = new VBox(username_label_,user_status_label_);
-        HBox tab = new HBox(tab_circle,tab_data_);
-        tab_circle.setPrefHeight(60);
+        tab_circle.setPrefHeight(100);
         tab_circle.setPrefWidth(60);
-        tab.setPrefHeight(160);
-        tab.setPrefWidth(194);
-        tab.setSpacing(10);
         circle.setStyle("-fx-fill: #dbdbdb;");
         circle.setCenterX(40);
         circle.setRadius(22);
-        circle.setCenterY(35);
+        circle.setCenterY(45);
         username_label_title_.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,20));
         username_label_title_.setStyle("-fx-text-fill: #57606A");
         username_label_title_.setLayoutX(10);
@@ -66,6 +72,9 @@ public class ChatTabViewModel {
         username_label_.setStyle("-fx-text-fill: black;");
         user_status_label_.setFont(Font.font("Microsoft YaHei",FontWeight.BOLD,14));
         user_status_label_.setStyle("-fx-text-fill:"+chattab.getUser().getStatus_().getColor() );
+        AnchorPane tab = new AnchorPane(tab_circle,tab_data_);
+        tab.setPrefHeight(80);
+        tab.setPrefWidth(194);
         tab.getStyleClass().addAll(Styles.ACCENT);
         tab.setOnMouseEntered(e->{
             if(!chattab.isActive())
@@ -75,6 +84,12 @@ public class ChatTabViewModel {
             if(!chattab.isActive())
                 tab.setStyle("-fx-background-color: transparent");
         });
+        AnchorPane.setTopAnchor(tab_circle,6.0);
+        AnchorPane.setLeftAnchor(tab_circle,7.0);
+        AnchorPane.setBottomAnchor(tab_circle,6.0);
+        AnchorPane.setRightAnchor(tab_data_,30.0);
+        AnchorPane.setBottomAnchor(tab_data_,6.0);
+        AnchorPane.setTopAnchor(tab_data_,6.0);
         return  tab;
     }
 
@@ -89,5 +104,13 @@ public class ChatTabViewModel {
 
     public User getUser() {
         return user;
+    }
+
+    public ChatWindowsController getChatWindowCopy(){
+        try {
+            return chat_windows_controller.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

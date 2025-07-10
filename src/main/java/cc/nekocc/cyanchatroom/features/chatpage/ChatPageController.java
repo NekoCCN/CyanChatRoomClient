@@ -49,10 +49,7 @@ public class ChatPageController implements Initializable {
         setupStyle();
         synchronizeData();
         setupUI();
-
         view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
-
-
     }
 
 

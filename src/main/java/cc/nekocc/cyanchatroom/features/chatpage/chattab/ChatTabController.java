@@ -18,10 +18,15 @@ public class ChatTabController {
     private final ChatTabViewModel view_model;
 
     // 用户标签
-    private final HBox tab_;
+    private final AnchorPane tab_;
 
     public ChatTabController(){
         view_model = new ChatTabViewModel();
+        tab_ = view_model.getChatTabPane(this);
+    }
+
+    public ChatTabController(ChatTabViewModel copy){
+        view_model = new ChatTabViewModel(copy);
         tab_ = view_model.getChatTabPane(this);
     }
 
@@ -31,9 +36,7 @@ public class ChatTabController {
     }
 
 
-
-
-    public HBox getUserTab(){return tab_;}
+    public AnchorPane getUserTab(){return tab_;}
 
 
 
