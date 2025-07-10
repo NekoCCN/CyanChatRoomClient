@@ -56,7 +56,11 @@
 
 
                 <ScrollPane fx:id="list_scrollPane_" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-                    <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
+               <VBox fx:id="scroll_root_pane_">
+                  <children>
+                          <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
+                  </children>
+               </VBox>
                 </ScrollPane>
             </VBox>
             <VBox alignment="TOP_CENTER" maxWidth="70.0" minWidth="55.0" prefHeight="200.0" prefWidth="55.0" spacing="10.0" style="-fx-background-color: #CDCDCD;">

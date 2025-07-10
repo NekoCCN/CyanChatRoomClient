@@ -2,21 +2,21 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import cc.nekocc.cyanchatroom.features.setting.SettingPage;
+import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import atlantafx.base.theme.Styles;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.effect.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
 
 
 import java.util.ResourceBundle;
@@ -33,6 +33,8 @@ public class ChatPageController implements Initializable {
     public ImageView contact_icon_;
     @FXML
     public ImageView setting_icon_;
+    @FXML
+    public VBox scroll_root_pane_;
     @FXML
     private Label username_title_label_;   // 用户名
     @FXML
@@ -52,22 +54,24 @@ public class ChatPageController implements Initializable {
     @FXML
     private Button enter_button_;
 
-    private boolean setting_shown_ = false;
+    private final BooleanProperty setting_shown_  = new SimpleBooleanProperty(false);
     private Node current_list_node;
     private final DropShadow glow_effect_ = new DropShadow();
     private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
+    private ContactListController   contact_list ;
 
 
     public ChatPageController(){}
     // 初始化
     public void initialize(URL url, ResourceBundle resource_bundle)
     {
+        contact_list = (ContactListController)ViewTool.loadFXML("fxml/ContactList.fxml");
         setupAnimation();
         setupStyle();
-        view_model_.synchronizeData();
+        synchronizeData();
         setupUI();
-
         setupEvent();
+        setupBind();
         view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
     }
 
@@ -76,6 +80,12 @@ public class ChatPageController implements Initializable {
         glow_effect_.setColor(Color.rgb(73,136,240)); // 设置发光颜色
         glow_effect_.setSpread(0.8);       // 控制发光范围
         glow_effect_.setRadius(12);
+    }
+
+
+    public void synchronizeData() {
+        view_model_.synchronizeData();
+        contact_list.syncContact(view_model_.getUserList());
     }
 
 
@@ -89,6 +99,9 @@ public class ChatPageController implements Initializable {
         list_scrollPane_.getStyleClass().addAll(Styles.CENTER_PILL);
         user_tool_pane_.getStyleClass().addAll(Styles.ROUNDED);
         enter_button_.getStyleClass().addAll(Styles.ROUNDED,Styles.ACCENT);
+
+
+
         talk_icon_.setEffect(glow_effect_);
     }
 
@@ -104,47 +117,55 @@ public class ChatPageController implements Initializable {
     }
 
     // 事件设置
-    private void setupEvent(){
+    private void setupEvent()
+    {
+//        var crack_pane = new Parent()
+//        {
+//            private ScrollPane edit_pane_;
+//
+//            public void initCrack(ScrollPane pane)
+//            {
+//                edit_pane_ = pane;
+//            }
+//
+//            @Override
+//            public javafx.collections.ObservableList<javafx.scene.Node> getChildren()
+//            {
+//                return edit_pane_.getChildren();
+//            }
+//        };
 
         initIconEffect(talk_icon_);
         initIconEffect(contact_icon_);
-        talk_icon_.setOnMouseClicked(e->{
+        talk_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  talk_icon_)
             {
                 current_list_node.setEffect(null);
                 current_list_node = talk_icon_;
-                //user_list_vbox_.getChildren().clear();
                 talk_icon_.setEffect(glow_effect_);
+                scroll_root_pane_.getChildren().clear();
+                scroll_root_pane_.getChildren().add(user_list_vbox_);
             }
         });
-        contact_icon_.setOnMouseClicked(e->{
+        contact_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  contact_icon_)
             {
                 current_list_node.setEffect(null);
                 current_list_node = contact_icon_;
                 contact_icon_.setEffect(glow_effect_);
+                scroll_root_pane_.getChildren().clear();
+                scroll_root_pane_.getChildren().add(contact_list.getRootPane());
+
             }
         });
 
-        setting_icon_.setOnMouseEntered(e->{
-            setting_icon_.setEffect(new Glow(0.6));
-        });
-        setting_icon_.setOnMouseExited(e->{
-            setting_icon_.setEffect(null);
-        });
-        setting_icon_.setOnMouseClicked(e->{
-            if(!setting_shown_)
+        setting_icon_.setOnMouseEntered(_ -> setting_icon_.setEffect(new Glow(0.6)));
+        setting_icon_.setOnMouseExited(_ -> setting_icon_.setEffect(null));
+        setting_icon_.setOnMouseClicked(_ ->{
+            if(!setting_shown_.get())
             {
-                setting_shown_ = true;
-                Stage setting_stage = new Stage();
-                setting_stage.setOnCloseRequest(e1->{
-                    setting_shown_ = false;
-                });
-                SettingPage setting_page = (SettingPage)ViewTool.loadFXML("fxml/setting.fxml");
-                setting_stage.setTitle("设置");
-                setting_stage.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/setting_stage_icon.png")))));
-                setting_stage.setScene(new Scene(setting_page.getRootPane()));
-                setting_stage.show();
+                setting_shown_.set(true);
+                view_model_.showSetting();
             }
 
         });
@@ -154,15 +175,20 @@ public class ChatPageController implements Initializable {
 
     // 图标悬停效果初始化
     private void initIconEffect(ImageView icon) {
-        icon.setOnMouseEntered(e->{
+        icon.setOnMouseEntered(_ ->{
             if(current_list_node !=  icon)
                 icon.setEffect(new Glow(0.6));
         });
-        icon.setOnMouseExited(e->{
+        icon.setOnMouseExited(_ ->{
             if(current_list_node !=  icon)
                 icon.setEffect(null);
         });
     }
+
+    private void setupBind(){
+        setting_shown_.bindBidirectional(view_model_.getSettingShown());
+    }
+
 
 
 

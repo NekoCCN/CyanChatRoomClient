@@ -1,4 +1,4 @@
-package cc.nekocc.cyanchatroom.features.chatpage.chatwindow;
+package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
 import cc.nekocc.cyanchatroom.domain.User;
 import javafx.fxml.FXML;

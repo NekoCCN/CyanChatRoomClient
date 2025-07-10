@@ -12,11 +12,13 @@ module cc.nekocc.cyanchatroom
     requires java.sql;
     requires com.zaxxer.hikari;
     requires org.mybatis;
+    requires jdk.compiler;
 
     opens cc.nekocc.cyanchatroom.features.login to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.chatpage to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.chatpage.chattab to javafx.fxml;
-    opens cc.nekocc.cyanchatroom.features.chatpage.chatwindow to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.chatpage.contact to javafx.fxml;
+    opens cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.turntochatpage to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.setting to javafx.fxml;
     opens cc.nekocc.cyanchatroom to javafx.fxml;
