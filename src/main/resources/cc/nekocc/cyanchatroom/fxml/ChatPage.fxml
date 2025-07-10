@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -57,7 +59,20 @@
                     <VBox fx:id="user_list_vbox_" prefHeight="520.0" prefWidth="200.0" />
                 </ScrollPane>
             </VBox>
-            <VBox maxWidth="40.0" minWidth="40.0" prefHeight="200.0" prefWidth="40.0" style="-fx-background-color: #CDCDCD;" />
+            <VBox alignment="TOP_CENTER" maxWidth="70.0" minWidth="55.0" prefHeight="200.0" prefWidth="55.0" spacing="10.0" style="-fx-background-color: #CDCDCD;">
+                <Label prefHeight="23.0" prefWidth="55.0" text="Label" visible="false" />
+                <ImageView fx:id="talk_icon_" fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../../../../Image/talk_icon.png" />
+                </ImageView>
+                <ImageView fx:id="contact_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../../../../Image/contack_icon.png" />
+                </ImageView>
+                <ImageView fx:id="setting_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../../../../Image/setting_icon.png" />
+                    </image>
+                </ImageView>
+            </VBox>
         </HBox>
     </HBox>
 </AnchorPane>

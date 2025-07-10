@@ -4,7 +4,6 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 
@@ -50,6 +49,12 @@ public class ChatPageViewModel {
         }
     }
 
+    // 数据同步（预留接口）
+    public void synchronizeData()
+    {
+        //username_title_label_.textProperty().bindBidirectional(view_model_.getUsername_title_property());
+
+    }
 
 
     private void rewriteUserActive(){
