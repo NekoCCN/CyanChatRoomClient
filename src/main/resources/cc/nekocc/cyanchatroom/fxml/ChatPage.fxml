@@ -58,7 +58,7 @@
       
                       <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutY="85.0" style="-fx-background: transparent; -fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
                        <AnchorPane fx:id="scroll_root_pane_" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <VBox fx:id="user_list_vbox_" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           <VBox fx:id="user_list_vbox_" fillWidth="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                        </AnchorPane>
                    </ScrollPane>
             </children>
