@@ -4,15 +4,11 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import cc.nekocc.cyanchatroom.util.ViewTool;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.*;
 import javafx.fxml.FXML;
 import atlantafx.base.theme.Styles;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.ImageView;
@@ -129,6 +125,7 @@ public class ChatPageController implements Initializable {
         talk_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  talk_icon_)
             {
+                view_model_.loadLastWindow();
                 current_list_node.setEffect(null);
                 current_list_node = talk_icon_;
                 talk_icon_.setEffect(glow_effect_);
@@ -139,6 +136,7 @@ public class ChatPageController implements Initializable {
         contact_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  contact_icon_)
             {
+                view_model_.setCurrentChatWindowNULL();
                 current_list_node.setEffect(null);
                 current_list_node = contact_icon_;
                 contact_icon_.setEffect(glow_effect_);
@@ -163,6 +161,13 @@ public class ChatPageController implements Initializable {
             {
                 setting_shown_.set(true);
                 view_model_.showSetting();
+            }
+        });
+
+        enter_button_.setOnAction(_ ->{
+            if(!view_model_.isCurrentChatWindowNULL() && !message_input.getText().isEmpty()){
+                view_model_.sendMessageFromMe(message_input.getText());
+                message_input.clear();
             }
         });
 

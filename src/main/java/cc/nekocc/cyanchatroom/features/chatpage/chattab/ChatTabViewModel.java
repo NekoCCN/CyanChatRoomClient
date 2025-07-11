@@ -112,4 +112,9 @@ public class ChatTabViewModel {
             throw new RuntimeException(e);
         }
     }
+
+
+    public ChatWindowsController getChatWindow(){
+        return chat_windows_controller;
+    }
 }
