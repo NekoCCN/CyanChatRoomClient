@@ -13,6 +13,10 @@ module cc.nekocc.cyanchatroom
     requires com.zaxxer.hikari;
     requires org.mybatis;
     requires jdk.compiler;
+    requires org.java_websocket;
+    requires java.net.http;
+    requires org.apache.httpcomponents.core5.httpcore5;
+    requires org.apache.httpcomponents.client5.httpclient5;
 
     opens cc.nekocc.cyanchatroom.features.login to javafx.fxml;
     opens cc.nekocc.cyanchatroom.features.chatpage to javafx.fxml;
@@ -30,5 +34,4 @@ module cc.nekocc.cyanchatroom
     opens cc.nekocc.cyanchatroom.domain.goods to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.order to com.google.gson;
     opens cc.nekocc.cyanchatroom.domain.userstatus to com.google.gson;
-    opens cc.nekocc.cyanchatroom.domain.messages to com.google.gson;
 }
