@@ -5,7 +5,9 @@ import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import atlantafx.base.theme.Styles;
 import javafx.fxml.Initializable;
@@ -131,7 +133,7 @@ public class ChatPageController implements Initializable {
                 current_list_node = talk_icon_;
                 talk_icon_.setEffect(glow_effect_);
                 scroll_root_pane_.getChildren().clear();
-                scroll_root_pane_.getChildren().add(user_list_vbox_);
+                scroll_root_pane_.getChildren().add(list_scrollPane_);
             }
         });
         contact_icon_.setOnMouseClicked(_ ->{
@@ -182,6 +184,7 @@ public class ChatPageController implements Initializable {
     private void setupBind(){
         setting_shown_.bindBidirectional(view_model_.getSettingShown());
         contact_agreement_shown_.bindBidirectional(view_model_.getContactAgreeShown());
+
     }
 
 

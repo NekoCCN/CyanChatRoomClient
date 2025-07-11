@@ -54,13 +54,15 @@
                        <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
                    </AnchorPane>
                    <Line endX="100.0" layoutX="101.0" layoutY="84.0" startX="-100.0" stroke="#cdcdcd" strokeWidth="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0" />
-   
-      
-                      <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutY="85.0" style="-fx-background: transparent; -fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
-                       <AnchorPane fx:id="scroll_root_pane_" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <VBox fx:id="user_list_vbox_" fillWidth="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                       </AnchorPane>
-                   </ScrollPane>
+               <AnchorPane fx:id="scroll_root_pane_" layoutY="80.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
+                  <children>
+         
+            
+                            <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <VBox fx:id="user_list_vbox_" fillWidth="false" />
+                         </ScrollPane>
+                  </children>
+               </AnchorPane>
             </children>
          </AnchorPane>
             <VBox alignment="TOP_CENTER" maxWidth="70.0" minWidth="55.0" prefHeight="200.0" prefWidth="55.0" spacing="10.0" style="-fx-background-color: #CDCDCD;">

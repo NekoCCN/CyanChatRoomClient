@@ -57,7 +57,7 @@ public class ChatTabViewModel {
         Circle circle = new Circle();
         StackPane tab_circle = new StackPane(circle,username_label_title_);
         VBox tab_data_ = new VBox(username_label_,user_status_label_);
-        tab_circle.setPrefHeight(100);
+        tab_circle.setPrefHeight(80);
         tab_circle.setPrefWidth(60);
         circle.setStyle("-fx-fill: #dbdbdb;");
         circle.setCenterX(40);
