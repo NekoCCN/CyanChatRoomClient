@@ -5,12 +5,17 @@
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane fx:id="root_pane_" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.setting.SettingPage">
-    <TabPane prefHeight="400.0" prefWidth="600.0" side="LEFT" tabClosingPolicy="UNAVAILABLE">
-        <Tab text="Untitled Tab 1">
+    <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="常规设置">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="537.0" />
+        </Tab>
+        <Tab text="安全设置">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
         </Tab>
-        <Tab text="Untitled Tab 2">
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-        </Tab>
+      <Tab text="聊天记录管理">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+        </content>
+      </Tab>
     </TabPane>
 </AnchorPane>

@@ -17,15 +17,13 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
     @FXML
-    public ScrollPane scroll_pane_;
+    private ScrollPane scroll_pane_;
     @FXML
-    public AnchorPane container_pane__;
+    private AnchorPane container_pane__;
     @FXML
-    public AnchorPane user_label_pane_;
+    private AnchorPane user_label_pane_;
     @FXML
     private ImageView personal_icon_;
-    @FXML
-    private  AnchorPane root_pane_;
     @FXML
     private Label username_label_;
 
@@ -37,9 +35,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
         this.personal_icon_ = personal_icon;
     }
 
-    public void setRootPane(AnchorPane root_pane){
-        this.root_pane_ = root_pane;
-    }
 
     // 注入FXML初始化
     @Override
@@ -62,8 +57,8 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
 
-    public AnchorPane getRoot_pane_() {
-        return root_pane_;
+    public ScrollPane getRoot_pane_() {
+        return scroll_pane_;
     }
 
     // 深拷贝
@@ -147,20 +142,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
             if (clone.container_pane__ != null) {
                 clone.scroll_pane_.setContent(clone.container_pane__);
-            }
-        }
-
-        // 深拷贝root_pane_ (AnchorPane)
-        if (this.root_pane_ != null) {
-            clone.root_pane_ = new AnchorPane();
-            clone.root_pane_.setMaxHeight(this.root_pane_.getMaxHeight());
-            clone.root_pane_.setMaxWidth(this.root_pane_.getMaxWidth());
-            if (clone.scroll_pane_ != null) {
-                AnchorPane.setBottomAnchor(clone.scroll_pane_, AnchorPane.getBottomAnchor(this.scroll_pane_));
-                AnchorPane.setLeftAnchor(clone.scroll_pane_, AnchorPane.getLeftAnchor(this.scroll_pane_));
-                AnchorPane.setRightAnchor(clone.scroll_pane_, AnchorPane.getRightAnchor(this.scroll_pane_));
-                AnchorPane.setTopAnchor(clone.scroll_pane_, AnchorPane.getTopAnchor(this.scroll_pane_));
-                clone.root_pane_.getChildren().add(clone.scroll_pane_);
             }
         }
 
