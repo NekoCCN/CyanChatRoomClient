@@ -11,7 +11,7 @@
     <ScrollPane fx:id="scroll_pane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <AnchorPane fx:id="container_pane__" prefHeight="400.0">
             <AnchorPane fx:id="user_label_pane_" prefWidth="600.0" style="-fx-background-color: #E0E0E0;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                <ImageView fx:id="personal_icon_" fitHeight="45.0" fitWidth="45.0" layoutX="520.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="0.0">
+                <ImageView fx:id="personal_icon_" fitHeight="45.0" fitWidth="45.0" layoutX="520.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
                     <Image url="@../../../../Image/personal.png" />
                 </ImageView>
                 <Label fx:id="username_label_" layoutX="15.333333015441895" minHeight="46.0" text="Username" textFill="#1e1f22" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="0.0">

@@ -20,7 +20,7 @@ import java.util.ResourceBundle;
 public class ContactListController implements Initializable {
 
     @FXML
-    private VBox contact_tree_;
+    private AnchorPane contact_tree_;
     @FXML
     private TreeView root_list_;
 
@@ -38,7 +38,15 @@ public class ContactListController implements Initializable {
     public ContactListController() {}
     public void initialize(URL url, ResourceBundle resource_bundle) {
         setupList();
+        setupStyle();
 
+    }
+
+    private void setupStyle(){
+        AnchorPane.setBottomAnchor(contact_tree_,0.0);
+        AnchorPane.setTopAnchor(contact_tree_,0.0);
+        AnchorPane.setLeftAnchor(contact_tree_,0.0);
+        AnchorPane.setRightAnchor(contact_tree_,0.0);
     }
 
 
@@ -69,7 +77,7 @@ public class ContactListController implements Initializable {
     }
 
 
-    public VBox getRootPane(){
+    public AnchorPane getRootPane(){
         return contact_tree_;
     }
 

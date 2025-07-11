@@ -155,7 +155,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
             clone.root_pane_ = new AnchorPane();
             clone.root_pane_.setMaxHeight(this.root_pane_.getMaxHeight());
             clone.root_pane_.setMaxWidth(this.root_pane_.getMaxWidth());
-
             if (clone.scroll_pane_ != null) {
                 AnchorPane.setBottomAnchor(clone.scroll_pane_, AnchorPane.getBottomAnchor(this.scroll_pane_));
                 AnchorPane.setLeftAnchor(clone.scroll_pane_, AnchorPane.getLeftAnchor(this.scroll_pane_));

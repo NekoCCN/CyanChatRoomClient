@@ -3,6 +3,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
+import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.features.setting.SettingPage;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.beans.property.BooleanProperty;
@@ -22,7 +23,9 @@ public class ChatPageViewModel {
 
     private final ArrayList<ChatTabController> user_list_ = new ArrayList<>();
     private final BooleanProperty setting_shown = new SimpleBooleanProperty();
+    private final BooleanProperty contact_agree_shown = new SimpleBooleanProperty();
     private Stage setting_stage;
+    private Stage contact_agree_stage;
 
     public ChatPageViewModel(){
         initialize();
@@ -31,9 +34,21 @@ public class ChatPageViewModel {
 
     private void initialize(){
         loadSetting();
+        loadContactAgree();
            ChatTabViewModel copy_info_ = new ChatTabViewModel();
         for(int i =0 ; i< 20; i ++)
             user_list_.add(new ChatTabController(copy_info_));
+    }
+
+    public void loadContactAgree(){
+        ContactAgreeController contact_agree_controller = (ContactAgreeController) ViewTool.loadFXML("fxml/ContactAgreePage.fxml");
+        contact_agree_stage = new Stage();
+        contact_agree_stage.setTitle("添加联系人");
+        contact_agree_stage.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/contact_agree_page_icon.png")))));
+        contact_agree_stage.setScene(new Scene(contact_agree_controller.getRootPane()));
+        contact_agree_stage.setOnCloseRequest(e1 -> {
+            contact_agree_shown.set(false);
+        });
     }
 
     public void loadSetting(){
@@ -77,6 +92,7 @@ public class ChatPageViewModel {
     public void showSetting(){
         setting_stage.show();
     }
+    public void showContactAgree(){contact_agree_stage.show();}
 
 
     private void rewriteUserActive(){
@@ -94,5 +110,10 @@ public class ChatPageViewModel {
 
     public ArrayList<ChatTabController> getUserList(){
         return user_list_;
+    }
+
+
+    public BooleanProperty getContactAgreeShown() {
+        return contact_agree_shown;
     }
 }

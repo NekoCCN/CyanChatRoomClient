@@ -34,7 +34,9 @@ public class ChatPageController implements Initializable {
     @FXML
     public ImageView setting_icon_;
     @FXML
-    public VBox scroll_root_pane_;
+    public AnchorPane scroll_root_pane_;
+    @FXML
+    public ImageView contact_agreement_icon_;
     @FXML
     private Label username_title_label_;   // 用户名
     @FXML
@@ -55,6 +57,7 @@ public class ChatPageController implements Initializable {
     private Button enter_button_;
 
     private final BooleanProperty setting_shown_  = new SimpleBooleanProperty(false);
+    private final BooleanProperty contact_agreement_shown_ = new SimpleBooleanProperty(false);
     private Node current_list_node;
     private final DropShadow glow_effect_ = new DropShadow();
     private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
@@ -119,22 +122,6 @@ public class ChatPageController implements Initializable {
     // 事件设置
     private void setupEvent()
     {
-//        var crack_pane = new Parent()
-//        {
-//            private ScrollPane edit_pane_;
-//
-//            public void initCrack(ScrollPane pane)
-//            {
-//                edit_pane_ = pane;
-//            }
-//
-//            @Override
-//            public javafx.collections.ObservableList<javafx.scene.Node> getChildren()
-//            {
-//                return edit_pane_.getChildren();
-//            }
-//        };
-
         initIconEffect(talk_icon_);
         initIconEffect(contact_icon_);
         talk_icon_.setOnMouseClicked(_ ->{
@@ -158,7 +145,15 @@ public class ChatPageController implements Initializable {
 
             }
         });
-
+        contact_agreement_icon_.setOnMouseEntered(_ -> contact_agreement_icon_.setEffect(new Glow(0.6)));
+        contact_agreement_icon_.setOnMouseExited(_ -> contact_agreement_icon_.setEffect(null));
+        contact_agreement_icon_.setOnMouseClicked(_ ->{
+            if(!contact_agreement_shown_.get())
+            {
+                contact_agreement_shown_.set(true);
+                view_model_.showContactAgree();
+            }
+        });
         setting_icon_.setOnMouseEntered(_ -> setting_icon_.setEffect(new Glow(0.6)));
         setting_icon_.setOnMouseExited(_ -> setting_icon_.setEffect(null));
         setting_icon_.setOnMouseClicked(_ ->{
@@ -167,7 +162,6 @@ public class ChatPageController implements Initializable {
                 setting_shown_.set(true);
                 view_model_.showSetting();
             }
-
         });
 
 
@@ -187,6 +181,7 @@ public class ChatPageController implements Initializable {
 
     private void setupBind(){
         setting_shown_.bindBidirectional(view_model_.getSettingShown());
+        contact_agreement_shown_.bindBidirectional(view_model_.getContactAgreeShown());
     }
 
 
