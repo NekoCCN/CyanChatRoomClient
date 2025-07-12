@@ -21,7 +21,7 @@
           </Label>
       </AnchorPane>
     <ScrollPane fx:id="scroll_pane_" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
-      <VBox fx:id="container_pane_" maxHeight="1.7976931348623157E308" prefHeight="1000.0" spacing="20.0">
+      <VBox fx:id="container_pane_" maxHeight="1.7976931348623157E308" prefHeight="1000.0" prefWidth="482.0" spacing="20.0">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>

@@ -1,7 +1,9 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
+import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.domain.User;
 import javafx.animation.PauseTransition;
+import javafx.css.Style;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -11,12 +13,18 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.lang.reflect.Array;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.Stack;
 
 public class ChatWindowsController implements Initializable,Cloneable{
 
@@ -33,21 +41,20 @@ public class ChatWindowsController implements Initializable,Cloneable{
     @FXML
     private Label username_label_;
 
+
+
     private final ChatWindowsViewModel view_model_ = new ChatWindowsViewModel();
     private final PauseTransition delay = new PauseTransition(Duration.millis(20));
-
+    private final ArrayList<Label> message_labels = new ArrayList<>();
+    private Double label_longth = 0.0;
     public ChatWindowsController() {
         setupAnimation();
     }
-    public void setPersonalIcon(ImageView personal_icon){
-        this.personal_icon_ = personal_icon;
-    }
-
-
     // 注入FXML初始化
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupUI();
+        setupAnimation();
     }
     private void setupAnimation() {
         delay.setOnFinished(event ->
@@ -56,6 +63,21 @@ public class ChatWindowsController implements Initializable,Cloneable{
     }
 
 
+    public void setUser(User user) {
+        view_model_.setUser(user);
+        addListener();
+    }
+
+
+    private void addListener() {
+        label_longth = container_pane_.getWidth()*0.7;
+        container_pane_.widthProperty().addListener((observableValue, var1, var2) -> {
+                label_longth = var2.doubleValue()*0.7;
+                for (Label label : message_labels)
+                        label.setMaxWidth(var2.doubleValue()*0.7);
+                });
+
+    }
 
     // 设置UI
     private void setupUI() {
@@ -66,31 +88,43 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
     public void sendMessageFromMe(String text) {
         VBox message_container = new VBox();
+
         message_container.setAlignment(Pos.CENTER_RIGHT);
         message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
         HBox message_box = new HBox();
-        message_box.setAlignment(Pos.CENTER_RIGHT);
+        message_box.setAlignment(Pos.TOP_RIGHT);
+        message_box.setPrefWidth(400);
         message_box.setPrefWidth(400);
         Label message_label = new Label(text);
-        message_label.setMaxWidth(300);
-        message_label.setStyle("-fx-padding : 5;-fx-background-color: green ;" +
+        message_label.setStyle("-fx-padding : 4;-fx-background-color: green ;" +
                 "-fx-text-fill:white;"+
-                "-fx-wrap-text: true");
+                "-fx-wrap-text: true;"+
+                "-fx-background-radius: 8");
+        message_label.setMaxWidth(label_longth);
         message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,19));
         Label white = new Label();
         white.setPrefHeight(15);
         white.setVisible(false);
-        message_box.getChildren().addAll(message_label);
+        message_box.setSpacing(10);
+        Text username = new Text(view_model_.getUserName());
+        username.setStyle("-fx-fill: black;");
+        username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
+        VBox message_box_with_name = new VBox(username,message_label);
+        message_box_with_name.setSpacing(2);
+        message_box_with_name.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_box_with_name.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_box_with_name.setAlignment(Pos.TOP_RIGHT);
+        message_box.getChildren().addAll(message_box_with_name,view_model_.getUSerAvatar());
         message_container.getChildren().addAll(message_box,white);
         message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
         container_pane_.getChildren().add(message_container);
+        message_labels.add(message_label);
         delay.play();
-
-
-
     }
+
 
 
 

@@ -36,6 +36,9 @@ public class ChatPageController implements Initializable {
     @FXML
     public ImageView contact_agreement_icon_;
     @FXML
+    public AnchorPane Input_box_;
+
+    @FXML
     private Label username_title_label_;   // 用户名
     @FXML
     private Label username_label_;
@@ -100,7 +103,7 @@ public class ChatPageController implements Initializable {
         list_scrollPane_.getStyleClass().addAll(Styles.CENTER_PILL);
         user_tool_pane_.getStyleClass().addAll(Styles.ROUNDED);
         enter_button_.getStyleClass().addAll(Styles.ROUNDED,Styles.ACCENT);
-
+        message_input.getStyleClass().addAll(Styles.BG_ACCENT_MUTED);
 
 
         talk_icon_.setEffect(glow_effect_);
@@ -115,6 +118,7 @@ public class ChatPageController implements Initializable {
         current_list_node = talk_icon_;
 
 
+
     }
 
     // 事件设置
@@ -126,6 +130,8 @@ public class ChatPageController implements Initializable {
             if(current_list_node !=  talk_icon_)
             {
                 view_model_.loadLastWindow();
+                if(!view_model_.isCurrentChatWindowNULL())
+                    chat_windows_pane_.getChildren().add(view_model_.getCurrentChatWindow());
                 current_list_node.setEffect(null);
                 current_list_node = talk_icon_;
                 talk_icon_.setEffect(glow_effect_);
@@ -136,6 +142,7 @@ public class ChatPageController implements Initializable {
         contact_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  contact_icon_)
             {
+                chat_windows_pane_.getChildren().clear();
                 view_model_.setCurrentChatWindowNULL();
                 current_list_node.setEffect(null);
                 current_list_node = contact_icon_;
@@ -167,8 +174,9 @@ public class ChatPageController implements Initializable {
         enter_button_.setOnAction(_ ->{
             if(!view_model_.isCurrentChatWindowNULL() && !message_input.getText().isEmpty()){
                 view_model_.sendMessageFromMe(message_input.getText());
-
                 message_input.clear();
+                Input_box_.toFront();
+
             }
         });
 
