@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.nekocc.cyanchatroom.model.mapper.SchemaMapper">
+
+    <update id="createConversationsTable">
+        CREATE TABLE IF NOT EXISTS conversations (
+                                                     id TEXT PRIMARY KEY,
+                                                     type TEXT NOT NULL,
+                                                     last_message_time TEXT NOT NULL
+        );
+    </update>
+
+    <update id="createMessagesTable">
+        CREATE TABLE IF NOT EXISTS messages (
+                                                id TEXT PRIMARY KEY,
+                                                conversation_id TEXT NOT NULL,
+                                                sender_id TEXT NOT NULL,
+                                                is_outgoing BOOLEAN NOT NULL,
+                                                type TEXT NOT NULL,
+                                                content TEXT NOT NULL,
+                                                created_at TEXT NOT NULL
+        );
+    </update>
+
+    <update id="createMessagesIndex">
+        CREATE INDEX IF NOT EXISTS idx_messages_conv_time ON messages (conversation_id, created_at);
+    </update>
+
+</mapper>

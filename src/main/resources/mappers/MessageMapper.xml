@@ -4,55 +4,53 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cc.nekocc.cyanchatroom.model.mapper.MessageMapper">
 
+    <resultMap id="MessageResultMap" type="Message">
+        <id property="uuid_" column="id" javaType="java.util.UUID"/>
+        <result property="conversation_id_" column="conversation_id" javaType="java.util.UUID"/>
+        <result property="sender_id_" column="sender_id" javaType="java.util.UUID"/>
+        <result property="is_outgoing_" column="is_outgoing"/>
+        <result property="type_" column="type"/>
+        <result property="val_" column="content"/>
+        <result property="time_" column="created_at"/>
+    </resultMap>
+
     <insert id="insertMessage" parameterType="Message">
-        INSERT INTO messages (id, conversation_id, type, content, created_at)
-        VALUES (#{uuid_}, #{conversation_id_}, #{type_}, #{val_}, #{time_})
+        INSERT INTO messages (id, conversation_id, sender_id, is_outgoing, type, content, created_at)
+        VALUES (#{uuid_}, #{conversation_id_}, #{sender_id_}, #{is_outgoing_}, #{type_}, #{val_}, #{time_})
     </insert>
 
     <insert id="insertMessagesBatch" parameterType="java.util.List">
-        INSERT INTO messages (id, conversation_id, type, content, created_at)
+        INSERT INTO messages (id, conversation_id, sender_id, is_outgoing, type, content, created_at)
         VALUES
         <foreach collection="messages" item="msg" separator=",">
-            (#{msg.uuid_}, #{msg.conversation_id_}, #{msg.type_}, #{msg.val_}, #{msg.time_})
+            (#{msg.uuid_}, #{msg.conversation_id_}, #{msg.sender_id_}, #{msg.is_outgoing_}, #{msg.type_}, #{msg.val_}, #{msg.time_})
         </foreach>
     </insert>
 
-    <select id="findAllMessagesByConversationId" parameterType="string" resultType="Message">
-        SELECT
-        id as uuid_,
-        conversation_id as conversation_id_,
-        type as type_,
-        content as val_,
-        created_at as time_
-        FROM messages
-        WHERE conversation_id = #{conversation_id}
-        ORDER BY created_at ASC
-    </select>
-
-    <select id="findMessagesByRange" resultType="Message">
-        SELECT
-        id as uuid_,
-        conversation_id as conversation_id_,
-        type as type_,
-        content as val_,
-        created_at as time_
-        FROM messages
+    <select id="findMessagesByRange" resultMap="MessageResultMap">
+        SELECT * FROM messages
         WHERE conversation_id = #{conversation_id}
         ORDER BY created_at DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <select id="countMessagesInConversation" parameterType="string" resultType="int">
+    <select id="findAllMessagesByConversationId" resultMap="MessageResultMap">
+        SELECT * FROM messages
+        WHERE conversation_id = #{conversation_id}
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="countMessagesInConversation" resultType="int">
         SELECT COUNT(*) FROM messages WHERE conversation_id = #{conversation_id}
     </select>
 
     <delete id="deleteOldestMessages">
         DELETE FROM messages
         WHERE id IN (
-        SELECT id FROM messages
-        WHERE conversation_id = #{conversation_id}
-        ORDER BY created_at ASC
-        LIMIT #{count}
+            SELECT id FROM messages
+            WHERE conversation_id = #{conversation_id}
+            ORDER BY created_at ASC
+            LIMIT #{count}
         )
     </delete>
 
