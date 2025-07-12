@@ -1,22 +1,19 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
-import cc.nekocc.cyanchatroom.Navigator;
 import cc.nekocc.cyanchatroom.domain.User;
-import javafx.application.Platform;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -37,10 +34,11 @@ public class ChatWindowsController implements Initializable,Cloneable{
     private Label username_label_;
 
     private final ChatWindowsViewModel view_model_ = new ChatWindowsViewModel();
-    public ChatWindowsController() {}
-    private Double last_height_ ;
+    private final PauseTransition delay = new PauseTransition(Duration.millis(20));
 
-
+    public ChatWindowsController() {
+        setupAnimation();
+    }
     public void setPersonalIcon(ImageView personal_icon){
         this.personal_icon_ = personal_icon;
     }
@@ -49,32 +47,49 @@ public class ChatWindowsController implements Initializable,Cloneable{
     // 注入FXML初始化
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        last_height_ = 30.0;
         setupUI();
     }
+    private void setupAnimation() {
+        delay.setOnFinished(event ->
+                scroll_pane_.setVvalue(1.0));
+
+    }
+
+
 
     // 设置UI
-    public void setupUI() {
+    private void setupUI() {
         personal_icon_.setFitHeight(45);
         personal_icon_.setFitWidth(45);
         personal_icon_.setPreserveRatio(true);
     }
 
     public void sendMessageFromMe(String text) {
+        VBox message_container = new VBox();
+        message_container.setAlignment(Pos.CENTER_RIGHT);
+        message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
         HBox message_box = new HBox();
         message_box.setAlignment(Pos.CENTER_RIGHT);
         message_box.setPrefWidth(400);
-        Label messageLabel = new Label(text);
-        messageLabel.setWrapText(true);
-        messageLabel.setPrefWidth(300);
-        messageLabel.setStyle("-fx-background-color: #4CAF50; -fx-padding: 8px;");
-        message_box.setPrefWidth(Control.USE_COMPUTED_SIZE);
-        message_box.getChildren().add(messageLabel);
-        container_pane_.getChildren().add(message_box);
-        System.out.println("Width:"+container_pane_.widthProperty().get());
+        Label message_label = new Label(text);
+        message_label.setMaxWidth(300);
+        message_label.setStyle("-fx-padding : 5;-fx-background-color: green ;" +
+                "-fx-text-fill:white;"+
+                "-fx-wrap-text: true");
+        message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        Label white = new Label();
+        white.setPrefHeight(15);
+        white.setVisible(false);
+        message_box.getChildren().addAll(message_label);
+        message_container.getChildren().addAll(message_box,white);
+        message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        container_pane_.getChildren().add(message_container);
+        delay.play();
 
-        // 自动滚动
-        Platform.runLater(() -> scroll_pane_.setVvalue(1.0));
+
+
     }
 
 
@@ -93,91 +108,114 @@ public class ChatWindowsController implements Initializable,Cloneable{
     // 深拷贝
     @Override
     public ChatWindowsController clone() throws CloneNotSupportedException {
-        // 首先调用super.clone()获取浅拷贝对象
-        ChatWindowsController clone = (ChatWindowsController) super.clone();
+        ChatWindowsController clone = new ChatWindowsController();
 
         // 深拷贝ImageView (personal_icon_)
+        clone.personal_icon_ = new ImageView();
         if (this.personal_icon_ != null) {
-            Image originalImage = this.personal_icon_.getImage();
-            clone.personal_icon_ = new ImageView();
-            if (originalImage != null) {
-                clone.personal_icon_.setImage(new Image(originalImage.getUrl()));
+            clone.personal_icon_.setFitHeight(this.personal_icon_.getFitHeight()); // 45.0
+            clone.personal_icon_.setFitWidth(this.personal_icon_.getFitWidth());   // 45.0
+            clone.personal_icon_.setLayoutX(this.personal_icon_.getLayoutX());   // 520.0
+            clone.personal_icon_.setPickOnBounds(this.personal_icon_.isPickOnBounds()); // true
+            clone.personal_icon_.setPreserveRatio(this.personal_icon_.isPreserveRatio()); // true
+
+            if (this.personal_icon_.getImage() != null) {
+                // 从类路径加载图片资源
+                clone.personal_icon_.setImage(this.personal_icon_.getImage());
             }
-            clone.personal_icon_.setFitHeight(this.personal_icon_.getFitHeight());
-            clone.personal_icon_.setFitWidth(this.personal_icon_.getFitWidth());
-            clone.personal_icon_.setLayoutX(this.personal_icon_.getLayoutX());
-            clone.personal_icon_.setPickOnBounds(this.personal_icon_.isPickOnBounds());
-            clone.personal_icon_.setPreserveRatio(this.personal_icon_.isPreserveRatio());
         }
 
         // 深拷贝Label (username_label_)
+        clone.username_label_ = new Label();
         if (this.username_label_ != null) {
-            clone.username_label_ = new Label(this.username_label_.getText());
-            clone.username_label_.setLayoutX(this.username_label_.getLayoutX());
-            clone.username_label_.setMinHeight(this.username_label_.getMinHeight());
-            clone.username_label_.setTextFill(this.username_label_.getTextFill());
+            clone.username_label_.setText(this.username_label_.getText()); // "Username"
+            clone.username_label_.setLayoutX(this.username_label_.getLayoutX()); // 15.333
+            clone.username_label_.setMinHeight(this.username_label_.getMinHeight()); // 46.0
+            clone.username_label_.setTextFill(this.username_label_.getTextFill()); // #1e1f22
+
             if (this.username_label_.getFont() != null) {
                 Font originalFont = this.username_label_.getFont();
-                clone.username_label_.setFont(Font.font(
-                        originalFont.getFamily(),
-                        originalFont.getSize()
+                clone.username_label_.setFont(new Font(
+                        "Microsoft YaHei UI", // 字体名称
+                        20.0 // 字体大小
                 ));
             }
         }
 
         // 深拷贝user_label_pane_ (AnchorPane)
+        clone.user_label_pane_ = new AnchorPane();
         if (this.user_label_pane_ != null) {
-            clone.user_label_pane_ = new AnchorPane();
-            clone.user_label_pane_.setPrefWidth(this.user_label_pane_.getPrefWidth());
-            clone.user_label_pane_.setStyle(this.user_label_pane_.getStyle());
+            clone.user_label_pane_.setPrefHeight(this.user_label_pane_.getPrefHeight()); // 46.0
+            clone.user_label_pane_.setPrefWidth(this.user_label_pane_.getPrefWidth()); // 600.0
+            clone.user_label_pane_.setStyle(this.user_label_pane_.getStyle()); // -fx-background-color: #E0E0E0;
 
-            // 添加拷贝的子节点
+            // 添加子节点
             if (clone.personal_icon_ != null) {
-                AnchorPane.setBottomAnchor(clone.personal_icon_, AnchorPane.getBottomAnchor(this.personal_icon_));
-                AnchorPane.setRightAnchor(clone.personal_icon_, AnchorPane.getRightAnchor(this.personal_icon_));
-                AnchorPane.setTopAnchor(clone.personal_icon_, AnchorPane.getTopAnchor(this.personal_icon_));
+                AnchorPane.setBottomAnchor(clone.personal_icon_, 1.0);
+                AnchorPane.setRightAnchor(clone.personal_icon_, 5.0);
+                AnchorPane.setTopAnchor(clone.personal_icon_, 0.0);
                 clone.user_label_pane_.getChildren().add(clone.personal_icon_);
             }
 
             if (clone.username_label_ != null) {
-                AnchorPane.setBottomAnchor(clone.username_label_, AnchorPane.getBottomAnchor(this.username_label_));
-                AnchorPane.setLeftAnchor(clone.username_label_, AnchorPane.getLeftAnchor(this.username_label_));
-                AnchorPane.setTopAnchor(clone.username_label_, AnchorPane.getTopAnchor(this.username_label_));
+                AnchorPane.setBottomAnchor(clone.username_label_, 0.0);
+                AnchorPane.setLeftAnchor(clone.username_label_, 15.0);
+                AnchorPane.setTopAnchor(clone.username_label_, 0.0);
                 clone.user_label_pane_.getChildren().add(clone.username_label_);
             }
         }
 
-        // 深拷贝container_pane__ (VBox)
+        // 深拷贝container_pane_ (VBox)
+        clone.container_pane_ = new VBox();
         if (this.container_pane_ != null) {
-            clone.container_pane_ = new VBox();
-            clone.container_pane_.setPrefHeight(this.container_pane_.getPrefHeight());
+            clone.container_pane_.setStyle(this.container_pane_.getStyle()); // -fx-background-color: red;
         }
 
         // 深拷贝scroll_pane_ (ScrollPane)
+        clone.scroll_pane_ = new ScrollPane();
         if (this.scroll_pane_ != null) {
-            clone.scroll_pane_ = new ScrollPane();
-            clone.scroll_pane_.setFitToHeight(this.scroll_pane_.isFitToHeight());
-            clone.scroll_pane_.setFitToWidth(this.scroll_pane_.isFitToWidth());
-            clone.scroll_pane_.setHbarPolicy(this.scroll_pane_.getHbarPolicy());
-            clone.scroll_pane_.setMaxHeight(this.scroll_pane_.getMaxHeight());
-            clone.scroll_pane_.setMaxWidth(this.scroll_pane_.getMaxWidth());
+            clone.scroll_pane_.setFitToHeight(this.scroll_pane_.isFitToHeight()); // true
+            clone.scroll_pane_.setFitToWidth(this.scroll_pane_.isFitToWidth()); // true
+            clone.scroll_pane_.setHbarPolicy(this.scroll_pane_.getHbarPolicy()); // NEVER
+            clone.scroll_pane_.setMaxHeight(Double.MAX_VALUE); // 1.7976931348623157E308
+            clone.scroll_pane_.setMaxWidth(Double.MAX_VALUE); // 1.7976931348623157E308
+            clone.scroll_pane_.setPrefHeight(354.0);
 
             if (clone.container_pane_ != null) {
                 clone.scroll_pane_.setContent(clone.container_pane_);
             }
         }
 
+        // 重建根布局
+        clone.root_pane_ = new AnchorPane();
+        clone.root_pane_.setMaxHeight(Double.MAX_VALUE);
+        clone.root_pane_.setMaxWidth(Double.MAX_VALUE);
 
-        AnchorPane.setLeftAnchor(clone.user_label_pane_, AnchorPane.getLeftAnchor(this.user_label_pane_));
-        AnchorPane.setRightAnchor(clone.user_label_pane_, AnchorPane.getRightAnchor(this.user_label_pane_));
-        AnchorPane.setTopAnchor(clone.user_label_pane_, AnchorPane.getTopAnchor(this.user_label_pane_));
-        AnchorPane.setTopAnchor(clone.scroll_pane_, AnchorPane.getTopAnchor(this.scroll_pane_));
-        AnchorPane.setBottomAnchor(clone.scroll_pane_, AnchorPane.getBottomAnchor(this.scroll_pane_));
-        AnchorPane.setRightAnchor(clone.scroll_pane_, AnchorPane.getRightAnchor(this.scroll_pane_));
-        AnchorPane.setLeftAnchor(clone.scroll_pane_, AnchorPane.getLeftAnchor(this.scroll_pane_));
-        AnchorPane root_pane = new AnchorPane();
-        root_pane.getChildren().addAll(clone.user_label_pane_, clone.scroll_pane_);
+        // 添加子节点并设置约束
+        if (clone.user_label_pane_ != null) {
+            AnchorPane.setLeftAnchor(clone.user_label_pane_, 0.0);
+            AnchorPane.setRightAnchor(clone.user_label_pane_, 0.0);
+            AnchorPane.setTopAnchor(clone.user_label_pane_, 0.0);
+            clone.root_pane_.getChildren().add(clone.user_label_pane_);
+        }
+
+        if (clone.scroll_pane_ != null) {
+            AnchorPane.setBottomAnchor(clone.scroll_pane_, 0.0);
+            AnchorPane.setLeftAnchor(clone.scroll_pane_, 0.0);
+            AnchorPane.setRightAnchor(clone.scroll_pane_, 0.0);
+            AnchorPane.setTopAnchor(clone.scroll_pane_, 46.0);
+            clone.root_pane_.getChildren().add(clone.scroll_pane_);
+        }
+
+
+
 
         return clone;
     }
+
+
+
+
+
+
 }

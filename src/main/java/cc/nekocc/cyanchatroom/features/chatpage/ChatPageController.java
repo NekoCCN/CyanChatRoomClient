@@ -167,6 +167,7 @@ public class ChatPageController implements Initializable {
         enter_button_.setOnAction(_ ->{
             if(!view_model_.isCurrentChatWindowNULL() && !message_input.getText().isEmpty()){
                 view_model_.sendMessageFromMe(message_input.getText());
+
                 message_input.clear();
             }
         });

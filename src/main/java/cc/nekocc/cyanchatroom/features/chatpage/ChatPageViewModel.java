@@ -7,6 +7,7 @@ import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsCo
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.features.setting.SettingPage;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -56,6 +57,7 @@ public class ChatPageViewModel {
 
     public void sendMessageFromMe(String message){
         current_chat_window_.get().sendMessageFromMe(message);
+
     }
 
 

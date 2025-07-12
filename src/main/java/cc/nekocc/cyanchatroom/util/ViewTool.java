@@ -22,4 +22,11 @@ public class ViewTool {
         }
 
     }
+
+
+
+    public static String getImagePath(String image_name)
+    {
+        return Objects.requireNonNull(ViewTool.class.getResource("/Image/" + image_name)).toExternalForm();
+    }
 }
