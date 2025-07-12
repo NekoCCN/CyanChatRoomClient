@@ -30,6 +30,7 @@ public class ChatTabViewModel {
         this.user = new User("示例用户"+(int)(Math.random()*10), Status.getRandomStatus());
         chat_windows_controller = (ChatWindowsController)ViewTool.loadFXML("fxml/ChatWindow.fxml");
         if (chat_windows_controller != null) {
+            chat_windows_controller.setUser(user);
             chat_windows_property_.set(chat_windows_controller.getRoot_pane_());
         }else{
             throw new NullPointerException("聊天窗加载失败");
@@ -40,6 +41,7 @@ public class ChatTabViewModel {
         this.user = new User("示例用户"+(int)(Math.random()*10), Status.getRandomStatus());
         chat_windows_controller = copy_.getChatWindowCopy();
         if (chat_windows_controller != null) {
+            chat_windows_controller.setUser(user);
             chat_windows_property_.set(chat_windows_controller.getRoot_pane_());
         }else{
             throw new NullPointerException("聊天窗加载失败");

@@ -12,6 +12,9 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -35,6 +38,9 @@ public class ChatPageController implements Initializable {
     public AnchorPane scroll_root_pane_;
     @FXML
     public ImageView contact_agreement_icon_;
+    @FXML
+    public AnchorPane Input_box_;
+
     @FXML
     private Label username_title_label_;   // 用户名
     @FXML
@@ -60,6 +66,9 @@ public class ChatPageController implements Initializable {
     private final DropShadow glow_effect_ = new DropShadow();
     private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
     private ContactListController   contact_list ;
+    private final KeyCodeCombination send_message_ = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
+    private ContextMenu message_input_menu_ = new ContextMenu();
+
 
 
     public ChatPageController(){}
@@ -100,7 +109,7 @@ public class ChatPageController implements Initializable {
         list_scrollPane_.getStyleClass().addAll(Styles.CENTER_PILL);
         user_tool_pane_.getStyleClass().addAll(Styles.ROUNDED);
         enter_button_.getStyleClass().addAll(Styles.ROUNDED,Styles.ACCENT);
-
+        message_input.getStyleClass().addAll(Styles.BG_ACCENT_MUTED);
 
 
         talk_icon_.setEffect(glow_effect_);
@@ -113,6 +122,20 @@ public class ChatPageController implements Initializable {
         user_status_.getItems().addAll(Status.ONLINE, Status.BUSY, Status.DO_NOT_DISTURB, Status.INVISIBLE,Status.AWAY,Status.OFFLINE);
         user_status_.setValue(Status.ONLINE);
         current_list_node = talk_icon_;
+        MenuItem copyItem = new MenuItem("复制");
+        copyItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem pasteItem = new MenuItem("粘贴");
+        pasteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem deleteItem = new MenuItem("清空");
+        deleteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem sendItem = new MenuItem("发送");
+        sendItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        copyItem.setOnAction(event -> message_input.copy());
+        pasteItem.setOnAction(event -> message_input.paste());
+        deleteItem.setOnAction(event -> message_input.clear());
+        sendItem.setOnAction(event -> enter_button_.fire());
+        message_input_menu_.getItems().addAll(copyItem, pasteItem, deleteItem, sendItem);
+        message_input.setContextMenu(message_input_menu_);
 
 
     }
@@ -126,6 +149,8 @@ public class ChatPageController implements Initializable {
             if(current_list_node !=  talk_icon_)
             {
                 view_model_.loadLastWindow();
+                if(!view_model_.isCurrentChatWindowNULL())
+                    chat_windows_pane_.getChildren().add(view_model_.getCurrentChatWindow());
                 current_list_node.setEffect(null);
                 current_list_node = talk_icon_;
                 talk_icon_.setEffect(glow_effect_);
@@ -136,6 +161,7 @@ public class ChatPageController implements Initializable {
         contact_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  contact_icon_)
             {
+                chat_windows_pane_.getChildren().clear();
                 view_model_.setCurrentChatWindowNULL();
                 current_list_node.setEffect(null);
                 current_list_node = contact_icon_;
@@ -167,9 +193,14 @@ public class ChatPageController implements Initializable {
         enter_button_.setOnAction(_ ->{
             if(!view_model_.isCurrentChatWindowNULL() && !message_input.getText().isEmpty()){
                 view_model_.sendMessageFromMe(message_input.getText());
-
                 message_input.clear();
+                Input_box_.toFront();
+
             }
+        });
+        message_input.setOnKeyPressed(e -> {
+            if(send_message_.match(e))
+                enter_button_.fire();
         });
 
 

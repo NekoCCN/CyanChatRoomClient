@@ -54,7 +54,6 @@ public class turnToChatPage implements Initializable {
         setupResponsiveLayout();
         setupAnimation();
         setupTips();
-
     }
 
     // 同步系统数据

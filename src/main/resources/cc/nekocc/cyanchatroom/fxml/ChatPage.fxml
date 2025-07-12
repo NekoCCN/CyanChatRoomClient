@@ -21,10 +21,10 @@
 
     <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <AnchorPane HBox.hgrow="ALWAYS">
-         <AnchorPane fx:id="chat_windows_pane_" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+         <AnchorPane fx:id="chat_windows_pane_" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
 
-            <AnchorPane layoutY="400.0" maxHeight="300.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1 0 0 0;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <AnchorPane fx:id="Input_box_" layoutY="400.0" maxHeight="175.0" minHeight="175.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1 0 0 0; -fx-background-color: #CDCDCD;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                 <TextArea fx:id="message_input" maxHeight="300.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1; -fx-border-radius: 5;" wrapText="true" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0">
                <padding>
                   <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />

@@ -12,7 +12,8 @@ public final class JsonUtil
     private static final Gson GSON = new GsonBuilder().create();
 
     private JsonUtil()
-    {  }
+    {
+    }
 
     public static String serialize(Object obj)
     {
