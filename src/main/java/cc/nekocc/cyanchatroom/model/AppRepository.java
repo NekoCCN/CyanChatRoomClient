@@ -1,11 +1,9 @@
 package cc.nekocc.cyanchatroom.model;
 
-import cc.nekocc.cyanchatroom.model.callback.ResponseCallback;
+import cc.nekocc.cyanchatroom.model.dto.MessageType;
 import cc.nekocc.cyanchatroom.model.dto.request.*;
 import cc.nekocc.cyanchatroom.model.dto.response.*;
-import cc.nekocc.cyanchatroom.model.entity.Conversation;
-import cc.nekocc.cyanchatroom.model.entity.Message;
-import cc.nekocc.cyanchatroom.model.entity.User;
+import cc.nekocc.cyanchatroom.model.entity.*;
 import cc.nekocc.cyanchatroom.model.service.HttpService;
 import cc.nekocc.cyanchatroom.model.service.NetworkService;
 import cc.nekocc.cyanchatroom.model.util.JsonUtil;
@@ -20,25 +18,39 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import java.io.File;
 import java.lang.reflect.Type;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 应用程序级别的存储库，负责管理应用状态、网络连接和数据交互。
+ * TODO: 把这个构思的巨型类拆分为多个模块 让这个类型成为一个注册表
+ * TODO: 极度欠缺测试
+ * TODO: 应该可以利用反射书写一个类型书面值从而使得类型安全性更高一点
+ */
 public class AppRepository
 {
+    public static class ResponseFuture<R>
+    {
+        public final CompletableFuture<ProtocolMessage<R>> future;
+        public final Class<R> responseClass;
+
+        public ResponseFuture(CompletableFuture<ProtocolMessage<R>> future, Class<R> responseClass)
+        {
+            this.future = future;
+            this.responseClass = responseClass;
+        }
+    }
+
     private static final AppRepository INSTANCE = new AppRepository();
 
     private final NetworkService network_service_;
     private final HttpService http_service_;
     private final LocalPersistenceService persistence_service_;
 
-    private final Map<String, CompletableFuture<String>> upload_permission_futures_ = new ConcurrentHashMap<>();
-    private final Map<String, File> pending_uploads_ = new ConcurrentHashMap<>();
-
-    private Map<UUID, CompletableFuture<GetUserDetailsResponse>> get_user_details_permission_futures_ = new ConcurrentHashMap<>();
+    private final Map<UUID, ResponseFuture> response_futures_ = new ConcurrentHashMap<>();
 
     public enum ConnectionStatus
     {DISCONNECTED, CONNECTING, CONNECTED, FAILED, RECONNECTING}
@@ -49,17 +61,10 @@ public class AppRepository
     private final ObservableMap<UUID, ObservableList<Message>> conversation_messages_ = FXCollections.observableMap(new ConcurrentHashMap<>());
     private final ObservableList<Conversation> conversations_ = FXCollections.observableArrayList();
 
-    private ResponseCallback login_success_callback_;
-    private ResponseCallback register_success_callback_;
-    private ResponseCallback broadcast_message_callback_;
-    private ResponseCallback file_upload_response_callback_;
-    private ResponseCallback error_response_callback_;
-
     private AppRepository()
     {
         this.http_service_ = new HttpService();
         this.persistence_service_ = new LocalPersistenceService();
-        // Added onReconnecting callback handler
         this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened, this::onConnectionClosed, this::onReconnecting);
     }
 
@@ -82,17 +87,31 @@ public class AppRepository
     public void disconnect()
     {
         network_service_.disconnect();
-        onConnectionClosed();
     }
 
-    public void register(String user_name, String password, String nick_name)
+    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password, String nick_name)
     {
-        sendRequest("REGISTER_REQUEST", new RegisterRequest(user_name, password, nick_name));
+        UUID client_request_id = UUID.randomUUID();
+        RegisterRequest payload = new RegisterRequest(client_request_id, user_name, password, nick_name);
+        return sendRequestWithFuture(MessageType.REGISTER_REQUEST, payload, client_request_id, UserOperatorResponse.class);
     }
 
-    public void login(String user_name, String password)
+    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> login(String user_name, String password)
     {
-        sendRequest("LOGIN_REQUEST", new LoginRequest(user_name, password));
+        UUID client_request_id = UUID.randomUUID();
+        LoginRequest payload = new LoginRequest(client_request_id, user_name, password);
+
+        return sendRequestWithFuture(MessageType.LOGIN_REQUEST, payload, client_request_id, UserOperatorResponse.class);
+    }
+
+    public void setCurrentUser(User user)
+    {
+        if (user == null)
+        {
+            current_user_.set(null);
+            return;
+        }
+        current_user_.set(user);
     }
 
     public void sendMessage(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
@@ -100,99 +119,165 @@ public class AppRepository
         User current_user = current_user_.get();
         if (current_user == null)
         {
-            last_error_message_.set("Error: UNVAILD User Session");
+            last_error_message_.set("错误: 发送消息前必须登录。");
             return;
         }
-
         Message local_message = new Message(recipient_id, current_user.getId(), true, content_type, content);
         persistence_service_.saveMessage(local_message);
         getMessagesForConversation(recipient_id).add(local_message);
-
-        sendRequest("CHAT_MESSAGE", new ChatMessageRequest(recipient_type, recipient_id, content_type, is_encrypted, content));
+        sendRequest(MessageType.CHAT_MESSAGE, new ChatMessageRequest(UUID.randomUUID(), recipient_type,
+                recipient_id, content_type, is_encrypted, content));
     }
 
-    public void createGroup(String group_name, List<UUID> member_ids)
+    public CompletableFuture<ProtocolMessage<GroupResponse>> createGroup(String group_name, List<UUID> member_ids)
     {
-        sendRequest("CREATE_GROUP_REQUEST", new CreateGroupRequest(group_name, member_ids));
-    }
-
-    public CompletableFuture<GetUserDetailsResponse> getUserDetails(UUID user_id)
-    {
-        CompletableFuture<GetUserDetailsResponse> future = new CompletableFuture<>();
-        UUID request_id = UUID.randomUUID();
-        get_user_details_permission_futures_.put(request_id, future);
-        sendRequest("GET_USER_DETAILS_REQUEST", new GetUserDetailsRequest(request_id, user_id));
-        return future;
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.CREATE_GROUP_REQUEST,
+                new CreateGroupRequest(client_request_id, group_name, member_ids), client_request_id, GroupResponse.class);
     }
 
     public CompletableFuture<String> uploadFile(File file, Integer expires_in_hours)
     {
-        CompletableFuture<String> result_future = new CompletableFuture<>();
-        String client_request_id = UUID.randomUUID().toString();
-        upload_permission_futures_.put(client_request_id, result_future);
-        pending_uploads_.put(client_request_id, file);
-        sendRequest("REQUEST_FILE_UPLOAD", new FileUploadRequest(file.getName(), file.length(), expires_in_hours, client_request_id));
-        return result_future;
+        CompletableFuture<String> final_file_id_future = new CompletableFuture<>();
+        UUID client_request_id = UUID.randomUUID();
+        FileUploadRequest request_payload = new FileUploadRequest(file.getName(), file.length(),
+                expires_in_hours, client_request_id.toString());
+
+        sendRequestWithFuture(MessageType.REQUEST_FILE_UPLOAD, request_payload, client_request_id, FileUploadResponse.class)
+                .thenAccept(responseMsg ->
+                {
+                    FileUploadResponse upload_response = (FileUploadResponse) responseMsg.getPayload();
+                    http_service_.uploadFile(upload_response.upload_url(), file)
+                            .thenAccept(success -> Platform.runLater(() ->
+                            {
+                                if (success)
+                                {
+                                    final_file_id_future.complete(String.valueOf(upload_response.file_id()));
+                                } else
+                                {
+                                    final_file_id_future.completeExceptionally(new RuntimeException("HTTP文件上传失败"));
+                                }
+                            }));
+                })
+                .exceptionally(ex ->
+                {
+                    final_file_id_future.completeExceptionally(ex);
+                    return null;
+                });
+
+        return final_file_id_future;
     }
 
-    public void updateProfile(String nick_name, String signature, String avatar_file_id)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> updateProfile(String nick_name, String signature,
+                                                                            String avatar_file_id, UserStatus status)
     {
-        sendRequest("UPDATE_PROFILE_REQUEST", new UpdateProfileRequest(nick_name, signature, avatar_file_id));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.UPDATE_PROFILE_REQUEST,
+                new UpdateProfileRequest(client_request_id, nick_name, signature, avatar_file_id, status),
+                client_request_id, StatusResponse.class);
     }
 
-    public void changeUsername(String current_password, String new_user_name)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> changeUsername(String current_password, String new_user_name)
     {
-        sendRequest("CHANGE_USERNAME_REQUEST", new ChangeUsernameRequest(new_user_name, current_password));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.CHANGE_USERNAME_REQUEST,
+                new ChangeUsernameRequest(client_request_id, new_user_name, current_password), client_request_id,
+                StatusResponse.class);
     }
 
-    public void changePassword(String current_password, String new_password)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> changePassword(String current_password, String new_password)
     {
-        sendRequest("CHANGE_PASSWORD_REQUEST", new ChangePasswordRequest(current_password, new_password));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.CHANGE_PASSWORD_REQUEST,
+                new ChangePasswordRequest(client_request_id, current_password, new_password), client_request_id,
+                StatusResponse.class);
     }
 
-    public void publishKeys(JsonObject key_bundle)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> publishKeys(JsonObject key_bundle)
     {
-        sendRequest("PUBLISH_KEYS_REQUEST", new PublishKeysRequest(key_bundle));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.PUBLISH_KEYS_REQUEST,
+                new PublishKeysRequest(client_request_id, key_bundle), client_request_id, StatusResponse.class);
     }
 
-    public void fetchKeys(UUID user_id)
+    public CompletableFuture<ProtocolMessage<FetchKeysResponse>> fetchKeys(UUID user_id)
     {
-        sendRequest("FETCH_KEYS_REQUEST", new FetchKeysRequest(user_id));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.FETCH_KEYS_REQUEST,
+                new FetchKeysRequest(client_request_id, user_id), client_request_id, FetchKeysResponse.class);
     }
 
-    public void joinGroup(UUID group_id, String request_message)
+    public CompletableFuture<ProtocolMessage<GetUserDetailsResponse>> getUserDetails(UUID user_id)
     {
-        sendRequest("JOIN_GROUP_REQUEST", new JoinGroupRequest(group_id, request_message));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.GET_USER_DETAILS_REQUEST,
+                new GetUserDetailsRequest(client_request_id, user_id), client_request_id, GetUserDetailsResponse.class);
     }
 
-    public void handleJoinRequest(Long request_id, boolean approved)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> joinGroup(UUID group_id, String request_message)
     {
-        sendRequest("HANDLE_JOIN_REQUEST", new HandleJoinRequest(request_id, approved));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.JOIN_GROUP_REQUEST,
+                new JoinGroupRequest(client_request_id, group_id, request_message), client_request_id,
+                StatusResponse.class);
     }
 
-    public void leaveGroup(UUID group_id)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> handleJoinRequest(UUID group_id, UUID request_id,
+                                                                                boolean approved)
     {
-        sendRequest("LEAVE_GROUP_REQUEST", new LeaveGroupRequest(group_id));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.HANDLE_JOIN_REQUEST,
+                new HandleJoinRequest(client_request_id, group_id, request_id, approved), client_request_id,
+                StatusResponse.class);
     }
 
-    public void removeMember(UUID group_id, UUID target_user_id)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> leaveGroup(UUID group_id)
     {
-        sendRequest("REMOVE_MEMBER_REQUEST", new RemoveMemberRequest(group_id, target_user_id));
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.LEAVE_GROUP_REQUEST,
+                new LeaveGroupRequest(client_request_id, group_id), client_request_id, StatusResponse.class);
+    }
+
+    public CompletableFuture<ProtocolMessage<StatusResponse>> removeMember(UUID group_id, UUID target_user_id)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.REMOVE_MEMBER_REQUEST,
+                new RemoveMemberRequest(client_request_id, group_id, target_user_id), client_request_id,
+                StatusResponse.class);
     }
 
     private <T> void sendRequest(String type, T payload)
     {
-        ConnectionStatus status = connection_status_.get();
-        if (status != ConnectionStatus.CONNECTED)
-        {
-            if (!("LOGIN_REQUEST".equals(type) || "REGISTER_REQUEST".equals(type)) || status == ConnectionStatus.DISCONNECTED)
-            {
-                last_error_message_.set("错误: 尚未连接到服务器.");
-                return;
-            }
-        }
+        if (!checkConnection(type)) return;
         ProtocolMessage<T> request = new ProtocolMessage<>(type, payload);
         network_service_.sendMessage(JsonUtil.serialize(request));
+    }
+
+    private <T, R> CompletableFuture<ProtocolMessage<R>> sendRequestWithFuture(
+            String type, T payload, UUID client_request_id, Class<R> responseClass)
+    {
+        if (!checkConnection(type))
+            return CompletableFuture.failedFuture(new IllegalStateException("尚未连接到服务器。"));
+
+        CompletableFuture<ProtocolMessage<R>> future = new CompletableFuture<>();
+        response_futures_.put(client_request_id, new ResponseFuture<>(future, responseClass));
+
+        ProtocolMessage<T> request = new ProtocolMessage<>(type, payload);
+        network_service_.sendMessage(JsonUtil.serialize(request));
+        return future;
+    }
+
+    private boolean checkConnection(String type)
+    {
+        if (connection_status_.get() != ConnectionStatus.CONNECTED)
+        {
+            if (!("LOGIN_REQUEST".equals(type) || "REGISTER_REQUEST".equals(type)))
+            {
+                last_error_message_.set("错误: 尚未连接到服务器。");
+                return false;
+            }
+        }
+        return true;
     }
 
     private void onConnectionOpened()
@@ -202,9 +287,10 @@ public class AppRepository
 
     private void onConnectionClosed()
     {
-        Platform.runLater(() -> {
-            // Only set to disconnected if not currently attempting to reconnect
-            if (connection_status_.get() != ConnectionStatus.RECONNECTING) {
+        Platform.runLater(() ->
+        {
+            if (connection_status_.get() != ConnectionStatus.RECONNECTING)
+            {
                 connection_status_.set(ConnectionStatus.DISCONNECTED);
                 current_user_.set(null);
             }
@@ -216,82 +302,79 @@ public class AppRepository
         Platform.runLater(() -> connection_status_.set(ConnectionStatus.RECONNECTING));
     }
 
-    private void onMessageReceived(String json_message)
-    {
-        Platform.runLater(() ->
-        {
-            try
-            {
-                JsonObject json_object = JsonParser.parseString(json_message).getAsJsonObject();
-                String type = json_object.get("type").getAsString();
+    private void onMessageReceived(String json_message) {
+        try {
+            // --- This part is safe to run on a background thread ---
+            JsonObject json_object = JsonParser.parseString(json_message).getAsJsonObject();
+            String type = json_object.get("type").getAsString();
+            JsonObject payload_object = json_object.getAsJsonObject("payload");
 
-                switch (type)
+            Platform.runLater(() ->
+            {
+                try
                 {
-                    case "LOGIN_SUCCESS":
-                        handleLoginSuccess(json_message);
-                        break;
-                    case "REGISTER_SUCCESS":
-                        handleRegisterSuccess(json_message);
-                        break;
-                    case "BROADCAST_MESSAGE":
+                    if ("BROADCAST_MESSAGE".equals(type)) {
                         handleBroadcastMessage(json_message);
-                        break;
-                    case "RESPONSE_FILE_UPLOAD":
-                        handleFileUploadResponse(json_message);
-                        break;
-                    case "ERROR_RESPONSE":
-                        handleErrorResponse(json_message);
-                        break;
-                    case "GET_USER_DETAILS_SUCCESS":
-                        handleGetUserDetailsSuccess(json_message);
-                        break;
-                    // TODO: Handle all other server response and push types
+                        return;
+                    }
+
+                    if (payload_object != null && payload_object.has("client_request_id"))
+                    {
+                        UUID client_request_id = UUID.fromString(payload_object.get("client_request_id").getAsString());
+                        ResponseFuture<?> future = response_futures_.remove(client_request_id);
+                        if (future != null)
+                        {
+                            resolveFuture(future.future, type, json_message);
+                        }
+                    }
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                    last_error_message_.set("Error processing server message on UI thread: " + e.getMessage());
                 }
-            } catch (Exception e)
+            });
+
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            Platform.runLater(() -> last_error_message_.set("Error parsing server message: " + e.getMessage()));
+        }
+    }
+
+    private void resolveFuture(CompletableFuture future, String type, String json_message)
+    {
+        try
+        {
+            switch (type)
             {
-                e.printStackTrace();
-                last_error_message_.set("处理服务器消息时出错: " + e.getMessage());
+                case MessageType.REGISTER_RESPONSE:
+                case "LOGIN_SUCCESS":
+                case "LOGIN_FAILED":
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, UserOperatorResponse.class));
+                    break;
+                case MessageType.CREATE_GROUP_RESPONSE:
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, GroupResponse.class));
+                    break;
+                case "RESPONSE_FILE_UPLOAD":
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, FileUploadResponse.class));
+                    break;
+                case "FETCH_KEYS_RESPONSE":
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, FetchKeysResponse.class));
+                    break;
+                case "GET_USER_DETAILS_SUCCESS":
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, GetUserDetailsResponse.class));
+                    break;
+                case "ERROR_RESPONSE":
+                    ErrorResponse error_payload = JsonUtil.deserializeProtocolMessage(json_message, ErrorResponse.class).getPayload();
+                    future.completeExceptionally(new RuntimeException(error_payload.error()));
+                    break;
+                default:
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, StatusResponse.class));
+                    break;
             }
-        });
-    }
-
-    private void handleLoginSuccess(String json_message)
-    {
-        ProtocolMessage<UserLoginResponse> response = JsonUtil.deserializeProtocolMessage(json_message, UserLoginResponse.class);
-        UserLoginResponse.UserDTO user_dto = response.getPayload().user();
-        this.current_user_.set(new User(user_dto));
-        System.out.println("登录成功: " + user_dto.nick_name());
-        // TODO: Offline message testing
-
-        if (login_success_callback_ != null)
+        } catch (Exception e)
         {
-            login_success_callback_.onResponse(response);
-        }
-    }
-
-    private void handleRegisterSuccess(String json_message)
-    {
-        System.out.println("Register success");
-        if (register_success_callback_ != null)
-        {
-            ProtocolMessage<UserLoginResponse.UserDTO> response =
-                    JsonUtil.deserializeProtocolMessage(json_message, UserLoginResponse.UserDTO.class);
-            register_success_callback_.onResponse(response);
-        }
-    }
-
-    private void handleGetUserDetailsSuccess(String json_message)
-    {
-        ProtocolMessage<GetUserDetailsResponse> response = JsonUtil.deserializeProtocolMessage(json_message, GetUserDetailsResponse.class);
-        GetUserDetailsResponse payload = response.getPayload();
-        UUID request_id = payload.request_id();
-
-        CompletableFuture<GetUserDetailsResponse> future =
-                get_user_details_permission_futures_.remove(request_id);
-
-        if (future != null)
-        {
-            Platform.runLater(() -> future.complete(payload));
+            future.completeExceptionally(e);
         }
     }
 
@@ -313,7 +396,8 @@ public class AppRepository
         UUID conversation_id;
         if ("USER".equals(recipient_type))
         {
-            conversation_id = is_outgoing ? UUID.fromString((String) payload.get("recipient_id")) : sender_id;
+            UUID recipient_id = UUID.fromString((String) payload.get("recipient_id"));
+            conversation_id = is_outgoing ? recipient_id : sender_id;
         } else
         {
             conversation_id = UUID.fromString((String) payload.get("group_id"));
@@ -321,80 +405,11 @@ public class AppRepository
 
         String content_type = (String) payload.get("content_type");
         String content = (String) payload.get("content");
-        long timestamp_long = ((Double) payload.get("timestamp")).longValue();
-        String iso_time = Instant.ofEpochMilli(timestamp_long).toString();
 
-        Message local_message = new Message(conversation_id, sender_id, is_outgoing, content_type, content, iso_time);
+        Message local_message = new Message(conversation_id, sender_id, is_outgoing, content_type, content);
 
         persistence_service_.saveMessage(local_message);
         getMessagesForConversation(conversation_id).add(local_message);
-
-        if (broadcast_message_callback_ != null)
-        {
-            broadcast_message_callback_.onResponse(new ProtocolMessage<>("BROADCAST_MESSAGE", local_message));
-        }
-    }
-
-    private void handleErrorResponse(String json_message)
-    {
-        ProtocolMessage<ErrorResponse> response = JsonUtil.deserializeProtocolMessage(json_message, ErrorResponse.class);
-
-        if (response.getPayload() == null || response.getPayload().error() == null)
-        {
-            System.err.println("收到错误响应，但没有错误信息。");
-            return;
-        }
-
-        String error_info = "请求 [" + response.getPayload().request_type() + "] 失败: " + response.getPayload().error();
-        System.err.println(error_info);
-        last_error_message_.set(error_info);
-
-        if (error_response_callback_ != null)
-        {
-            error_response_callback_.onResponse(response);
-        }
-    }
-
-    private void handleFileUploadResponse(String json_message)
-    {
-        ProtocolMessage<FileUploadResponse> response = JsonUtil.deserializeProtocolMessage(json_message, FileUploadResponse.class);
-        String file_id = response.getPayload().file_id();
-        String upload_url = response.getPayload().upload_url();
-        String client_request_id = response.getPayload().client_id();
-
-        CompletableFuture<String> future = upload_permission_futures_.remove(client_request_id);
-        File file_to_upload = pending_uploads_.remove(client_request_id);
-
-        if (file_to_upload != null && future != null)
-        {
-            http_service_.uploadFile(upload_url, file_to_upload).thenAccept(success ->
-            {
-                Platform.runLater(() ->
-                {
-                    if (success)
-                    {
-                        future.complete(file_id);
-                    } else
-                    {
-                        future.completeExceptionally(new RuntimeException("HTTP上传失败"));
-                    }
-                });
-            });
-        }
-
-        if (file_upload_response_callback_ != null)
-        {
-            file_upload_response_callback_.onResponse(response);
-        }
-    }
-
-    public ObservableList<Message> getMessagesForConversation(UUID conversation_id)
-    {
-        return conversation_messages_.computeIfAbsent(conversation_id, id ->
-        {
-            List<Message> history = persistence_service_.getMessagesForConversation(id, 50, 0); // Initially load 50 messages
-            return FXCollections.observableArrayList(history);
-        });
     }
 
     public ReadOnlyObjectProperty<ConnectionStatus> connectionStatusProperty()
@@ -417,24 +432,12 @@ public class AppRepository
         return last_error_message_.getReadOnlyProperty();
     }
 
-    public void setLoginSuccessCallback(ResponseCallback callback)
+    public ObservableList<Message> getMessagesForConversation(UUID conversation_id)
     {
-        this.login_success_callback_ = callback;
-    }
-    public void setRegisterSuccessCallback(ResponseCallback callback)
-    {
-        this.register_success_callback_ = callback;
-    }
-    public void setBroadcastMessageCallback(ResponseCallback callback)
-    {
-        this.broadcast_message_callback_ = callback;
-    }
-    public void setFileUploadResponseCallback(ResponseCallback callback)
-    {
-        this.file_upload_response_callback_ = callback;
-    }
-    public void setErrorResponseCallback(ResponseCallback callback)
-    {
-        this.error_response_callback_ = callback;
+        return conversation_messages_.computeIfAbsent(conversation_id, id ->
+        {
+            List<Message> history = persistence_service_.getMessagesForConversation(id, 50, 0);
+            return FXCollections.observableArrayList(history);
+        });
     }
 }
