@@ -1,30 +1,29 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
-import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.domain.User;
 import javafx.animation.PauseTransition;
-import javafx.css.Style;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.control.Control;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import java.lang.reflect.Array;
+import javax.naming.Context;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.Stack;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class ChatWindowsController implements Initializable,Cloneable{
 
@@ -47,8 +46,8 @@ public class ChatWindowsController implements Initializable,Cloneable{
     private final PauseTransition delay = new PauseTransition(Duration.millis(20));
     private final ArrayList<Label> message_labels = new ArrayList<>();
     private Double label_longth = 0.0;
+
     public ChatWindowsController() {
-        setupAnimation();
     }
     // 注入FXML初始化
     @Override
@@ -63,9 +62,47 @@ public class ChatWindowsController implements Initializable,Cloneable{
     }
 
 
+
+    private void reLoad(){
+        addListener();
+        setupUI();
+        setupAnimation();
+    }
+    private ContextMenu setupMessageMenu(Label label, VBox  container,Boolean enabledWithDraw) {
+
+        ContextMenu message_menu_  = new ContextMenu();
+        MenuItem copyItem = new MenuItem("复制");
+        copyItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem repostItem = new MenuItem("转发");
+        repostItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem  withdrawItem= new MenuItem("撤回");
+        withdrawItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem deleteItem = new MenuItem("删除");
+        deleteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        copyItem.setOnAction(event -> {
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(label.getText());
+            clipboard.setContent(content);
+        });
+        withdrawItem.setOnAction(event -> {
+            container_pane_.getChildren().remove(container);
+        });
+        deleteItem.setOnAction(event -> {
+            container_pane_.getChildren().remove(container);
+
+        });
+        message_menu_.getItems().addAll(copyItem,repostItem);
+        if(enabledWithDraw)
+            message_menu_.getItems().add(withdrawItem);
+        message_menu_.getItems().add(deleteItem);
+        return message_menu_;
+    }
+
+
     public void setUser(User user) {
         view_model_.setUser(user);
-        addListener();
+        reLoad();
     }
 
 
@@ -87,8 +124,10 @@ public class ChatWindowsController implements Initializable,Cloneable{
     }
 
     public void sendMessageFromMe(String text) {
+        Label None = new Label();
+        None.setPrefWidth(7);
+        None.setVisible(false);
         VBox message_container = new VBox();
-
         message_container.setAlignment(Pos.CENTER_RIGHT);
         message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
@@ -104,7 +143,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
         message_label.setMaxWidth(label_longth);
         message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
-        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,19));
+        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,18));
         Label white = new Label();
         white.setPrefHeight(15);
         white.setVisible(false);
@@ -112,14 +151,74 @@ public class ChatWindowsController implements Initializable,Cloneable{
         Text username = new Text(view_model_.getUserName());
         username.setStyle("-fx-fill: black;");
         username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
-        VBox message_box_with_name = new VBox(username,message_label);
+        Text time = new Text(LocalDate.now().toString()+" "+ LocalTime.now().toString().substring(0, 5));
+        time.setStyle("-fx-fill: #B0B0B0");
+        time.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,10));
+        VBox message_box_with_name = new VBox(username,message_label,time);
         message_box_with_name.setSpacing(2);
         message_box_with_name.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_box_with_name.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_box_with_name.setAlignment(Pos.TOP_RIGHT);
-        message_box.getChildren().addAll(message_box_with_name,view_model_.getUSerAvatar());
+        message_box.getChildren().addAll(message_box_with_name,view_model_.getUSerAvatar(),None);
         message_container.getChildren().addAll(message_box,white);
         message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
+
+
+        message_label.setContextMenu(setupMessageMenu(message_label,message_container, true));
+
+
+        container_pane_.getChildren().add(message_container);
+        message_labels.add(message_label);
+        delay.play();
+        sendMessageFromOther(text);
+
+    }
+
+
+    public void sendMessageFromOther(String text) {
+        Label None = new Label();
+        None.setPrefWidth(7);
+        None.setVisible(false);
+        VBox message_container = new VBox();
+        message_container.setAlignment(Pos.CENTER_LEFT);
+        message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        HBox message_box = new HBox();
+        message_box.setAlignment(Pos.TOP_LEFT);
+        message_box.setPrefWidth(400);
+        message_box.setPrefWidth(400);
+        Label message_label = new Label(text);
+        message_label.setStyle("-fx-padding : 4;-fx-background-color: #FDF8FF ;" +
+                "-fx-text-fill:black;"+
+                "-fx-wrap-text: true;"+
+                "-fx-background-radius: 8;"+
+                "-fx-border-width: 1;"+
+                "-fx-border-radius: 8;"+
+                "-fx-border-color: #909090");
+        message_label.setMaxWidth(label_longth);
+        message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,18));
+        Label white = new Label();
+        white.setPrefHeight(15);
+        white.setVisible(false);
+        message_box.setSpacing(10);
+        Text username = new Text(view_model_.getUserName());
+        username.setStyle("-fx-fill: black;");
+        username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
+        Text time = new Text(LocalDate.now().toString()+" "+ LocalTime.now().toString().substring(0, 5));
+        time.setStyle("-fx-fill: #B0B0B0");
+        time.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,10));
+        VBox message_box_with_name = new VBox(username,message_label,time);
+        message_box_with_name.setSpacing(2);
+        message_box_with_name.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_box_with_name.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_box_with_name.setAlignment(Pos.TOP_LEFT);
+        message_label.setContextMenu(setupMessageMenu(message_label,message_container, false));
+        message_box.getChildren().addAll(None,view_model_.getUSerAvatar(),message_box_with_name);
+        message_container.getChildren().addAll(message_box,white);
+        message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
+
         container_pane_.getChildren().add(message_container);
         message_labels.add(message_label);
         delay.play();

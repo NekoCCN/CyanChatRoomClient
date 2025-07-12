@@ -14,8 +14,8 @@ public class Entry extends Application
         Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
         stage.setTitle("Hello!");
         Navigator.setPrimaryStage(stage);
-        Navigator.navigateTo("fxml/ChatPage.fxml");
-     //   stage.setResizable(false);
+        Navigator.navigateTo("fxml/LoginServer.fxml");
+        stage.setResizable(false);
         stage.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/ICON.png")))));
         stage.show();
     }

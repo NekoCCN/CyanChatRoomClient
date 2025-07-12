@@ -12,6 +12,9 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -63,6 +66,9 @@ public class ChatPageController implements Initializable {
     private final DropShadow glow_effect_ = new DropShadow();
     private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
     private ContactListController   contact_list ;
+    private final KeyCodeCombination send_message_ = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
+    private ContextMenu message_input_menu_ = new ContextMenu();
+
 
 
     public ChatPageController(){}
@@ -116,7 +122,20 @@ public class ChatPageController implements Initializable {
         user_status_.getItems().addAll(Status.ONLINE, Status.BUSY, Status.DO_NOT_DISTURB, Status.INVISIBLE,Status.AWAY,Status.OFFLINE);
         user_status_.setValue(Status.ONLINE);
         current_list_node = talk_icon_;
-
+        MenuItem copyItem = new MenuItem("复制");
+        copyItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem pasteItem = new MenuItem("粘贴");
+        pasteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem deleteItem = new MenuItem("清空");
+        deleteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        MenuItem sendItem = new MenuItem("发送");
+        sendItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
+        copyItem.setOnAction(event -> message_input.copy());
+        pasteItem.setOnAction(event -> message_input.paste());
+        deleteItem.setOnAction(event -> message_input.clear());
+        sendItem.setOnAction(event -> enter_button_.fire());
+        message_input_menu_.getItems().addAll(copyItem, pasteItem, deleteItem, sendItem);
+        message_input.setContextMenu(message_input_menu_);
 
 
     }
@@ -178,6 +197,10 @@ public class ChatPageController implements Initializable {
                 Input_box_.toFront();
 
             }
+        });
+        message_input.setOnKeyPressed(e -> {
+            if(send_message_.match(e))
+                enter_button_.fire();
         });
 
 
