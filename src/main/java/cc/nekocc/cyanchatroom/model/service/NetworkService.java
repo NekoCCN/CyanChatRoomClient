@@ -59,7 +59,7 @@ public class NetworkService
                     System.out.println("WebSocket connection opened.");
                     reconnect_attempts_ = 0; // Reset on successful connection
                     stopReconnectTimer();
-                    Platform.runLater(on_open_callback_);
+                    on_open_callback_.run();
                     startHeartbeat();
                 }
 
@@ -68,7 +68,8 @@ public class NetworkService
                 {
                     if ("pong".equalsIgnoreCase(m))
                         return;
-                    Platform.runLater(() -> on_message_callback_.accept(m));
+
+                    on_message_callback_.accept(m);
                 }
 
                 @Override
@@ -76,7 +77,7 @@ public class NetworkService
                 {
                     System.out.println("WebSocket closed: " + reason + " (code: " + code + ")");
                     stopHeartbeat();
-                    Platform.runLater(on_close_callback_);
+                    on_close_callback_.run();
                     if (auto_reconnect_)
                     {
                         scheduleReconnect();

@@ -1,4 +1,6 @@
 package cc.nekocc.cyanchatroom.model.dto.request;
 
-public record HandleJoinRequest(Long request_id, boolean approved)
+import java.util.UUID;
+
+public record HandleJoinRequest(UUID client_request_id, UUID group_id, UUID request_id, boolean approved)
 {  }

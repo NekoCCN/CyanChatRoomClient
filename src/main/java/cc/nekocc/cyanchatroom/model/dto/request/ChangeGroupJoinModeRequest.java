@@ -1,6 +1,7 @@
 package cc.nekocc.cyanchatroom.model.dto.request;
 
+import cc.nekocc.cyanchatroom.model.entity.GroupJoinMode;
 import java.util.UUID;
 
-public record ChangeGroupJoinModeRequest(UUID group_id, String new_mode)
+public record ChangeGroupJoinModeRequest(UUID client_request_id, UUID group_id, GroupJoinMode new_mode)
 {  }
