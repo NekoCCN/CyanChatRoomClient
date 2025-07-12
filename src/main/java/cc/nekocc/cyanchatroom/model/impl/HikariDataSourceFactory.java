@@ -44,7 +44,7 @@ public class HikariDataSourceFactory extends UnpooledDataSourceFactory
             }
         }
 
-        hikari_properties.setProperty("dataSource.url", "jdbc:sqlite:" + db_path.toAbsolutePath());
+        hikari_properties.setProperty("jdbcUrl", "jdbc:sqlite:" + db_path.toAbsolutePath());
 
         HikariConfig config = new HikariConfig(hikari_properties);
         this.dataSource = new HikariDataSource(config);
