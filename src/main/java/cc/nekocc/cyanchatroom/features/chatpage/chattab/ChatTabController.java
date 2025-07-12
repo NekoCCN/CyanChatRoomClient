@@ -2,6 +2,7 @@ package cc.nekocc.cyanchatroom.features.chatpage.chattab;
 
 import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Parent;
@@ -50,5 +51,9 @@ public class ChatTabController {
 
     public void syncUserData(User user){
         view_model.syncUserData(user);
+    }
+
+    public ChatWindowsController getChatWindow(){
+        return view_model.getChatWindow();
     }
 }

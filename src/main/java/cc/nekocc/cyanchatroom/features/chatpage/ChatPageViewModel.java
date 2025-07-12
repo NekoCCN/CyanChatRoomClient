@@ -3,11 +3,14 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.features.setting.SettingPage;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
@@ -19,8 +22,8 @@ import java.util.ArrayList;
 
 public class ChatPageViewModel {
 
-
-
+    private final ObjectProperty<ChatWindowsController>  temp_chat_window_ = new SimpleObjectProperty<>();
+    private final ObjectProperty<ChatWindowsController>  current_chat_window_ = new SimpleObjectProperty<>();
     private final ArrayList<ChatTabController> user_list_ = new ArrayList<>();
     private final BooleanProperty setting_shown = new SimpleBooleanProperty();
     private final BooleanProperty contact_agree_shown = new SimpleBooleanProperty();
@@ -51,6 +54,11 @@ public class ChatPageViewModel {
         });
     }
 
+    public void sendMessageFromMe(String message){
+        current_chat_window_.get().sendMessageFromMe(message);
+    }
+
+
     public void loadSetting(){
         SettingPage setting_page = (SettingPage) ViewTool.loadFXML("fxml/setting.fxml");
         setting_stage = new Stage();
@@ -67,6 +75,7 @@ public class ChatPageViewModel {
             AnchorPane tab = user.getUserTab();
             tab.setOnMouseClicked(_ ->{
                 if(!user.isActive()) {
+                    current_chat_window_.set(user.getChatWindow());
                     tab.setStyle("-fx-background-color: #3574F0");
                     anchorPane.getChildren().clear();
                     rewriteUserActive();
@@ -115,5 +124,16 @@ public class ChatPageViewModel {
 
     public BooleanProperty getContactAgreeShown() {
         return contact_agree_shown;
+    }
+    public void loadLastWindow(){
+        current_chat_window_.set(temp_chat_window_.get());
+    }
+
+    public void setCurrentChatWindowNULL(){
+        temp_chat_window_.set(current_chat_window_.get());
+        current_chat_window_.set(null);
+    }
+    public boolean isCurrentChatWindowNULL(){
+        return current_chat_window_.get() == null;
     }
 }
