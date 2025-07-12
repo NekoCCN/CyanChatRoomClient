@@ -29,7 +29,7 @@ public class HikariDataSourceFactory extends UnpooledDataSourceFactory
 
         Path db_path = Paths.get(System.getProperty("user.home"), ".cyanchatroom", "database.db");
 
-        if (db_path.getParent() == null && db_path.getParent().toFile().exists())
+        if (db_path.getParent() == null || !db_path.getParent().toFile().exists())
         {
             try
             {

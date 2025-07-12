@@ -41,7 +41,7 @@ public class AppRepository
     private Map<UUID, CompletableFuture<GetUserDetailsResponse>> get_user_details_permission_futures_ = new ConcurrentHashMap<>();
 
     public enum ConnectionStatus
-    {DISCONNECTED, CONNECTING, CONNECTED, FAILED}
+    {DISCONNECTED, CONNECTING, CONNECTED, FAILED, RECONNECTING}
 
     private final ReadOnlyObjectWrapper<ConnectionStatus> connection_status_ = new ReadOnlyObjectWrapper<>(ConnectionStatus.DISCONNECTED);
     private final ReadOnlyObjectWrapper<User> current_user_ = new ReadOnlyObjectWrapper<>(null);
@@ -55,12 +55,12 @@ public class AppRepository
     private ResponseCallback file_upload_response_callback_;
     private ResponseCallback error_response_callback_;
 
-
     private AppRepository()
     {
         this.http_service_ = new HttpService();
         this.persistence_service_ = new LocalPersistenceService();
-        this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened, this::onConnectionClosed);
+        // Added onReconnecting callback handler
+        this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened, this::onConnectionClosed, this::onReconnecting);
     }
 
     public static AppRepository getInstance()
@@ -77,6 +77,12 @@ public class AppRepository
         String http_url = "http://" + server_address;
         http_service_.setBaseUrl(http_url);
         network_service_.connect(ws_url);
+    }
+
+    public void disconnect()
+    {
+        network_service_.disconnect();
+        onConnectionClosed();
     }
 
     public void register(String user_name, String password, String nick_name)
@@ -176,10 +182,14 @@ public class AppRepository
 
     private <T> void sendRequest(String type, T payload)
     {
-        if (connection_status_.get() != ConnectionStatus.CONNECTED && !"LOGIN_REQUEST".equals(type) && !"REGISTER_REQUEST".equals(type))
+        ConnectionStatus status = connection_status_.get();
+        if (status != ConnectionStatus.CONNECTED)
         {
-            last_error_message_.set("错误: 尚未连接到服务器.");
-            return;
+            if (!("LOGIN_REQUEST".equals(type) || "REGISTER_REQUEST".equals(type)) || status == ConnectionStatus.DISCONNECTED)
+            {
+                last_error_message_.set("错误: 尚未连接到服务器.");
+                return;
+            }
         }
         ProtocolMessage<T> request = new ProtocolMessage<>(type, payload);
         network_service_.sendMessage(JsonUtil.serialize(request));
@@ -187,13 +197,23 @@ public class AppRepository
 
     private void onConnectionOpened()
     {
-        connection_status_.set(ConnectionStatus.CONNECTED);
+        Platform.runLater(() -> connection_status_.set(ConnectionStatus.CONNECTED));
     }
 
     private void onConnectionClosed()
     {
-        connection_status_.set(ConnectionStatus.DISCONNECTED);
-        current_user_.set(null);
+        Platform.runLater(() -> {
+            // Only set to disconnected if not currently attempting to reconnect
+            if (connection_status_.get() != ConnectionStatus.RECONNECTING) {
+                connection_status_.set(ConnectionStatus.DISCONNECTED);
+                current_user_.set(null);
+            }
+        });
+    }
+
+    private void onReconnecting()
+    {
+        Platform.runLater(() -> connection_status_.set(ConnectionStatus.RECONNECTING));
     }
 
     private void onMessageReceived(String json_message)
@@ -225,7 +245,7 @@ public class AppRepository
                     case "GET_USER_DETAILS_SUCCESS":
                         handleGetUserDetailsSuccess(json_message);
                         break;
-                    // TODO: 处理所有其他类型的服务器响应和推送
+                    // TODO: Handle all other server response and push types
                 }
             } catch (Exception e)
             {
@@ -241,7 +261,7 @@ public class AppRepository
         UserLoginResponse.UserDTO user_dto = response.getPayload().user();
         this.current_user_.set(new User(user_dto));
         System.out.println("登录成功: " + user_dto.nick_name());
-        // TODO: 离线消息测试
+        // TODO: Offline message testing
 
         if (login_success_callback_ != null)
         {
@@ -269,10 +289,10 @@ public class AppRepository
         CompletableFuture<GetUserDetailsResponse> future =
                 get_user_details_permission_futures_.remove(request_id);
 
-        Platform.runLater(() ->
+        if (future != null)
         {
-            future.complete(payload);
-        });
+            Platform.runLater(() -> future.complete(payload));
+        }
     }
 
     private void handleBroadcastMessage(String json_message)
@@ -372,7 +392,7 @@ public class AppRepository
     {
         return conversation_messages_.computeIfAbsent(conversation_id, id ->
         {
-            List<Message> history = persistence_service_.getMessagesForConversation(id, 50, 0); // 初始加载50条
+            List<Message> history = persistence_service_.getMessagesForConversation(id, 50, 0); // Initially load 50 messages
             return FXCollections.observableArrayList(history);
         });
     }
