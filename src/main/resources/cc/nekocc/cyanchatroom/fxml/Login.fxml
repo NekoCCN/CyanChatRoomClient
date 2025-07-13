@@ -74,7 +74,7 @@
          <StackPane fx:id="register_stack_pane_" prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="45.0" AnchorPane.rightAnchor="75.0" AnchorPane.topAnchor="50.0">
             <VBox fx:id="register_next_box_" prefHeight="282.0" prefWidth="449.0" spacing="14.0">
                <HBox prefHeight="51.0" prefWidth="539.0" spacing="10.0">
-                  <TextField fx:id="register_phone_" prefHeight="50.0" prefWidth="359.0" promptText="手机号码">
+                  <TextField fx:id="register_nickname_" prefHeight="50.0" prefWidth="359.0" promptText="昵称">
                      <font>
                         <Font name="Microsoft YaHei Light" size="24.0" />
                      </font>
@@ -82,7 +82,7 @@
                   <Label fx:id="phonenumber_error_" prefHeight="45.0" prefWidth="203.0" text="手机号只能为数字" textFill="#ff0300" visible="false" />
                </HBox>
                <HBox prefHeight="58.0" prefWidth="570.0">
-                  <TextField fx:id="register_address_" prefHeight="50.0" prefWidth="357.0" promptText="地址">
+                  <TextField fx:id="register_signature_" prefHeight="50.0" prefWidth="357.0" promptText="个人签名">
                      <font>
                         <Font name="Microsoft YaHei Light" size="24.0" />
                      </font>

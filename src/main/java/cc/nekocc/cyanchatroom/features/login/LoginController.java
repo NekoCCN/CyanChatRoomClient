@@ -58,9 +58,9 @@ public class LoginController implements Initializable
     @FXML
     private VBox register_next_box_;
     @FXML
-    private TextField register_phone_;
+    private TextField register_nickname_;
     @FXML
-    private TextField register_address_;
+    private TextField register_signature_;
     @FXML
     private Button register_client_register_button_;
     @FXML
@@ -128,16 +128,16 @@ public class LoginController implements Initializable
             }
         }));
 
-        register_phone_.setTextFormatter(new TextFormatter<>(change -> {
+        register_nickname_.setTextFormatter(new TextFormatter<>(change -> {
             String newText = change.getControlNewText();  // 获取输入后的完整文本
             if (newText.matches("^[0-9]+$") || newText.isEmpty()) {
                 phonenumber_error_.setVisible(false);
-                register_phone_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                register_nickname_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                 return change;
             }
             else{
                 phonenumber_error_.setVisible(true);
-                register_phone_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                register_nickname_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
                 return null;  // 拒绝修改
             }
         }));
@@ -154,8 +154,8 @@ public class LoginController implements Initializable
 
         register_username_.textProperty().bindBidirectional(view_model_.registerUsernameProperty());
         register_password_.textProperty().bindBidirectional(view_model_.registerPasswordProperty());
-        register_phone_.textProperty().bindBidirectional(view_model_.registerPhoneProperty());
-        register_address_.textProperty().bindBidirectional(view_model_.registerAddressProperty());
+        register_nickname_.textProperty().bindBidirectional(view_model_.registerNickNameProperty());
+        register_signature_.textProperty().bindBidirectional(view_model_.registerSignatureProperty());
 
 
         verification_slider_.valueProperty().bindBidirectional(view_model_.version_slider_property());

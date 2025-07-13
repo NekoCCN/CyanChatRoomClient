@@ -3,15 +3,24 @@ package cc.nekocc.cyanchatroom.features.login;
 import cc.nekocc.cyanchatroom.Navigator;
 import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
 import cc.nekocc.cyanchatroom.domain.client.IndividualClient;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.UserRepository;
 import cc.nekocc.cyanchatroom.model.UserSession;
+import cc.nekocc.cyanchatroom.model.dto.response.UserOperatorResponse;
+import cc.nekocc.cyanchatroom.model.entity.User;
+import cc.nekocc.cyanchatroom.model.entity.UserStatus;
+import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
 import javafx.beans.property.*;
 import javafx.scene.control.Alert;
+
+import java.util.concurrent.CompletableFuture;
 
 public class LoginViewModel
 {
     private final UserRepository user_repository_;
 
+    private boolean is_logining_ = false;
+    private boolean is_registering_ = false;
 
     private final IntegerProperty version_slider_property_ = new SimpleIntegerProperty(1);
     private final StringProperty login_username_ = new SimpleStringProperty("");
@@ -19,8 +28,8 @@ public class LoginViewModel
 
     private final StringProperty register_username_ = new SimpleStringProperty("");
     private final StringProperty register_password_ = new SimpleStringProperty("");
-    private final StringProperty register_phone_ = new SimpleStringProperty("");
-    private final StringProperty register_address_ = new SimpleStringProperty("");
+    private final StringProperty register_nickname_ = new SimpleStringProperty("");
+    private final StringProperty register_signature_ = new SimpleStringProperty("");
     private final ObjectProperty<AbstractClient> register_client_type_ = new SimpleObjectProperty<>();
 
     private final BooleanProperty login_button_disabled_ = new SimpleBooleanProperty(true);
@@ -49,54 +58,106 @@ public class LoginViewModel
         );
 
         register_button_disabled_.bind(
-                register_phone_.isEmpty()
-                        .or(register_address_.isEmpty())
+                register_nickname_.isEmpty()
                         .or(version_slider_property_.isNotEqualTo( 200) )
         );
     }
 
     public void login()
     {
-        boolean is_success = user_repository_.login(login_username_.get(), login_password_.get());
-        if (is_success)
+        if (is_logining_)
         {
-            UserSession.getInstance().loginUser(user_repository_.findByUsername(login_username_.get()).get());
-            Navigator.navigateTo("fxml/turnToChatPage.fxml",800,600,1000);
+            return;
         }
-        else
+
+        CompletableFuture<ProtocolMessage<UserOperatorResponse>> user_response =
+                AppRepository.getInstance().login(login_username_.get(), login_password_.get());
+
+        is_logining_ = true;
+
+        user_response.thenAccept(response ->
         {
-            showAlert(Alert.AlertType.ERROR, "登录失败", "用户名或密码错误。");
-        }
+            if (response.getPayload().success())
+            {
+                AppRepository.getInstance().setCurrentUser(new User(response.getPayload().user()));
+                Navigator.navigateTo("fxml/turnToChatPage.fxml",800,600,1000);
+            }
+            else
+            {
+                showAlert(Alert.AlertType.ERROR, "登录失败", response.getPayload().message());
+            }
+            is_logining_ = false;
+        }).exceptionally(ex ->
+        {
+            showAlert(Alert.AlertType.ERROR, "登录失败", "发生错误: " + ex.getMessage());
+            is_logining_ = false;
+            return null;
+        });
     }
 
     public void register()
     {
+        if (is_registering_)
+        {
+            return;
+        }
+
         try
         {
             String username = register_username_.get();
             String password = register_password_.get();
-            String phone = register_phone_.get();
-            String address = register_address_.get();
-
-//            AbstractClient client_prototype = register_client_type_.get();  因为废除了choicebox故这里要简单修改一下
-            AbstractClient client_data =new IndividualClient(username, phone, address);
-
-  /*          if (client_prototype instanceof IndividualClient)
+            String nickname = register_nickname_.get();
+            String signature;
+            if (!register_signature_.isEmpty().get())
             {
-                client_data = new IndividualClient(username, phone, address);
-            }
-            else if (client_prototype instanceof CorporationClient)
+                signature = register_signature_.get();
+            } else
             {
-                client_data = new CorporationClient(username, phone, address);
-            }
-            else
-            {
-                throw new IllegalStateException("未知的客户类型");
+                signature = null;
             }
 
-   */
-            user_repository_.registerUser(username, password, client_data);
-            showAlert(Alert.AlertType.INFORMATION, "注册成功", "用户 " + username + " 已成功注册！");
+            CompletableFuture<ProtocolMessage<UserOperatorResponse>> user_response =
+                    AppRepository.getInstance().register(username, password, nickname);
+
+            is_registering_ = true;
+
+            user_response.thenAccept(response ->
+            {
+                if (response.getPayload().success())
+                {
+                    if (signature != null)
+                    {
+                        AppRepository.getInstance().updateProfile(
+                                nickname,
+                                signature,
+                                "",
+                                UserStatus.ONLINE
+                        ).thenAccept(update_response ->
+                        {
+                            if (update_response.getPayload().status() == true)
+                            {
+                                showAlert(Alert.AlertType.INFORMATION, "注册成功", "用户 " + username + " 已成功注册！");
+                            }
+                            else
+                            {
+                                showAlert(Alert.AlertType.ERROR, "注册成功，部分更新资料失败", update_response.getPayload().message());
+                            }
+                        }).exceptionally(ex ->
+                        {
+                            showAlert(Alert.AlertType.ERROR, "更新资料失败", "发生错误: " + ex.getMessage());
+                            return null;
+                        });
+                    }
+                    else
+                    {
+                        showAlert(Alert.AlertType.INFORMATION, "注册成功", "用户 " + username + " 已成功注册！");
+                    }
+                }
+            }).exceptionally(ex ->
+            {
+                showAlert(Alert.AlertType.ERROR, "注册失败", "发生错误: " + ex.getMessage());
+                return null;
+            });
         }
         catch (Exception e)
         {
@@ -133,14 +194,14 @@ public class LoginViewModel
         return register_password_;
     }
 
-    public StringProperty registerPhoneProperty()
+    public StringProperty registerNickNameProperty()
     {
-        return register_phone_;
+        return register_nickname_;
     }
 
-    public StringProperty registerAddressProperty()
+    public StringProperty registerSignatureProperty()
     {
-        return register_address_;
+        return register_signature_;
     }
 
     public BooleanProperty loginButtonDisabledProperty()
