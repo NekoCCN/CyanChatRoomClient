@@ -55,7 +55,7 @@ public class ChatTabViewModel {
             throw new IllegalArgumentException("用户名不能为空");
         Label username_label_title_ = new Label(String.valueOf(name.charAt(0)));
         Label username_label_ = new Label(name);
-        Label user_status_label_ = new Label(chattab.getUser().getStatus_().toStringshow());
+        Label user_status_label_ = new Label(chattab.getUser().getStatus_().toDisplayString());
         Circle circle = new Circle();
         StackPane tab_circle = new StackPane(circle,username_label_title_);
         VBox tab_data_ = new VBox(username_label_,user_status_label_);

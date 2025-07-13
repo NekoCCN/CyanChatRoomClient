@@ -4,7 +4,6 @@ import cc.nekocc.cyanchatroom.Navigator;
 import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
 import cc.nekocc.cyanchatroom.domain.client.IndividualClient;
 import cc.nekocc.cyanchatroom.model.AppRepository;
-import cc.nekocc.cyanchatroom.model.UserRepository;
 import cc.nekocc.cyanchatroom.model.UserSession;
 import cc.nekocc.cyanchatroom.model.dto.response.UserOperatorResponse;
 import cc.nekocc.cyanchatroom.model.entity.User;
@@ -17,10 +16,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class LoginViewModel
 {
-    private final UserRepository user_repository_;
-
     private boolean is_logining_ = false;
     private boolean is_registering_ = false;
+
 
     private final IntegerProperty version_slider_property_ = new SimpleIntegerProperty(1);
     private final StringProperty login_username_ = new SimpleStringProperty("");
@@ -35,17 +33,12 @@ public class LoginViewModel
     private final BooleanProperty login_button_disabled_ = new SimpleBooleanProperty(true);
     private final BooleanProperty register_next_button_disabled_ = new SimpleBooleanProperty(true);
     private final BooleanProperty register_button_disabled_ = new SimpleBooleanProperty(true);
+    private final BooleanProperty accept_version_ = new SimpleBooleanProperty();
 
     public LoginViewModel()
-    {
-        this(new UserRepository());
-    }
+    { setupBindings();}
 
-    public LoginViewModel(UserRepository user_repository)
-    {
-        user_repository_ = user_repository;
-        setupBindings();
-    }
+
 
     private void setupBindings()
     {
@@ -59,7 +52,7 @@ public class LoginViewModel
 
         register_button_disabled_.bind(
                 register_nickname_.isEmpty()
-                        .or(version_slider_property_.isNotEqualTo( 200) )
+                        .or(accept_version_.not())
         );
     }
 
@@ -223,5 +216,15 @@ public class LoginViewModel
 
     public IntegerProperty version_slider_property() {
         return version_slider_property_;
+    }
+
+
+
+    public boolean isAccept_version_() {
+        return accept_version_.get();
+    }
+
+    public BooleanProperty accept_version_Property() {
+        return accept_version_;
     }
 }

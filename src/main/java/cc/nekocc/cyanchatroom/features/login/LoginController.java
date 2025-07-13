@@ -5,6 +5,10 @@ import atlantafx.base.theme.Styles;
 import atlantafx.base.util.Animations;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
@@ -77,6 +81,7 @@ public class LoginController implements Initializable
     private Timeline returnAnimation;
     private boolean isAnimating = false;
     private int version_slider_value = 0;
+    private BooleanProperty accept_version_value = new SimpleBooleanProperty();
 
     @Override
     public void initialize(URL url, ResourceBundle resource_bundle)
@@ -127,21 +132,6 @@ public class LoginController implements Initializable
                 return null;  // 拒绝修改
             }
         }));
-
-        register_nickname_.setTextFormatter(new TextFormatter<>(change -> {
-            String newText = change.getControlNewText();  // 获取输入后的完整文本
-            if (newText.matches("^[0-9]+$") || newText.isEmpty()) {
-                phonenumber_error_.setVisible(false);
-                register_nickname_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
-                return change;
-            }
-            else{
-                phonenumber_error_.setVisible(true);
-                register_nickname_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
-                return null;  // 拒绝修改
-            }
-        }));
-
     }
     
 
@@ -153,7 +143,10 @@ public class LoginController implements Initializable
         login_button_.disableProperty().bind(view_model_.loginButtonDisabledProperty());
 
         register_username_.textProperty().bindBidirectional(view_model_.registerUsernameProperty());
-        register_password_.textProperty().bindBidirectional(view_model_.registerPasswordProperty());
+        register_password_.passwordProperty().addListener(((observableValue, s, t1) ->{
+            view_model_.registerPasswordProperty().set(t1);
+        }
+            ));
         register_nickname_.textProperty().bindBidirectional(view_model_.registerNickNameProperty());
         register_signature_.textProperty().bindBidirectional(view_model_.registerSignatureProperty());
 
@@ -161,6 +154,8 @@ public class LoginController implements Initializable
         verification_slider_.valueProperty().bindBidirectional(view_model_.version_slider_property());
         register_username_next_button_.disableProperty().bind(view_model_.registerNextButtonDisabledProperty());
         register_client_register_button_.disableProperty().bind(view_model_.registerButtonDisabledProperty());
+
+        accept_version_value.bindBidirectional(view_model_.accept_version_Property());
     }
 
     private void checkLogin(){
@@ -263,6 +258,7 @@ public class LoginController implements Initializable
         verification_message_label_.setStyle("-fx-text-fill: #AAAAAA");
         version_slider_value = (int)(Math.random()*160+40);
         verification_message_label_.setText("请滑动到"+String.format("%d",version_slider_value/2)+"%处完成验证");
+        accept_version_value.set(false);
     }
 
 
@@ -272,6 +268,7 @@ public class LoginController implements Initializable
         verification_slider_.setMax(200);
         verification_slider_.setMin(0);
         verification_slider_.setValue(0);
+        accept_version_value.set(false);
         // 初始化动画
         returnAnimation = new Timeline(
                 new KeyFrame(Duration.millis(20), e -> {
@@ -302,6 +299,7 @@ public class LoginController implements Initializable
                 verification_message_label_.setText("验证成功");
                 verification_message_label_.setStyle("-fx-text-fill: green;");
                 verification_slider_.setDisable(true);
+                accept_version_value.set(true);
                 isAnimating = false;
             } else {
                 // 验证失败，启动返回动画
@@ -309,6 +307,7 @@ public class LoginController implements Initializable
                 verification_message_label_.setStyle("-fx-text-fill: red;");
                 isAnimating = true;
                 verification_slider_.setDisable(true);
+                accept_version_value.set(false);
                 returnAnimation.playFromStart();
             }
         });

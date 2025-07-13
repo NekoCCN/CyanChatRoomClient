@@ -14,9 +14,6 @@ import java.net.URL;
 public class User
 {
     private String username_;
-    private String hashed_password_;
-    private boolean is_locked_;
-    private AbstractClient client_data_;
     private Status status_;
     private URL avatar_url_;
 
@@ -30,15 +27,11 @@ public class User
     public User(String username, String hashedPassword, AbstractClient clientData)
     {
         username_ = username;
-        hashed_password_ = hashedPassword;
-        client_data_ = clientData;
-        is_locked_ = false;
     }
 
     public User(String username,  Status status)
     {
         username_ = username;
-        is_locked_ = false;
         status_ = status;
     }
     public void setUsername(String username_)
@@ -49,16 +42,6 @@ public class User
     public String getUsername()
     {
         return username_;
-    }
-
-    public String getHashedPassword()
-    {
-        return hashed_password_;
-    }
-
-    public AbstractClient getClientData()
-    {
-        return client_data_;
     }
 
     public Status getStatus_() {
