@@ -91,7 +91,9 @@ public class AppRepository
         return INSTANCE;
     }
 
-    // 初始化部分
+    /*
+     * 初始化部分
+     */
     public void connectToServer(String server_address)
     {
         if (connection_status_.get() == ConnectionStatus.CONNECTING || connection_status_.get() == ConnectionStatus.CONNECTED)
@@ -117,7 +119,9 @@ public class AppRepository
         current_user_.set(user);
     }
 
-    // 用户操作相关
+    /*
+     * 用户操作相关
+     */
     public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password,
                                                                              String nick_name, String signature)
     {
@@ -133,7 +137,9 @@ public class AppRepository
         return sendRequestWithFuture(MessageType.LOGIN_REQUEST, payload, client_request_id, UserOperatorResponse.class);
     }
 
-    // 消息发送相关
+    /*
+     * 发送消息相关
+     */
     private void sendMessageInternal(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
         User current_user = current_user_.get();
@@ -148,13 +154,14 @@ public class AppRepository
         sendRequest(MessageType.CHAT_MESSAGE, new ChatMessageRequest(UUID.randomUUID(), recipient_type,
                 recipient_id, content_type, is_encrypted, content));
     }
-
     public void sendMessage(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
         sendMessageInternal(recipient_type, recipient_id, content_type, is_encrypted, content);
     }
 
-    // E2EE 相关
+    /*
+     * E2EE 相关
+     */
     public void sendEncryptedTextMessage(UUID recipient_id, String plain_text)
     {
         if (current_user_.get() == null)
@@ -249,7 +256,9 @@ public class AppRepository
                 new PublishKeysRequest(client_request_id, key_bundle), client_request_id, StatusResponse.class);
     }
 
-    // 文件上传相关
+    /*
+     * 文件相关
+     */
     public CompletableFuture<String> uploadFile(File file, Integer expires_in_hours)
     {
         CompletableFuture<String> final_file_id_future = new CompletableFuture<>();
@@ -281,8 +290,14 @@ public class AppRepository
 
         return final_file_id_future;
     }
+    public CompletableFuture<Boolean> downloadFile(String file_id, File save_location)
+    {
+        return http_service_.downloadFile(file_id, save_location);
+    }
 
-    // 用户资料相关操作
+    /*
+     * 用户资料相关
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> updateProfile(String nick_name, String signature,
                                                                             String avatar_file_id, UserStatus status)
     {
@@ -312,7 +327,9 @@ public class AppRepository
                 new GetUserDetailsRequest(client_request_id, user_id), client_request_id, GetUserDetailsResponse.class);
     }
 
-    // 群组相关操作
+    /*
+     * 群组相关
+     */
     public CompletableFuture<ProtocolMessage<GroupResponse>> createGroup(String group_name, List<UUID> member_ids)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -348,7 +365,9 @@ public class AppRepository
                 StatusResponse.class);
     }
 
-    // 发送请求的通用方法
+    /*
+     * 请求通用方法
+     */
     private <T> void sendRequest(String type, T payload)
     {
         if (!checkConnection(type)) return;
@@ -381,7 +400,9 @@ public class AppRepository
         return true;
     }
 
-    // 连接状态相关
+    /*
+     * 回调相关
+     */
     private void onConnectionOpened()
     {
         Platform.runLater(() -> connection_status_.set(ConnectionStatus.CONNECTED));
@@ -406,7 +427,9 @@ public class AppRepository
         Platform.runLater(() -> connection_status_.set(ConnectionStatus.RECONNECTING));
     }
 
-    // 处理服务器消息
+    /*
+     * 服务器消息处理
+     */
     private void onMessageReceived(String json_message)
     {
         try {
@@ -529,7 +552,9 @@ public class AppRepository
         getMessagesForConversation(conversation_id).add(local_message);
     }
 
-    // 获取应用状态相关属性
+    /*
+     * Property 相关
+     */
     public ReadOnlyObjectProperty<ConnectionStatus> connectionStatusProperty()
     {
         return connection_status_.getReadOnlyProperty();
