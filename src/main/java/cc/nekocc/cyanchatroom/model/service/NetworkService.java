@@ -20,18 +20,22 @@ public class NetworkService
     private Timer heartbeat_timer_;
     private Timer reconnect_timer_;
 
+    private Runnable on_reconnecting_failed_callback_;
+
     private boolean auto_reconnect_ = false;
     private int reconnect_attempts_ = 0;
-    private static final int MAX_RECONNECT_ATTEMPTS = 10;
-    private static final long INITIAL_RECONNECT_INTERVAL = 5000;
-    private static final long MAX_RECONNECT_INTERVAL = 60000;
+    private static final int MAX_RECONNECT_ATTEMPTS = 4;
+    private static final long INITIAL_RECONNECT_INTERVAL = 1000;
+    private static final long MAX_RECONNECT_INTERVAL = 300000;
 
-    public NetworkService(Consumer<String> on_message_callback, Runnable on_open_callback, Runnable on_close_callback, Runnable on_reconnecting_callback)
+    public NetworkService(Consumer<String> on_message_callback, Runnable on_open_callback,
+                          Runnable on_close_callback, Runnable on_reconnecting_callback, Runnable on_reconnecting_failed_callback)
     {
         this.on_message_callback_ = on_message_callback;
         this.on_open_callback_ = on_open_callback;
         this.on_close_callback_ = on_close_callback;
         this.on_reconnecting_callback_ = on_reconnecting_callback;
+        this.on_reconnecting_failed_callback_ = on_reconnecting_failed_callback;
     }
 
     public void connect(String server_url)
@@ -127,6 +131,7 @@ public class NetworkService
         {
             System.err.println("Max reconnect attempts reached. Giving up.");
             auto_reconnect_ = false;
+            on_reconnecting_failed_callback_.run();
             return;
         }
 

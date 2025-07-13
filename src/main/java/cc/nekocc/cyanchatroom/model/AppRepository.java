@@ -65,7 +65,8 @@ public class AppRepository
     {
         this.http_service_ = new HttpService();
         this.persistence_service_ = new LocalPersistenceService();
-        this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened, this::onConnectionClosed, this::onReconnecting);
+        this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened,
+                this::onConnectionClosed, this::onReconnecting, this::onReconnectionFailed);
     }
 
     public static AppRepository getInstance()
@@ -295,6 +296,11 @@ public class AppRepository
                 current_user_.set(null);
             }
         });
+    }
+
+    private void onReconnectionFailed()
+    {
+        Platform.runLater(() -> connection_status_.set(ConnectionStatus.FAILED));
     }
 
     private void onReconnecting()
