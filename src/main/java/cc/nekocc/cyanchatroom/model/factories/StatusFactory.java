@@ -1,0 +1,28 @@
+package cc.nekocc.cyanchatroom.model.factories;
+
+import cc.nekocc.cyanchatroom.domain.userstatus.Status;
+import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
+
+public class StatusFactory
+{
+    public static Status fromUser(GetUserDetailsResponse user)
+    {
+        if (user == null)
+        {
+            return null;
+        }
+
+        if (!user.is_online())
+        {
+            return Status.OFFLINE;
+        }
+
+        return switch (user.status())
+        {
+            case ONLINE -> Status.ONLINE;
+            case BUSY -> Status.BUSY;
+            case AWAY -> Status.AWAY;
+            case DO_NOT_DISTURB -> Status.DO_NOT_DISTURB;
+        };
+    }
+}
