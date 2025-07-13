@@ -56,13 +56,9 @@ public class ChatPageViewModel {
         });
     }
 
-    public void sendMessageFromMe(String message){
-
-
-
+    public void sendMessageFromMe(String message)
+    {
         current_chat_window_.get().sendMessageFromMe(message);
-
-
     }
 
 

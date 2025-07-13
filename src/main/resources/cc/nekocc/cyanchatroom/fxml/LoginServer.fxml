@@ -16,7 +16,7 @@
             <Image url="@../../../../Image/Login_background.jpg" />
          </image>
       </ImageView>
-      <TextField fx:id="server_ip_input_" layoutX="36.0" layoutY="172.0" prefHeight="55.0" prefWidth="311.0" text="chat.nekocc.cc23333">
+      <TextField fx:id="server_ip_input_" layoutX="36.0" layoutY="172.0" prefHeight="55.0" prefWidth="311.0" text="chat.nekocc.cc:23333">
          <font>
             <Font name="Microsoft YaHei" size="21.0" />
          </font>

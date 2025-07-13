@@ -139,14 +139,17 @@ public class LoginController implements Initializable
     private void bindControlsToViewModel()
     {
         login_username_.textProperty().bindBidirectional(view_model_.loginUsernameProperty());
-        login_password_.textProperty().bindBidirectional(view_model_.loginPasswordProperty());
+        login_password_.passwordProperty().addListener(((observableValue, s, t1) ->{
+            view_model_.loginPasswordProperty().set(t1);
+        }
+        ));
         login_button_.disableProperty().bind(view_model_.loginButtonDisabledProperty());
 
         register_username_.textProperty().bindBidirectional(view_model_.registerUsernameProperty());
         register_password_.passwordProperty().addListener(((observableValue, s, t1) ->{
             view_model_.registerPasswordProperty().set(t1);
-        }
-            ));
+            }
+        ));
         register_nickname_.textProperty().bindBidirectional(view_model_.registerNickNameProperty());
         register_signature_.textProperty().bindBidirectional(view_model_.registerSignatureProperty());
 
@@ -312,8 +315,6 @@ public class LoginController implements Initializable
             }
         });
     }
-
-
 
     private void initPasswordFieldStyle()
     {

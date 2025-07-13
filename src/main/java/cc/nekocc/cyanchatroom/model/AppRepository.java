@@ -90,10 +90,11 @@ public class AppRepository
         network_service_.disconnect();
     }
 
-    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password, String nick_name)
+    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password,
+                                                                             String nick_name, String signature)
     {
         UUID client_request_id = UUID.randomUUID();
-        RegisterRequest payload = new RegisterRequest(client_request_id, user_name, password, nick_name);
+        RegisterRequest payload = new RegisterRequest(client_request_id, user_name, password, nick_name, signature);
         return sendRequestWithFuture(MessageType.REGISTER_REQUEST, payload, client_request_id, UserOperatorResponse.class);
     }
 

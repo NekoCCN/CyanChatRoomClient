@@ -2,9 +2,7 @@ package cc.nekocc.cyanchatroom.features.login;
 
 import cc.nekocc.cyanchatroom.Navigator;
 import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
-import cc.nekocc.cyanchatroom.domain.client.IndividualClient;
 import cc.nekocc.cyanchatroom.model.AppRepository;
-import cc.nekocc.cyanchatroom.model.UserSession;
 import cc.nekocc.cyanchatroom.model.dto.response.UserOperatorResponse;
 import cc.nekocc.cyanchatroom.model.entity.User;
 import cc.nekocc.cyanchatroom.model.entity.UserStatus;
@@ -106,11 +104,11 @@ public class LoginViewModel
                 signature = register_signature_.get();
             } else
             {
-                signature = null;
+                signature = "";
             }
 
             CompletableFuture<ProtocolMessage<UserOperatorResponse>> user_response =
-                    AppRepository.getInstance().register(username, password, nickname);
+                    AppRepository.getInstance().register(username, password, nickname, signature);
 
             is_registering_ = true;
 
@@ -118,34 +116,13 @@ public class LoginViewModel
             {
                 if (response.getPayload().success())
                 {
-                    if (signature != null)
-                    {
-                        AppRepository.getInstance().updateProfile(
-                                nickname,
-                                signature,
-                                "",
-                                UserStatus.ONLINE
-                        ).thenAccept(update_response ->
-                        {
-                            if (update_response.getPayload().status() == true)
-                            {
-                                showAlert(Alert.AlertType.INFORMATION, "注册成功", "用户 " + username + " 已成功注册！");
-                            }
-                            else
-                            {
-                                showAlert(Alert.AlertType.ERROR, "注册成功，部分更新资料失败", update_response.getPayload().message());
-                            }
-                        }).exceptionally(ex ->
-                        {
-                            showAlert(Alert.AlertType.ERROR, "更新资料失败", "发生错误: " + ex.getMessage());
-                            return null;
-                        });
-                    }
-                    else
-                    {
-                        showAlert(Alert.AlertType.INFORMATION, "注册成功", "用户 " + username + " 已成功注册！");
-                    }
+                    showAlert(Alert.AlertType.INFORMATION, "注册成功", response.getPayload().message());
                 }
+                else
+                {
+                    showAlert(Alert.AlertType.ERROR, "注册失败", response.getPayload().message());
+                }
+                is_registering_ = false;
             }).exceptionally(ex ->
             {
                 showAlert(Alert.AlertType.ERROR, "注册失败", "发生错误: " + ex.getMessage());

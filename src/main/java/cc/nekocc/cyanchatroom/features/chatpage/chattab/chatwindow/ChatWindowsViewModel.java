@@ -8,7 +8,8 @@ import javafx.scene.layout.StackPane;
 public class ChatWindowsViewModel {
 
     private User user_;
-    public ChatWindowsViewModel( ){};
+    public ChatWindowsViewModel()
+    {  };
 
     public void setUser(User user_) {
         this.user_ = user_;
