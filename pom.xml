@@ -135,6 +135,12 @@
             <artifactId>uuid-creator</artifactId>
             <version>6.1.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.81</version>
+        </dependency>
     </dependencies>
 
     <build>

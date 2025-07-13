@@ -11,6 +11,7 @@ public interface ConversationMapper
     void upsertConversation(
             @Param("conversation_id") UUID conversation_id,
             @Param("type") ConversationType type,
+            @Param("sender_id") UUID sender_id,
             @Param("last_message_time") String last_message_time
     );
 

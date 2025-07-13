@@ -4,8 +4,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cc.nekocc.cyanchatroom.model.mapper.ConversationMapper">
     <insert id="upsertConversation">
-        INSERT INTO conversations (id, type, last_message_time)
-        VALUES (#{conversation_id}, #{type}, #{last_message_time})
+        INSERT INTO conversations (id, type, sender_id, last_message_time)
+        VALUES (#{conversation_id}, #{type}, #{sender_id}, #{last_message_time})
         ON CONFLICT(id) DO UPDATE SET
             last_message_time = excluded.last_message_time;
     </insert>

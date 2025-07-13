@@ -5,19 +5,30 @@ import cc.nekocc.cyanchatroom.model.dto.request.*;
 import cc.nekocc.cyanchatroom.model.dto.response.*;
 import cc.nekocc.cyanchatroom.model.entity.*;
 import cc.nekocc.cyanchatroom.model.service.HttpService;
+import cc.nekocc.cyanchatroom.model.service.LocalKeyStorageService;
+import cc.nekocc.cyanchatroom.model.service.LocalPersistenceService;
 import cc.nekocc.cyanchatroom.model.service.NetworkService;
+import cc.nekocc.cyanchatroom.model.util.E2EEHelper;
+import javax.crypto.SecretKey;
+import java.io.File;
+import java.lang.reflect.Type;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import cc.nekocc.cyanchatroom.model.util.JsonUtil;
 import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
+import java.time.Instant;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import java.io.File;
 import java.lang.reflect.Type;
+import java.time.OffsetDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -50,6 +61,11 @@ public class AppRepository
     private final HttpService http_service_;
     private final LocalPersistenceService persistence_service_;
 
+    private final LocalKeyStorageService key_storage_service_;
+    private final Map<UUID, SecretKey> session_keys_ = new ConcurrentHashMap<>();
+
+    private String server_address_;
+
     private final Map<UUID, ResponseFuture> response_futures_ = new ConcurrentHashMap<>();
 
     public enum ConnectionStatus
@@ -67,6 +83,7 @@ public class AppRepository
         this.persistence_service_ = new LocalPersistenceService();
         this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened,
                 this::onConnectionClosed, this::onReconnecting, this::onReconnectionFailed);
+        this.key_storage_service_ = new LocalKeyStorageService();
     }
 
     public static AppRepository getInstance()
@@ -74,38 +91,22 @@ public class AppRepository
         return INSTANCE;
     }
 
+    // 初始化部分
     public void connectToServer(String server_address)
     {
         if (connection_status_.get() == ConnectionStatus.CONNECTING || connection_status_.get() == ConnectionStatus.CONNECTED)
             return;
         connection_status_.set(ConnectionStatus.CONNECTING);
+        server_address_ = server_address;
         String ws_url = "ws://" + server_address + "/ws";
         String http_url = "http://" + server_address;
         http_service_.setBaseUrl(http_url);
         network_service_.connect(ws_url);
     }
-
     public void disconnect()
     {
         network_service_.disconnect();
     }
-
-    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password,
-                                                                             String nick_name, String signature)
-    {
-        UUID client_request_id = UUID.randomUUID();
-        RegisterRequest payload = new RegisterRequest(client_request_id, user_name, password, nick_name, signature);
-        return sendRequestWithFuture(MessageType.REGISTER_REQUEST, payload, client_request_id, UserOperatorResponse.class);
-    }
-
-    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> login(String user_name, String password)
-    {
-        UUID client_request_id = UUID.randomUUID();
-        LoginRequest payload = new LoginRequest(client_request_id, user_name, password);
-
-        return sendRequestWithFuture(MessageType.LOGIN_REQUEST, payload, client_request_id, UserOperatorResponse.class);
-    }
-
     public void setCurrentUser(User user)
     {
         if (user == null)
@@ -116,7 +117,24 @@ public class AppRepository
         current_user_.set(user);
     }
 
-    public void sendMessage(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
+    // 用户操作相关
+    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password,
+                                                                             String nick_name, String signature)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        RegisterRequest payload = new RegisterRequest(client_request_id, user_name, password, nick_name, signature);
+        return sendRequestWithFuture(MessageType.REGISTER_REQUEST, payload, client_request_id, UserOperatorResponse.class);
+    }
+    public CompletableFuture<ProtocolMessage<UserOperatorResponse>> login(String user_name, String password)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        LoginRequest payload = new LoginRequest(client_request_id, user_name, password);
+
+        return sendRequestWithFuture(MessageType.LOGIN_REQUEST, payload, client_request_id, UserOperatorResponse.class);
+    }
+
+    // 消息发送相关
+    private void sendMessageInternal(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
         User current_user = current_user_.get();
         if (current_user == null)
@@ -125,19 +143,113 @@ public class AppRepository
             return;
         }
         Message local_message = new Message(recipient_id, current_user.getId(), true, content_type, content);
-        persistence_service_.saveMessage(local_message);
+        persistence_service_.saveMessage(server_address_, local_message);
         getMessagesForConversation(recipient_id).add(local_message);
         sendRequest(MessageType.CHAT_MESSAGE, new ChatMessageRequest(UUID.randomUUID(), recipient_type,
                 recipient_id, content_type, is_encrypted, content));
     }
 
-    public CompletableFuture<ProtocolMessage<GroupResponse>> createGroup(String group_name, List<UUID> member_ids)
+    public void sendMessage(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
-        UUID client_request_id = UUID.randomUUID();
-        return sendRequestWithFuture(MessageType.CREATE_GROUP_REQUEST,
-                new CreateGroupRequest(client_request_id, group_name, member_ids), client_request_id, GroupResponse.class);
+        sendMessageInternal(recipient_type, recipient_id, content_type, is_encrypted, content);
     }
 
+    // E2EE 相关
+    public void sendEncryptedTextMessage(UUID recipient_id, String plain_text)
+    {
+        if (current_user_.get() == null)
+        {
+            last_error_message_.set("用户未登录");
+            return;
+        }
+
+        // 检查是否已有会话密钥
+        SecretKey session_key = session_keys_.get(recipient_id);
+        if (session_key != null)
+        {
+            try
+            {
+                String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
+                sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
+            } catch (Exception e)
+            {
+                last_error_message_.set("加密失败: " + e.getMessage());
+            }
+            return;
+        }
+
+        // 如果没有会话密钥, 则发起密钥交换流程
+        System.out.println("没有找到会话密钥, 开始密钥交换...");
+        fetchKeys(recipient_id).thenAccept(responseMsg ->
+        {
+            FetchKeysResponse payload = responseMsg.getPayload();
+            if (payload.succeed())
+            {
+                try
+                {
+                    JsonObject key_bundle = JsonParser.parseString(payload.public_key_bundle()).getAsJsonObject();
+                    String identity_key_base64 = key_bundle.get("identityKey").getAsString();
+                    PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
+
+                    KeyPair my_key_pair = key_storage_service_.loadKeyPair(server_address_, current_user_.get().getId());
+                    if (my_key_pair == null)
+                    {
+                        throw new Exception("找不到本地私钥!");
+                    }
+
+                    SecretKey new_session_key = E2EEHelper.deriveSharedSecret(my_key_pair.getPrivate(), recipient_identity_key);
+                    session_keys_.put(recipient_id, new_session_key);
+
+                    String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
+                    sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
+
+                } catch (Exception e)
+                {
+                    Platform.runLater(() -> last_error_message_.set("密钥协商失败: " + e.getMessage()));
+                }
+            } else
+            {
+                Platform.runLater(() -> last_error_message_.set("无法获取对方密钥，无法发送加密消息。"));
+            }
+        });
+    }
+    public CompletableFuture<ProtocolMessage<StatusResponse>> generateAndRegisterKeys()
+    {
+        User current_user = current_user_.get();
+        if (current_user == null) return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
+
+        try
+        {
+            KeyPair key_pair = E2EEHelper.generateKeyPair();
+
+            key_storage_service_.saveKeyPair(server_address_, current_user.getId(), key_pair);
+            System.out.println("密钥已生成并存储在本地。");
+
+            String public_key_base64 = Base64.getEncoder().encodeToString(key_pair.getPublic().getEncoded());
+            JsonObject key_bundle = new JsonObject();
+            key_bundle.addProperty("identityKey", public_key_base64);
+
+            return publishKeys(key_bundle);
+
+        } catch (Exception e)
+        {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+    public CompletableFuture<ProtocolMessage<FetchKeysResponse>> fetchKeys(UUID user_id)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.FETCH_KEYS_REQUEST,
+                new FetchKeysRequest(client_request_id, user_id), client_request_id, FetchKeysResponse.class);
+    }
+    public CompletableFuture<ProtocolMessage<StatusResponse>> publishKeys(JsonObject key_bundle)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.PUBLISH_KEYS_REQUEST,
+                new PublishKeysRequest(client_request_id, key_bundle), client_request_id, StatusResponse.class);
+    }
+
+    // 文件上传相关
     public CompletableFuture<String> uploadFile(File file, Integer expires_in_hours)
     {
         CompletableFuture<String> final_file_id_future = new CompletableFuture<>();
@@ -170,6 +282,7 @@ public class AppRepository
         return final_file_id_future;
     }
 
+    // 用户资料相关操作
     public CompletableFuture<ProtocolMessage<StatusResponse>> updateProfile(String nick_name, String signature,
                                                                             String avatar_file_id, UserStatus status)
     {
@@ -178,7 +291,6 @@ public class AppRepository
                 new UpdateProfileRequest(client_request_id, nick_name, signature, avatar_file_id, status),
                 client_request_id, StatusResponse.class);
     }
-
     public CompletableFuture<ProtocolMessage<StatusResponse>> changeUsername(String current_password, String new_user_name)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -186,7 +298,6 @@ public class AppRepository
                 new ChangeUsernameRequest(client_request_id, new_user_name, current_password), client_request_id,
                 StatusResponse.class);
     }
-
     public CompletableFuture<ProtocolMessage<StatusResponse>> changePassword(String current_password, String new_password)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -194,21 +305,6 @@ public class AppRepository
                 new ChangePasswordRequest(client_request_id, current_password, new_password), client_request_id,
                 StatusResponse.class);
     }
-
-    public CompletableFuture<ProtocolMessage<StatusResponse>> publishKeys(JsonObject key_bundle)
-    {
-        UUID client_request_id = UUID.randomUUID();
-        return sendRequestWithFuture(MessageType.PUBLISH_KEYS_REQUEST,
-                new PublishKeysRequest(client_request_id, key_bundle), client_request_id, StatusResponse.class);
-    }
-
-    public CompletableFuture<ProtocolMessage<FetchKeysResponse>> fetchKeys(UUID user_id)
-    {
-        UUID client_request_id = UUID.randomUUID();
-        return sendRequestWithFuture(MessageType.FETCH_KEYS_REQUEST,
-                new FetchKeysRequest(client_request_id, user_id), client_request_id, FetchKeysResponse.class);
-    }
-
     public CompletableFuture<ProtocolMessage<GetUserDetailsResponse>> getUserDetails(UUID user_id)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -216,6 +312,13 @@ public class AppRepository
                 new GetUserDetailsRequest(client_request_id, user_id), client_request_id, GetUserDetailsResponse.class);
     }
 
+    // 群组相关操作
+    public CompletableFuture<ProtocolMessage<GroupResponse>> createGroup(String group_name, List<UUID> member_ids)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.CREATE_GROUP_REQUEST,
+                new CreateGroupRequest(client_request_id, group_name, member_ids), client_request_id, GroupResponse.class);
+    }
     public CompletableFuture<ProtocolMessage<StatusResponse>> joinGroup(UUID group_id, String request_message)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -223,7 +326,6 @@ public class AppRepository
                 new JoinGroupRequest(client_request_id, group_id, request_message), client_request_id,
                 StatusResponse.class);
     }
-
     public CompletableFuture<ProtocolMessage<StatusResponse>> handleJoinRequest(UUID group_id, UUID request_id,
                                                                                 boolean approved)
     {
@@ -232,14 +334,12 @@ public class AppRepository
                 new HandleJoinRequest(client_request_id, group_id, request_id, approved), client_request_id,
                 StatusResponse.class);
     }
-
     public CompletableFuture<ProtocolMessage<StatusResponse>> leaveGroup(UUID group_id)
     {
         UUID client_request_id = UUID.randomUUID();
         return sendRequestWithFuture(MessageType.LEAVE_GROUP_REQUEST,
                 new LeaveGroupRequest(client_request_id, group_id), client_request_id, StatusResponse.class);
     }
-
     public CompletableFuture<ProtocolMessage<StatusResponse>> removeMember(UUID group_id, UUID target_user_id)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -248,13 +348,13 @@ public class AppRepository
                 StatusResponse.class);
     }
 
+    // 发送请求的通用方法
     private <T> void sendRequest(String type, T payload)
     {
         if (!checkConnection(type)) return;
         ProtocolMessage<T> request = new ProtocolMessage<>(type, payload);
         network_service_.sendMessage(JsonUtil.serialize(request));
     }
-
     private <T, R> CompletableFuture<ProtocolMessage<R>> sendRequestWithFuture(
             String type, T payload, UUID client_request_id, Class<R> responseClass)
     {
@@ -268,7 +368,6 @@ public class AppRepository
         network_service_.sendMessage(JsonUtil.serialize(request));
         return future;
     }
-
     private boolean checkConnection(String type)
     {
         if (connection_status_.get() != ConnectionStatus.CONNECTED)
@@ -282,11 +381,11 @@ public class AppRepository
         return true;
     }
 
+    // 连接状态相关
     private void onConnectionOpened()
     {
         Platform.runLater(() -> connection_status_.set(ConnectionStatus.CONNECTED));
     }
-
     private void onConnectionClosed()
     {
         Platform.runLater(() ->
@@ -298,20 +397,19 @@ public class AppRepository
             }
         });
     }
-
     private void onReconnectionFailed()
     {
         Platform.runLater(() -> connection_status_.set(ConnectionStatus.FAILED));
     }
-
     private void onReconnecting()
     {
         Platform.runLater(() -> connection_status_.set(ConnectionStatus.RECONNECTING));
     }
 
-    private void onMessageReceived(String json_message) {
+    // 处理服务器消息
+    private void onMessageReceived(String json_message)
+    {
         try {
-            // --- This part is safe to run on a background thread ---
             JsonObject json_object = JsonParser.parseString(json_message).getAsJsonObject();
             String type = json_object.get("type").getAsString();
             JsonObject payload_object = json_object.getAsJsonObject("payload");
@@ -347,7 +445,6 @@ public class AppRepository
             Platform.runLater(() -> last_error_message_.set("Error parsing server message: " + e.getMessage()));
         }
     }
-
     private void resolveFuture(CompletableFuture future, String type, String json_message)
     {
         try
@@ -384,7 +481,6 @@ public class AppRepository
             future.completeExceptionally(e);
         }
     }
-
     private void handleBroadcastMessage(String json_message)
     {
         User current_user = current_user_.get();
@@ -400,10 +496,12 @@ public class AppRepository
         boolean is_outgoing = sender_id.equals(current_user.getId());
 
         String recipient_type = (String) payload.get("recipient_type");
+
         UUID conversation_id;
+        UUID recipient_id = UUID.fromString((String) payload.get("receiver_id"));
+
         if ("USER".equals(recipient_type))
         {
-            UUID recipient_id = UUID.fromString((String) payload.get("recipient_id"));
             conversation_id = is_outgoing ? recipient_id : sender_id;
         } else
         {
@@ -413,37 +511,46 @@ public class AppRepository
         String content_type = (String) payload.get("content_type");
         String content = (String) payload.get("content");
 
+        long timestamp_long = ((Double) payload.get("timestamp")).longValue();
+        String iso_time = Instant.ofEpochMilli(timestamp_long).toString();
+
         Message local_message = new Message(conversation_id, sender_id, is_outgoing, content_type, content);
 
-        persistence_service_.saveMessage(local_message);
+        persistence_service_.saveMessage(server_address_, local_message);
+
+        persistence_service_.upsertConversation(
+                server_address_,
+                conversation_id,
+                ConversationType.valueOf(recipient_type),
+                recipient_id,
+                OffsetDateTime.parse(iso_time)
+        );
+
         getMessagesForConversation(conversation_id).add(local_message);
     }
 
+    // 获取应用状态相关属性
     public ReadOnlyObjectProperty<ConnectionStatus> connectionStatusProperty()
     {
         return connection_status_.getReadOnlyProperty();
     }
-
     public ReadOnlyObjectProperty<User> currentUserProperty()
     {
         return current_user_.getReadOnlyProperty();
     }
-
     public ObservableList<Conversation> getConversations()
     {
         return FXCollections.unmodifiableObservableList(conversations_);
     }
-
     public ReadOnlyStringProperty lastErrorMessageProperty()
     {
         return last_error_message_.getReadOnlyProperty();
     }
-
     public ObservableList<Message> getMessagesForConversation(UUID conversation_id)
     {
         return conversation_messages_.computeIfAbsent(conversation_id, id ->
         {
-            List<Message> history = persistence_service_.getMessagesForConversation(id, 50, 0);
+            List<Message> history = persistence_service_.getMessagesForConversation(server_address_, id, 50, 0);
             return FXCollections.observableArrayList(history);
         });
     }

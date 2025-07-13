@@ -8,6 +8,7 @@
         CREATE TABLE IF NOT EXISTS conversations (
                                                      id TEXT PRIMARY KEY,
                                                      type TEXT NOT NULL,
+                                                     sender_id TEXT NOT NULL,
                                                      last_message_time TEXT NOT NULL
         );
     </update>

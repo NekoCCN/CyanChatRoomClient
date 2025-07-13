@@ -3,6 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+
     <typeAliases>
         <package name="cc.nekocc.cyanchatroom.model.entity"/>
     </typeAliases>
@@ -11,17 +12,10 @@
         <typeHandler handler="cc.nekocc.cyanchatroom.model.impl.UUIDTypeHandler"/>
     </typeHandlers>
 
-    <environments default="development">
-        <environment id="development">
-            <transactionManager type="JDBC"/>
-            <dataSource type="cc.nekocc.cyanchatroom.model.impl.HikariDataSourceFactory"/>
-        </environment>
-    </environments>
-
     <mappers>
+        <mapper resource="mappers/SchemaMapper.xml"/>
         <mapper resource="mappers/ConversationMapper.xml"/>
         <mapper resource="mappers/MessageMapper.xml"/>
-        <mapper resource="mappers/SchemaMapper.xml"/>
     </mappers>
 
 </configuration>
