@@ -273,7 +273,7 @@ public class ChatPageController implements Initializable {
     private void setupBind(){
         setting_shown_.bindBidirectional(view_model_.getSettingShown());
         contact_agreement_shown_.bindBidirectional(view_model_.getContactAgreeShown());
-
+        enter_button_.disableProperty().bind(view_model_.getCurrentChatWindowProperty().isNull());
     }
 
     public AnchorPane getRootPane()

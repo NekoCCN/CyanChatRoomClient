@@ -132,6 +132,20 @@ public class LoginController implements Initializable
                 return null;  // 拒绝修改
             }
         }));
+
+        register_nickname_.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if (newText.length()<= 8 || newText.isEmpty()) {
+                phonenumber_error_.setVisible(false);
+                login_username_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                return change;
+            }
+            else{
+                phonenumber_error_.setVisible(true);
+                login_username_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return null;  // 拒绝修改
+            }
+        }));
     }
     
 
@@ -192,7 +206,6 @@ public class LoginController implements Initializable
             password_warning_message_.setVisible(false);
             login_password_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
         }
-
         view_model_.login();
     }
 
@@ -252,8 +265,15 @@ public class LoginController implements Initializable
                     }
                     reinitSlider();
                 switchPanes(register_user_box_, register_next_box_);});
-        register_client_back_button_.setOnAction(_ -> switchPanes(register_next_box_, register_user_box_));
+         register_client_back_button_.setOnAction(_ -> switchPanes(register_next_box_, register_user_box_));
+
+
+
+
+
+
     }
+
     // 重置滑块
     private void reinitSlider() {
         verification_slider_.setValue(0);

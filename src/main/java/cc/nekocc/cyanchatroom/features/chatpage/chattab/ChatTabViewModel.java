@@ -7,6 +7,7 @@ import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsCo
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.scene.Parent;
 import javafx.scene.control.Control;
@@ -105,8 +106,8 @@ public class ChatTabViewModel {
         AnchorPane.setTopAnchor(tab_circle,5.0);
         AnchorPane.setLeftAnchor(tab_circle,7.0);
         AnchorPane.setBottomAnchor(tab_circle,5.0);
-        AnchorPane.setRightAnchor(tab_data_,40.0);
-        AnchorPane.setTopAnchor(tab_data_,10.0);
+        AnchorPane.setTopAnchor(tab_data_,20.0);
+        AnchorPane.setLeftAnchor(tab_data_,70.0);
         tab.setPrefHeight(Control.USE_COMPUTED_SIZE);
         tab.setPrefWidth(Control.USE_COMPUTED_SIZE);
         return  tab;

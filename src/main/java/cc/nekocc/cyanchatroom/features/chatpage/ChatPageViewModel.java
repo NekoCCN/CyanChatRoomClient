@@ -4,8 +4,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
-import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
-import cc.nekocc.cyanchatroom.features.setting.SettingPage;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -31,6 +30,7 @@ public class ChatPageViewModel {
 
     private final ObjectProperty<ChatWindowsController>  temp_chat_window_ = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatWindowsController>  current_chat_window_ = new SimpleObjectProperty<>();
+    private final ObjectProperty<ChatTabController>  current_chat_tab_ = new SimpleObjectProperty<>();
     private final ArrayList<ChatTabController> user_list_ = new ArrayList<>();
     private final BooleanProperty setting_shown = new SimpleBooleanProperty();
     private final BooleanProperty contact_agree_shown = new SimpleBooleanProperty();
@@ -49,11 +49,17 @@ public class ChatPageViewModel {
 
 
     private void initialize(){
-        ChatTabViewModel copy_info_ = new ChatTabViewModel();
-        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("0197ef89-9434-7056-ba9d-ba56aba677a1")));
-        observableUserList.add(user_list_.get(0));
+        initUserList();
         setupBindings();
         addListener();
+    }
+
+
+    private void initUserList(){
+        ChatTabViewModel copy_info_ = new ChatTabViewModel();
+        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("0197ef89-9434-7056-ba9d-ba56aba677a1")));
+        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("0197f803-9a96-7cd0-8482-234162984117")));
+        observableUserList.addAll(user_list_);
     }
 
     private void addListener(){
@@ -75,6 +81,7 @@ public class ChatPageViewModel {
 
     public void sendMessageFromMe(String message)
     {
+        AppRepository.getInstance().sendMessage("USER",current_chat_tab_.get().getUserID(), "TEXT", false, message);
         current_chat_window_.get().sendMessageFromMe(message);
     }
 
@@ -89,10 +96,11 @@ public class ChatPageViewModel {
 
     public void loadUserList(VBox vBox, AnchorPane anchorPane){
         for(ChatTabController user : user_list_){
-            AnchorPane tab = user.getUserTab();
+            AnchorPane tab = user.getFirstUserTab();
             tab.setOnMouseClicked(_ ->{
                 if(!user.isActive()) {
                     current_chat_window_.set(user.getChatWindow());
+                    current_chat_tab_.set(user);
                     tab.setStyle("-fx-background-color: #3574F0");
                     anchorPane.getChildren().clear();
                     rewriteUserActive();
@@ -169,6 +177,11 @@ public class ChatPageViewModel {
     }
     public boolean isCurrentChatWindowNULL(){
         return current_chat_window_.get() == null;
+    }
+
+    public ObjectProperty<ChatWindowsController> getCurrentChatWindowProperty()
+    {
+        return current_chat_window_;
     }
 
     public AnchorPane getCurrentChatWindow()

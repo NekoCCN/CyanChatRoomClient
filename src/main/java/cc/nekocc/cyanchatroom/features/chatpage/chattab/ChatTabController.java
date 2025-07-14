@@ -30,15 +30,19 @@ public class ChatTabController {
     }
 
 
-
-    public AnchorPane getUserTab(){
+    public AnchorPane getFirstUserTab(){
         tab_ =view_model.getChatTabPane(this);
         view_model.synchronizeToWindow();
+        return tab_;
+    }
+
+    public AnchorPane getUserTab(){
+
         return tab_;}
 
 
 
-    public UUID getUser() {
+    public UUID getUserID() {
         return view_model.getOppositeID();
     }
 

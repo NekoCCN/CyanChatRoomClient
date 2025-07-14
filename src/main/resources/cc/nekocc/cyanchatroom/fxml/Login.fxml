@@ -79,7 +79,10 @@
                         <Font name="Microsoft YaHei Light" size="24.0" />
                      </font>
                   </TextField>
-                  <Label fx:id="phonenumber_error_" prefHeight="45.0" prefWidth="203.0" text="手机号只能为数字" textFill="#ff0300" visible="false" />
+                  <Label fx:id="phonenumber_error_" prefHeight="45.0" prefWidth="203.0" text="昵称不能多于8个字" textFill="#ff0300" visible="false">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
                </HBox>
                <HBox prefHeight="58.0" prefWidth="570.0">
                   <TextField fx:id="register_signature_" prefHeight="50.0" prefWidth="357.0" promptText="个人签名">
