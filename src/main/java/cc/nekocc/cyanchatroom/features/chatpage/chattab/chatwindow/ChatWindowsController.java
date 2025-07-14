@@ -1,6 +1,7 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
 import cc.nekocc.cyanchatroom.domain.User;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -9,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -18,12 +18,12 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import javax.naming.Context;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 public class ChatWindowsController implements Initializable,Cloneable{
 
@@ -63,7 +63,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
 
-    private void reLoad(){
+    public void reLoad(){
         addListener();
         setupUI();
         setupAnimation();
@@ -100,10 +100,9 @@ public class ChatWindowsController implements Initializable,Cloneable{
     }
 
 
-    public void setUser(User user) {
-        view_model_.setUser(user);
-        reLoad();
-    }
+
+
+
 
 
     private void addListener() {
@@ -148,10 +147,10 @@ public class ChatWindowsController implements Initializable,Cloneable{
         white.setPrefHeight(15);
         white.setVisible(false);
         message_box.setSpacing(10);
-        Text username = new Text(view_model_.getUserName());
+        Text username = new Text(AppRepository.getInstance().currentUserProperty().get().getNickname());
         username.setStyle("-fx-fill: black;");
         username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
-        Text time = new Text(LocalDate.now().toString()+" "+ LocalTime.now().toString().substring(0, 5));
+        Text time = new Text(LocalDate.now()+" "+ LocalTime.now().toString().substring(0, 5));
         time.setStyle("-fx-fill: #B0B0B0");
         time.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,10));
         VBox message_box_with_name = new VBox(username,message_label,time);
@@ -170,12 +169,12 @@ public class ChatWindowsController implements Initializable,Cloneable{
         container_pane_.getChildren().add(message_container);
         message_labels.add(message_label);
         delay.play();
-        sendMessageFromOther(text);
+   //     sendMessageFromOther(text);
 
     }
 
 
-    public void sendMessageFromOther(String text) {
+    public void sendMessageFromOther(String text,String opposite_username_) {
         Label None = new Label();
         None.setPrefWidth(7);
         None.setVisible(false);
@@ -203,7 +202,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
         white.setPrefHeight(15);
         white.setVisible(false);
         message_box.setSpacing(10);
-        Text username = new Text(view_model_.getUserName());
+        Text username = new Text(opposite_username_);
         username.setStyle("-fx-fill: black;");
         username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
         Text time = new Text(LocalDate.now().toString()+" "+ LocalTime.now().toString().substring(0, 5));
@@ -228,8 +227,9 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
     // 同步User数据
-    public void syncUserData(User user) {
-        username_label_.setText(user.getUsername());
+    public void syncUserData(String username) {
+        username_label_.setText(username);
+        view_model_.setUserName(username);
     }
 
 
@@ -345,7 +345,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
         return clone;
     }
-
 
 
 

@@ -297,7 +297,7 @@ public class LoginController implements Initializable
 
         verification_slider_.setOnMouseReleased(event -> {
             if (isAnimating) return; // 如果正在动画中，不处理释放事件
-            if (verification_slider_.getValue() >= version_slider_value - 6 && verification_slider_.getValue() <= version_slider_value + 6 && (Math.random() * 10 >= 1)) {
+            if (verification_slider_.getValue() >= version_slider_value - 8 && verification_slider_.getValue() <= version_slider_value + 8 && (Math.random() * 10 >= 1)) {
                 // 验证成功
                 verification_message_label_.setText("验证成功");
                 verification_message_label_.setStyle("-fx-text-fill: green;");

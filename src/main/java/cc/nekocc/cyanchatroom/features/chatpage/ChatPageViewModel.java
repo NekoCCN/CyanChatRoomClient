@@ -6,13 +6,16 @@ import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.features.setting.SettingPage;
-import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
-import javafx.application.Platform;
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
@@ -20,7 +23,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
+
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class ChatPageViewModel {
 
@@ -29,31 +34,44 @@ public class ChatPageViewModel {
     private final ArrayList<ChatTabController> user_list_ = new ArrayList<>();
     private final BooleanProperty setting_shown = new SimpleBooleanProperty();
     private final BooleanProperty contact_agree_shown = new SimpleBooleanProperty();
-    private Stage setting_stage;
-    private Stage contact_agree_stage;
+    private final BooleanProperty load_over_ = new SimpleBooleanProperty(false);
+    private Stage setting_stage_;
+    private Stage contact_agree_stage_;
+    private final ObservableList<ChatTabController> observableUserList = FXCollections.observableArrayList(
+            controller -> new Observable[]{controller.getIsLoaded()}  // 监听每个 isLoaded
+    );
+
 
     public ChatPageViewModel(){
         initialize();
     }
 
 
+
     private void initialize(){
-        loadSetting();
-        loadContactAgree();
-           ChatTabViewModel copy_info_ = new ChatTabViewModel();
-        for(int i =0 ; i< 20; i ++)
-            user_list_.add(new ChatTabController(copy_info_));
+        ChatTabViewModel copy_info_ = new ChatTabViewModel();
+        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("0197ef89-9434-7056-ba9d-ba56aba677a1")));
+        observableUserList.add(user_list_.get(0));
+        setupBindings();
+        addListener();
+    }
+
+    private void addListener(){
+        load_over_.addListener((observableValue, aBoolean, t1) -> {
+            if (t1) {
+                loadSetting();
+                loadContactAgree();
+            }
+        });
     }
 
     public void loadContactAgree(){
         ContactAgreeController contact_agree_controller = (ContactAgreeController) ViewTool.loadFXML("fxml/ContactAgreePage.fxml");
-        contact_agree_stage = new Stage();
-        contact_agree_stage.setTitle("添加联系人");
-        contact_agree_stage.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/contact_agree_page_icon.png")))));
-        contact_agree_stage.setScene(new Scene(contact_agree_controller.getRootPane()));
-        contact_agree_stage.setOnCloseRequest(e1 -> {
-            contact_agree_shown.set(false);
-        });
+        contact_agree_stage_ = new Stage();
+        contact_agree_stage_.setTitle("添加联系人");
+        contact_agree_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/contact_agree_page_icon.png")))));
+        contact_agree_stage_.setScene(new Scene(contact_agree_controller.getRootPane()));
+        contact_agree_stage_.setOnCloseRequest(_ -> contact_agree_shown.set(false));
     }
 
     public void sendMessageFromMe(String message)
@@ -64,13 +82,11 @@ public class ChatPageViewModel {
 
     public void loadSetting(){
         SettingPage setting_page = (SettingPage) ViewTool.loadFXML("fxml/setting.fxml");
-        setting_stage = new Stage();
-        setting_stage.setTitle("设置");
-        setting_stage.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/setting_stage_icon.png")))));
-        setting_stage.setScene(new Scene(setting_page.getRootPane()));
-        setting_stage.setOnCloseRequest(e1 -> {
-            setting_shown.set(false);
-        });
+        setting_stage_ = new Stage();
+        setting_stage_.setTitle("设置");
+        setting_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/setting_stage_icon.png")))));
+        setting_stage_.setScene(new Scene(setting_page.getRootPane()));
+        setting_stage_.setOnCloseRequest(_ -> setting_shown.set(false));
     }
 
     public void loadUserList(VBox vBox, AnchorPane anchorPane){
@@ -101,10 +117,26 @@ public class ChatPageViewModel {
 
     }
 
-    public void showSetting(){
-        setting_stage.show();
+    private void setupBindings() {
+        BooleanBinding allLoaded = Bindings.createBooleanBinding(
+                () -> observableUserList.stream().allMatch(ChatTabController::isLoaded),
+                observableUserList
+        );
+        if (observableUserList.stream().allMatch(ChatTabController::isLoaded)) {
+            load_over_.set(true);
+        }
+        else{
+            load_over_.bind(allLoaded);
+        }
+
+        System.out.println("绑定同步");
     }
-    public void showContactAgree(){contact_agree_stage.show();}
+
+    public void showSetting(){
+        setting_stage_.show();
+    }
+    public void showContactAgree(){
+        contact_agree_stage_.show();}
 
 
     private void rewriteUserActive(){
@@ -144,4 +176,11 @@ public class ChatPageViewModel {
     {
         return current_chat_window_.get().getRoot_pane_();
     }
+
+    public BooleanProperty getLoadOver() {
+        return load_over_;
+    }
+
+
+
 }

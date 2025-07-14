@@ -37,4 +37,7 @@ public class User
         return id_;
     }
 
+    public String getNickname() {
+        return nickname_;
+    }
 }

@@ -3,6 +3,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.beans.property.*;
 import javafx.fxml.FXML;
@@ -40,6 +41,8 @@ public class ChatPageController implements Initializable {
     public ImageView contact_agreement_icon_;
     @FXML
     public AnchorPane Input_box_;
+    @FXML
+    public AnchorPane root_pane_;
 
     @FXML
     private Label username_title_label_;   // 用户名
@@ -60,6 +63,7 @@ public class ChatPageController implements Initializable {
     @FXML
     private Button enter_button_;
 
+
     private final BooleanProperty setting_shown_  = new SimpleBooleanProperty(false);
     private final BooleanProperty contact_agreement_shown_ = new SimpleBooleanProperty(false);
     private Node current_list_node;
@@ -67,7 +71,7 @@ public class ChatPageController implements Initializable {
     private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
     private ContactListController   contact_list ;
     private final KeyCodeCombination send_message_ = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
-    private ContextMenu message_input_menu_ = new ContextMenu();
+    private final ContextMenu message_input_menu_ = new ContextMenu();
 
 
 
@@ -75,14 +79,25 @@ public class ChatPageController implements Initializable {
     // 初始化
     public void initialize(URL url, ResourceBundle resource_bundle)
     {
-        contact_list = (ContactListController)ViewTool.loadFXML("fxml/ContactList.fxml");
-        setupAnimation();
-        setupStyle();
-        synchronizeData();
-        setupUI();
-        setupEvent();
         setupBind();
-        view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
+        addListerner();
+    }
+
+
+    private void addListerner(){
+        view_model_.getLoadOver().addListener((observableValue, aBoolean, t1) -> {
+            if (t1)
+            {
+                setupAnimation();
+                setupStyle();
+                setupUI();
+                contact_list = (ContactListController)ViewTool.loadFXML("fxml/ContactList.fxml");
+                synchronizeData();
+                setupEvent();
+                view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
+
+            }
+        });
     }
 
     // 动画设置
@@ -136,6 +151,7 @@ public class ChatPageController implements Initializable {
         sendItem.setOnAction(event -> enter_button_.fire());
         message_input_menu_.getItems().addAll(copyItem, pasteItem, deleteItem, sendItem);
         message_input.setContextMenu(message_input_menu_);
+        username_label_.setText(AppRepository.getInstance().currentUserProperty().get().getNickname());
 
 
     }
@@ -224,6 +240,15 @@ public class ChatPageController implements Initializable {
 
     }
 
+    public AnchorPane getRootPane()
+    {
+        return root_pane_;
+    }
+
+
+    public BooleanProperty getLoadOver(){
+        return view_model_.getLoadOver();
+    }
 
 
 
