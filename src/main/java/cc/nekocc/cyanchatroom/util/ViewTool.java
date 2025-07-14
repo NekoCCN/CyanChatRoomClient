@@ -3,6 +3,7 @@ package cc.nekocc.cyanchatroom.util;
 
 import cc.nekocc.cyanchatroom.Navigator;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
@@ -16,20 +17,19 @@ public class ViewTool {
 
 
 
-    public static Object loadFXML(String fxml_file)
+    public static FXMLLoader loadFXML(String fxml_file)
     {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(Navigator.class.getResource(fxml_file)));
             loader.load();
-            return loader.getController();
+            return loader;
         } catch (Exception e) {
+            System.err.println("无法加载页面: " + fxml_file);
             e.printStackTrace();
             return null;
         }
 
     }
-
-
 
     public static String getImagePath(String image_name)
     {
@@ -52,4 +52,14 @@ public class ViewTool {
         username_label_title_.setLayoutY(40);
         return avatar;
     }
+    public static void showAlert(Alert.AlertType alert_type, String title, String content)
+    {
+        Alert alert = new Alert(alert_type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+
 }

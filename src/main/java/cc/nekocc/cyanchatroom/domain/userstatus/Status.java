@@ -5,8 +5,7 @@ public enum Status {
     BUSY,
     AWAY,
     DO_NOT_DISTURB,
-    OFFLINE,
-    INVISIBLE;
+    OFFLINE;
 
     @Override
     public String toString() {
@@ -16,7 +15,6 @@ public enum Status {
             case AWAY -> "离开";
             case DO_NOT_DISTURB -> "请勿打扰";
             case OFFLINE -> "离线";
-            case INVISIBLE -> "隐身";
         };
 
     }
@@ -29,7 +27,7 @@ public enum Status {
             case BUSY -> "忙碌";
             case AWAY -> "离开";
             case DO_NOT_DISTURB -> "请勿打扰";
-            case OFFLINE, INVISIBLE -> "离线";
+            case OFFLINE -> "离线";
         };
     }
 
@@ -40,7 +38,7 @@ public enum Status {
             case BUSY -> "#696969";
             case AWAY -> "#9400D3";
             case DO_NOT_DISTURB -> "#191970";
-            case OFFLINE, INVISIBLE -> "#A52A2A";
+            case OFFLINE -> "#A52A2A";
         };
     }
 

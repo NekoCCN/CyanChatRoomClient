@@ -4,7 +4,11 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import cc.nekocc.cyanchatroom.model.AppRepository;
+import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
+import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
+import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.fxml.FXML;
 import atlantafx.base.theme.Styles;
@@ -23,6 +27,7 @@ import javafx.scene.shape.Rectangle;
 
 import java.util.ResourceBundle;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
 
 
 public class ChatPageController implements Initializable {
@@ -91,7 +96,7 @@ public class ChatPageController implements Initializable {
                 setupAnimation();
                 setupStyle();
                 setupUI();
-                contact_list = (ContactListController)ViewTool.loadFXML("fxml/ContactList.fxml");
+                contact_list = ViewTool.loadFXML("fxml/ContactList.fxml").getController();
                 synchronizeData();
                 setupEvent();
                 view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
@@ -134,7 +139,7 @@ public class ChatPageController implements Initializable {
 
 
     private void setupUI(){
-        user_status_.getItems().addAll(Status.ONLINE, Status.BUSY, Status.DO_NOT_DISTURB, Status.INVISIBLE,Status.AWAY,Status.OFFLINE);
+        user_status_.getItems().addAll(Status.ONLINE, Status.BUSY, Status.DO_NOT_DISTURB, Status.AWAY,Status.OFFLINE);
         user_status_.setValue(Status.ONLINE);
         current_list_node = talk_icon_;
         MenuItem copyItem = new MenuItem("复制");
@@ -217,6 +222,37 @@ public class ChatPageController implements Initializable {
         message_input.setOnKeyPressed(e -> {
             if(send_message_.match(e))
                 enter_button_.fire();
+        });
+
+
+        user_status_.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != Status.OFFLINE){
+            CompletableFuture<ProtocolMessage<GetUserDetailsResponse>> details_future = AppRepository.getInstance().getUserDetails(
+                    AppRepository.getInstance().currentUserProperty().get().getId()
+            );
+
+            details_future.thenAccept(response -> {
+                var update_future = AppRepository.getInstance().updateProfile(
+                        response.getPayload().nick_name(),
+                        response.getPayload().signature(),
+                        response.getPayload().avatar_url(),
+                        StatusFactory.fromStatus(newValue)
+                );
+
+                update_future.thenAccept(update_response -> {
+                    if (!update_response.getPayload().status()) {
+                        user_status_.setValue(oldValue);
+                        ViewTool.showAlert(Alert.AlertType.ERROR, "更新状态失败", "发生错误:账户状态修改事件无法正常执行，请检查网路是否链接或者服务器是否还在运行");
+                    }
+                });
+
+            });
+        }
+            else{
+                ViewTool.showAlert(Alert.AlertType.INFORMATION, "离线切换失败", "你要切换离线状态直接退出程序就行。");
+                Platform.runLater(() -> user_status_.setValue(oldValue));
+
+            }
         });
 
 

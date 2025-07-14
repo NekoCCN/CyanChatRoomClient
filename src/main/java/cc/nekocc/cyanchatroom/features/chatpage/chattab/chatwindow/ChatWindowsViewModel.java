@@ -2,6 +2,8 @@ package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
 
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.layout.StackPane;
 
 public class ChatWindowsViewModel {
@@ -12,11 +14,6 @@ public class ChatWindowsViewModel {
     }
     public void setUserName(String username_) {
         this.opposite_username = username_;
-    }
-
-    public StackPane getUSerAvatar() {
-        return ViewTool.getDefaultAvatar((opposite_username.isEmpty() ? "NULL": opposite_username));
-
     }
 
 

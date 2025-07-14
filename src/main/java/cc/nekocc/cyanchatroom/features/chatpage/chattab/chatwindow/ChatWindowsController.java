@@ -1,7 +1,7 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow;
 
-import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.model.AppRepository;
+import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
 
 public class ChatWindowsController implements Initializable,Cloneable{
 
@@ -45,7 +44,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
     private final ChatWindowsViewModel view_model_ = new ChatWindowsViewModel();
     private final PauseTransition delay = new PauseTransition(Duration.millis(20));
     private final ArrayList<Label> message_labels = new ArrayList<>();
-    private Double label_longth = 0.0;
 
     public ChatWindowsController() {
     }
@@ -64,7 +62,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
     public void reLoad(){
-        addListener();
         setupUI();
         setupAnimation();
     }
@@ -102,19 +99,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
 
-
-
-
-    private void addListener() {
-        label_longth = container_pane_.getWidth()*0.7;
-        container_pane_.widthProperty().addListener((observableValue, var1, var2) -> {
-                label_longth = var2.doubleValue()*0.7;
-                for (Label label : message_labels)
-                        label.setMaxWidth(var2.doubleValue()*0.7);
-                });
-
-    }
-
     // 设置UI
     private void setupUI() {
         personal_icon_.setFitHeight(45);
@@ -139,7 +123,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
                 "-fx-text-fill:white;"+
                 "-fx-wrap-text: true;"+
                 "-fx-background-radius: 8");
-        message_label.setMaxWidth(label_longth);
+        message_label.maxWidthProperty().bind(container_pane_.widthProperty().multiply(0.6));
         message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,18));
@@ -158,23 +142,18 @@ public class ChatWindowsController implements Initializable,Cloneable{
         message_box_with_name.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_box_with_name.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_box_with_name.setAlignment(Pos.TOP_RIGHT);
-        message_box.getChildren().addAll(message_box_with_name,view_model_.getUSerAvatar(),None);
+        message_box.getChildren().addAll(message_box_with_name, ViewTool.getDefaultAvatar(username.getText()),None);
         message_container.getChildren().addAll(message_box,white);
         message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
-
-
         message_label.setContextMenu(setupMessageMenu(message_label,message_container, true));
-
-
         container_pane_.getChildren().add(message_container);
         message_labels.add(message_label);
         delay.play();
-   //     sendMessageFromOther(text);
 
     }
 
 
-    public void sendMessageFromOther(String text,String opposite_username_) {
+    public void sendMessageFromOther(String text) {
         Label None = new Label();
         None.setPrefWidth(7);
         None.setVisible(false);
@@ -194,7 +173,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
                 "-fx-border-width: 1;"+
                 "-fx-border-radius: 8;"+
                 "-fx-border-color: #909090");
-        message_label.setMaxWidth(label_longth);
+        message_label.maxWidthProperty().bind(container_pane_.widthProperty().multiply(0.6));
         message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,18));
@@ -202,7 +181,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
         white.setPrefHeight(15);
         white.setVisible(false);
         message_box.setSpacing(10);
-        Text username = new Text(opposite_username_);
+        Text username = new Text(view_model_.getUserName());
         username.setStyle("-fx-fill: black;");
         username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
         Text time = new Text(LocalDate.now().toString()+" "+ LocalTime.now().toString().substring(0, 5));
@@ -214,7 +193,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
         message_box_with_name.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_box_with_name.setAlignment(Pos.TOP_LEFT);
         message_label.setContextMenu(setupMessageMenu(message_label,message_container, false));
-        message_box.getChildren().addAll(None,view_model_.getUSerAvatar(),message_box_with_name);
+        message_box.getChildren().addAll(None,ViewTool.getDefaultAvatar(username.getText()),message_box_with_name);
         message_container.getChildren().addAll(message_box,white);
         message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
 

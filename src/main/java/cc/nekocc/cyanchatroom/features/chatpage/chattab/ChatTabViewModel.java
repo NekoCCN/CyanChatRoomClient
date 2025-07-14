@@ -9,6 +9,7 @@ import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.beans.property.*;
 import javafx.scene.Parent;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
@@ -35,7 +36,7 @@ public class ChatTabViewModel {
 
     public ChatTabViewModel() {
         //   this.opposite_user_id = UUID.fromString("0197ef89-9434-7056-ba9d-ba56aba677a1");
-           chat_windows_controller = (ChatWindowsController)ViewTool.loadFXML("fxml/ChatWindow.fxml");
+           chat_windows_controller = ViewTool.loadFXML("fxml/ChatWindow.fxml").getController();
         if (chat_windows_controller != null) {
             chat_windows_property_.set(chat_windows_controller.getRoot_pane_());
         }else{
@@ -58,7 +59,7 @@ public class ChatTabViewModel {
     public void synchronizeData(){
         AppRepository.getInstance().getUserDetails(opposite_user_id).thenAccept(response ->
         {
-            user_name_property_.set(response.getPayload().username());
+            user_name_property_.set(response.getPayload().nick_name());
             status_property_.set(StatusFactory.fromUser(response.getPayload()));
             is_loaded_property_.bind(user_name_property_.isNotEqualTo("未加载").and(status_property_.isNotNull().and(user_name_property_.isNotEmpty())));
             System.out.println("用户数据同步成功,username :"+user_name_property_.get()+" status:"+status_property_.get().toString());
@@ -74,6 +75,7 @@ public class ChatTabViewModel {
         Label username_label_title_ = new Label(String.valueOf(user_name_property_.get().charAt(0)));
         Label username_label_ = new Label(user_name_property_.get());
         Label user_status_label_ = new Label(status_property_.get().toDisplayString());
+        user_status_label_.textProperty().bind(status_property_.asString());
         Circle circle = new Circle();
         StackPane tab_circle = new StackPane(circle,username_label_title_);
         VBox tab_data_ = new VBox(username_label_,user_status_label_);
@@ -81,19 +83,16 @@ public class ChatTabViewModel {
         tab_circle.setPrefWidth(60);
         circle.setStyle("-fx-fill: #dbdbdb;");
         circle.setCenterX(40);
-        circle.setRadius(22);
+        circle.setRadius(24);
         circle.setCenterY(45);
         username_label_title_.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,20));
         username_label_title_.setStyle("-fx-text-fill: #57606A");
-        username_label_title_.setLayoutX(10);
-        username_label_title_.setLayoutY(40);
-        username_label_.setFont(Font.font("Microsoft YaHei", 18));
+
+        username_label_.setFont(Font.font("Microsoft YaHei", 20));
         username_label_.setStyle("-fx-text-fill: black;");
-        user_status_label_.setFont(Font.font("Microsoft YaHei",FontWeight.BOLD,14));
+        user_status_label_.setFont(Font.font("Microsoft YaHei",FontWeight.BOLD,16));
         user_status_label_.setStyle("-fx-text-fill:"+status_property_.get().getColor() );
         AnchorPane tab = new AnchorPane(tab_circle,tab_data_);
-        tab.setPrefHeight(80);
-        tab.setPrefWidth(194);
         tab.getStyleClass().addAll(Styles.ACCENT);
         tab.setOnMouseEntered(e->{
             if(!chattab.isActive())
@@ -103,12 +102,13 @@ public class ChatTabViewModel {
             if(!chattab.isActive())
                 tab.setStyle("-fx-background-color: transparent");
         });
-        AnchorPane.setTopAnchor(tab_circle,6.0);
+        AnchorPane.setTopAnchor(tab_circle,5.0);
         AnchorPane.setLeftAnchor(tab_circle,7.0);
-        AnchorPane.setBottomAnchor(tab_circle,6.0);
-        AnchorPane.setRightAnchor(tab_data_,30.0);
-        AnchorPane.setBottomAnchor(tab_data_,6.0);
-        AnchorPane.setTopAnchor(tab_data_,6.0);
+        AnchorPane.setBottomAnchor(tab_circle,5.0);
+        AnchorPane.setRightAnchor(tab_data_,40.0);
+        AnchorPane.setTopAnchor(tab_data_,10.0);
+        tab.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        tab.setPrefWidth(Control.USE_COMPUTED_SIZE);
         return  tab;
     }
 

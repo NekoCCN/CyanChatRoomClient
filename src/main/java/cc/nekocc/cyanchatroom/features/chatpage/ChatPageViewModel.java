@@ -66,11 +66,10 @@ public class ChatPageViewModel {
     }
 
     public void loadContactAgree(){
-        ContactAgreeController contact_agree_controller = (ContactAgreeController) ViewTool.loadFXML("fxml/ContactAgreePage.fxml");
         contact_agree_stage_ = new Stage();
         contact_agree_stage_.setTitle("添加联系人");
         contact_agree_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/contact_agree_page_icon.png")))));
-        contact_agree_stage_.setScene(new Scene(contact_agree_controller.getRootPane()));
+        contact_agree_stage_.setScene(new Scene(ViewTool.loadFXML("fxml/ContactAgreePage.fxml").getRoot()));
         contact_agree_stage_.setOnCloseRequest(_ -> contact_agree_shown.set(false));
     }
 
@@ -81,11 +80,10 @@ public class ChatPageViewModel {
 
 
     public void loadSetting(){
-        SettingPage setting_page = (SettingPage) ViewTool.loadFXML("fxml/setting.fxml");
         setting_stage_ = new Stage();
         setting_stage_.setTitle("设置");
         setting_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/setting_stage_icon.png")))));
-        setting_stage_.setScene(new Scene(setting_page.getRootPane()));
+        setting_stage_.setScene(new Scene(ViewTool.loadFXML("fxml/Setting.fxml").getRoot()));
         setting_stage_.setOnCloseRequest(_ -> setting_shown.set(false));
     }
 
@@ -106,6 +104,7 @@ public class ChatPageViewModel {
                     AnchorPane.setLeftAnchor(pane, 0.0);
                     AnchorPane.setRightAnchor(pane, 0.0);
                 }});
+
             vBox.getChildren().add(tab);
         }
     }

@@ -91,7 +91,7 @@ public class ContactListController implements Initializable {
                 case BUSY -> view_model_.syncContact(Busy_root,user);
                 case AWAY -> view_model_.syncContact(Away_root,user);
                 case DO_NOT_DISTURB -> view_model_.syncContact(Do_not_disturb_root,user);
-                case OFFLINE, INVISIBLE -> view_model_.syncContact(Offline_root,user);
+                case OFFLINE-> view_model_.syncContact(Offline_root,user);
             }
         }
     }

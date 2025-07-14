@@ -43,22 +43,23 @@ public class turnToChatPage implements Initializable {
     private String local_name ;
     private ChatPageController chat_page_controller;
     private FadeTransition username_animation;
+    private final PauseTransition pauseTransition = new PauseTransition(Duration.millis(1000));
 
     private final EventHandler<WindowEvent> windowShownHandler = _ -> {
         rotate.playFromStart();
         username_animation.playFromStart();
+        pauseTransition.playFromStart();
     };
 
     public turnToChatPage(){}
     public void initialize(URL var1, ResourceBundle var2) {
-        chat_page_controller = (ChatPageController)ViewTool.loadFXML("fxml/ChatPage.fxml");
+        local_name =AppRepository.getInstance().currentUserProperty().get().getNickname();
+        chat_page_controller = ViewTool.loadFXML("fxml/ChatPage.fxml").getController();
         sysnotifydata();
         setupStyle();
         setupResponsiveLayout();
         setupAnimation();
         setupTips();
-        addListener();
-        local_name =AppRepository.getInstance().currentUserProperty().get().getNickname();
     }
 
     // 同步系统数据
@@ -79,7 +80,7 @@ public class turnToChatPage implements Initializable {
     // 小提示
     private void setupTips()
     {
-        int tips_index = (int)(Math.random() * 11);
+        int tips_index = (int)(Math.random() * 12);
         String tips_text = switch (tips_index) {
             case 0 -> "重构是程序员的主力技能。";
             case 1 -> "普通程序员+google=超级程序员。";
@@ -92,6 +93,7 @@ public class turnToChatPage implements Initializable {
             case 8 -> "造轮子是很好的锻炼方法。前提是你见过别的轮子。";
             case 9 -> "至少半数时间将花在集成上。时间，时间，时间总是不够。";
             case 10 -> "你也许不知道：在前面的滑块验证中，有10%的概率即便你滑对了也会失败";
+            case 11 -> "你也许不知道，哪怕你的加载速度再快，也要看一秒我的加载界面。";
             default -> "不要定过大、过远、过细的计划。即使定了也没有用。";
         };
         tip_label_.setText("Tip:"+tips_text);
@@ -100,7 +102,6 @@ public class turnToChatPage implements Initializable {
 
     private void setupResponsiveLayout()
     {
-
 
         pack_pane_.sceneProperty().addListener((scene_observable, old_scene, new_scene) ->
         {
@@ -126,7 +127,13 @@ public class turnToChatPage implements Initializable {
         username_animation.setFromValue(0);
         username_animation.setToValue(1);
         Navigator.getStage().getScene().getWindow().addEventHandler(WindowEvent.WINDOW_SHOWN, windowShownHandler);
-
+        pauseTransition.setOnFinished(event-> {
+            if(chat_page_controller.getLoadOver().get())
+                turnToNextPage();
+            else
+                addListener();
+        });
+        pauseTransition.setCycleCount(1);
     }
     private void addListener()
     {

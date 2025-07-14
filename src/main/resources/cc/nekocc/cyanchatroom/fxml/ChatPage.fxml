@@ -58,12 +58,12 @@
                        <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
                    </AnchorPane>
                    <Line endX="100.0" layoutX="101.0" layoutY="84.0" startX="-100.0" stroke="#cdcdcd" strokeWidth="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0" />
-               <AnchorPane fx:id="scroll_root_pane_" layoutY="80.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
+               <AnchorPane fx:id="scroll_root_pane_" layoutY="80.0" maxWidth="202.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
                   <children>
          
             
-                            <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                              <VBox fx:id="user_list_vbox_" fillWidth="false" />
+                            <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxWidth="202.0" style="-fx-background: transparent; -fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox fx:id="user_list_vbox_" maxWidth="202.0" />
                          </ScrollPane>
                   </children>
                </AnchorPane>
