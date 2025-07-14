@@ -27,7 +27,7 @@ import java.util.function.Function;
 public final class MyBatisUtil
 {
     private static final Map<String, SqlSessionFactory> session_factories_ = new ConcurrentHashMap<>();
-    private static Configuration base_configuration_; // 缓存从XML加载的基础配置
+    private static Configuration base_configuration_;
 
     private MyBatisUtil()
     {  }
@@ -50,41 +50,27 @@ public final class MyBatisUtil
     {
         try
         {
-            if (base_configuration_ == null)
-            {
-                synchronized (MyBatisUtil.class)
-                {
-                    if (base_configuration_ == null)
-                    {
-                        String resource = "mybatis-config.xml";
-                        InputStream inputStream = MyBatisUtil.class.getClassLoader().getResourceAsStream(resource);
-                        base_configuration_ = new SqlSessionFactoryBuilder().build(inputStream).getConfiguration();
-                    }
-                }
-            }
+            String resource = "mybatis-config.xml";
+            InputStream inputStream = MyBatisUtil.class.getClassLoader().getResourceAsStream(resource);
+            XMLConfigBuilder xml_config_builder = new XMLConfigBuilder(inputStream, null, null);
+            Configuration configuration = xml_config_builder.parse();
 
             DataSource data_source = createHikariDataSource(server_address, user_id);
             TransactionFactory transaction_factory = new JdbcTransactionFactory();
-            String environment_id = "env-" + server_address + "-" + user_id;
-            Environment environment = new Environment(environment_id, transaction_factory, data_source);
+            Environment environment = new Environment("dynamic-" + server_address, transaction_factory, data_source);
 
-            Configuration new_config = new Configuration(base_configuration_.getEnvironment());
-            new_config.setEnvironment(environment);
+            configuration.setEnvironment(environment);
 
-            base_configuration_.getMappedStatements().forEach(new_config::addMappedStatement);
-            base_configuration_.getTypeAliasRegistry().getTypeAliases().forEach(new_config.getTypeAliasRegistry()::registerAlias);
-            base_configuration_.getTypeHandlerRegistry().getTypeHandlers().forEach(new_config.getTypeHandlerRegistry()::register);
-
-            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(new_config);
+            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(configuration);
 
             initializeDatabaseSchema(factory);
 
-            System.out.println("已为服务器[" + server_address + "]上的用户[" + user_id + "]成功初始化数据库。");
+            System.out.println("已为服务器 " + server_address + " 成功初始化数据库。");
             return factory;
 
         } catch (Exception e)
         {
-            throw new RuntimeException("为服务器 " + server_address + " 上的用户 " + user_id + " 创建SqlSessionFactory失败", e);
+            throw new RuntimeException("为服务器 " + server_address + " 创建SqlSessionFactory失败", e);
         }
     }
 
