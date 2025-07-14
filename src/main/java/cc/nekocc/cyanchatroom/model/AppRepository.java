@@ -12,6 +12,8 @@ import cc.nekocc.cyanchatroom.model.util.E2EEHelper;
 import javax.crypto.SecretKey;
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Set;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import cc.nekocc.cyanchatroom.model.util.JsonUtil;
@@ -77,7 +79,9 @@ public class AppRepository
     private final ReadOnlyObjectWrapper<User> current_user_ = new ReadOnlyObjectWrapper<>(null);
     private final ReadOnlyStringWrapper last_error_message_ = new ReadOnlyStringWrapper();
     private final ObservableMap<UUID, ObservableList<Message>> conversation_messages_ = FXCollections.observableMap(new ConcurrentHashMap<>());
-    private final ObservableSet<Conversation> conversations_ = FXCollections.observableSet(new ConcurrentHashMap<Conversation, Boolean>().keySet());
+
+    private final Set<Conversation> conversations_backing_ = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final ObservableSet<Conversation> conversations_ = FXCollections.observableSet(conversations_backing_);
 
     private AppRepository()
     {
