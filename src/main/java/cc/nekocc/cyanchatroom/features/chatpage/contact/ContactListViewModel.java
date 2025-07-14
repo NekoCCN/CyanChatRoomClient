@@ -9,7 +9,7 @@ public class ContactListViewModel {
 
 
     public void syncContact(TreeItem root , ChatTabController tab) {
-        root.getChildren().add(new TreeItem<String>(tab.getUser().getUsername()));
+        root.getChildren().add(new TreeItem<String>(tab.getUserName()));
 
     }
 

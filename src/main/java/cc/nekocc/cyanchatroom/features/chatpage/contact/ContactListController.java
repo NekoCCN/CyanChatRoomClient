@@ -86,7 +86,7 @@ public class ContactListController implements Initializable {
     public void syncContact(ArrayList<ChatTabController> users) {
         for(ChatTabController user: users)
         {
-            switch(user.getUser().getStatus_()) {
+            switch(user.getStatus()) {
                 case ONLINE -> view_model_.syncContact(Online_root,user);
                 case BUSY -> view_model_.syncContact(Busy_root,user);
                 case AWAY -> view_model_.syncContact(Away_root,user);

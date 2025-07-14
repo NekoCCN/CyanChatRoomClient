@@ -128,6 +128,53 @@ public class Navigator
         navigateTo(fxml_file, AnimationType.FLIP);
     }
 
+    public static void navigateTo(Parent pane,AnimationType animation_type){
+        AnimationFX out_animation;
+        AnimationFX in_animation = switch (animation_type)
+        {
+            case SLIDE_LEFT ->
+            {
+                out_animation = new SlideOutLeft();
+                yield new SlideInRight();
+            }
+            case SLIDE_RIGHT ->
+            {
+                out_animation = new SlideOutRight();
+                yield new SlideInLeft();
+            }
+            case SLIDE_UP ->
+            {
+                out_animation = new SlideOutUp();
+                yield new SlideInUp();
+            }
+            case SLIDE_DOWN ->
+            {
+                out_animation = new SlideOutDown();
+                yield new SlideInDown();
+            }
+            case ZOOM ->
+            {
+                out_animation = new ZoomOut();
+                yield new ZoomIn();
+            }
+            case FLIP ->
+            {
+                out_animation = new FlipOutY();
+                yield new FlipInY();
+            }
+            case JACK_IN_THE_BOX ->
+            {
+                out_animation = new FadeOut();
+                yield new JackInTheBox();
+            }
+            default ->
+            {
+                out_animation = new FadeOut();
+                yield new FadeIn();
+            }
+        };
+        turnToPane(pane,out_animation,in_animation);
+    }
     public static void navigateTo(String fxml_file, AnimationType animation_type)
     {
         AnimationFX out_animation;
@@ -212,6 +259,32 @@ public class Navigator
             System.err.println("无法加载页面: " + fxml_file);
             e.printStackTrace();
         }
+    }
+
+    private static void turnToPane(Parent pane, AnimationFX out_animation, AnimationFX in_animation)
+    {
+            Scene current_scene = primary_stage_.getScene();
+            if (current_scene == null)
+            {
+                primary_stage_.setScene(new Scene(pane));
+
+                primary_stage_.show();
+                return;
+            }
+
+            out_animation.setNode(current_scene.getRoot());
+            out_animation.setOnFinished(_ ->
+            {
+                Scene new_scene = new Scene(pane, current_scene.getWidth(), current_scene.getHeight());
+
+                in_animation.setNode(pane);
+                in_animation.play();
+
+                primary_stage_.setScene(new_scene);
+            });
+            out_animation.play();
+
+
     }
 
     /*  由于变动窗口大小跳动画这一步的表现效果实在让人难堪，
