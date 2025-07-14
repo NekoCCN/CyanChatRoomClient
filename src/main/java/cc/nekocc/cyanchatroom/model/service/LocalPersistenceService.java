@@ -17,33 +17,49 @@ public class LocalPersistenceService
     public LocalPersistenceService()
     {  }
 
-    public void saveMessage(String server_address, Message message)
+    public void saveMessage(String server_address, UUID user_id, Message message)
     {
-        MyBatisUtil.executeUpdate(server_address, session -> session.getMapper(MessageMapper.class).insertMessage(message));
+        MyBatisUtil.executeUpdate(server_address, user_id, session -> session.getMapper(MessageMapper.class).insertMessage(message));
     }
 
-    public void saveMessagesBatch(String server_address, List<Message> messages)
+    public void saveMessagesBatch(String server_address, UUID user_id, List<Message> messages)
     {
         if (messages == null || messages.isEmpty())
             return;
-        MyBatisUtil.executeUpdate(server_address, session -> session.getMapper(MessageMapper.class).insertMessagesBatch(messages));
+        MyBatisUtil.executeUpdate(server_address, user_id, session -> session.getMapper(MessageMapper.class).insertMessagesBatch(messages));
     }
 
-    public List<Message> getMessagesForConversation(String server_address, UUID conversation_id, int limit, int offset)
+    public List<Message> getClipedMessagesForConversation(String server_address, UUID user_id,
+                                                          UUID conversation_id, int limit, int offset)
     {
-        return MyBatisUtil.executeQuery(server_address, session -> session.getMapper(MessageMapper.class).findMessagesByRange(conversation_id, limit, offset));
+        return MyBatisUtil.executeQuery(server_address, user_id, session ->
+                session.getMapper(MessageMapper.class).findMessagesByRange(conversation_id, limit, offset));
     }
 
-    public void upsertConversation(String server_address, UUID conversation_id, ConversationType type,
-                                   UUID sender_id, OffsetDateTime last_message_time)
+    public List<Message> getAllMessagesForConversation(String server_address, UUID user_id,
+                                                          UUID conversation_id)
+    {
+        return MyBatisUtil.executeQuery(server_address, user_id, session ->
+                session.getMapper(MessageMapper.class).findAllMessagesByConversationId(conversation_id));
+    }
+
+    public int countMessagesInConversation(String server_address, UUID user_id,
+                                                     UUID conversation_id)
+    {
+        return MyBatisUtil.executeQuery(server_address, user_id, session ->
+                session.getMapper(MessageMapper.class).countMessagesInConversation(conversation_id));
+    }
+
+    public void upsertConversation(String server_address, UUID user_id, UUID conversation_id,
+                                   ConversationType type, UUID sender_id, OffsetDateTime last_message_time)
     {
         String time_string = last_message_time.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        MyBatisUtil.executeUpdate(server_address, session -> session.getMapper(ConversationMapper.class)
+        MyBatisUtil.executeUpdate(server_address, user_id, session -> session.getMapper(ConversationMapper.class)
                 .upsertConversation(conversation_id, type, sender_id, time_string));
     }
 
-    public List<Conversation> getAllConversations(String server_address)
+    public List<Conversation> getAllConversations(String server_address, UUID user_id)
     {
-        return MyBatisUtil.executeQuery(server_address, session -> session.getMapper(ConversationMapper.class).findAll());
+        return MyBatisUtil.executeQuery(server_address, user_id, session -> session.getMapper(ConversationMapper.class).findAll());
     }
 }
