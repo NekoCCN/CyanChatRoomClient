@@ -94,6 +94,11 @@ public class AppRepository
     /*
      * 初始化部分
      */
+
+    /**
+     * 连接到指定的服务器地址。
+     * @param server_address 服务器地址 不含协议前缀和后缀
+     */
     public void connectToServer(String server_address)
     {
         if (connection_status_.get() == ConnectionStatus.CONNECTING || connection_status_.get() == ConnectionStatus.CONNECTED)
@@ -105,10 +110,17 @@ public class AppRepository
         http_service_.setBaseUrl(http_url);
         network_service_.connect(ws_url);
     }
+    /**
+     * 断开与服务器的连接。
+     */
     public void disconnect()
     {
         network_service_.disconnect();
     }
+    /**
+     * 手动设置当前用户，这是在登录或注册成功后调用的。
+     * @param user 当前用户对象
+     */
     public void setCurrentUser(User user)
     {
         if (user == null)
@@ -122,6 +134,15 @@ public class AppRepository
     /*
      * 用户操作相关
      */
+
+    /**
+     * 注册新用户。
+     * @param user_name 用户名称
+     * @param password 用户密码
+     * @param nick_name 用户昵称
+     * @param signature 用户签名
+     * @return 一个CompletableFuture，完成时包含用户操作响应 可能永不完成
+     */
     public CompletableFuture<ProtocolMessage<UserOperatorResponse>> register(String user_name, String password,
                                                                              String nick_name, String signature)
     {
@@ -129,6 +150,12 @@ public class AppRepository
         RegisterRequest payload = new RegisterRequest(client_request_id, user_name, password, nick_name, signature);
         return sendRequestWithFuture(MessageType.REGISTER_REQUEST, payload, client_request_id, UserOperatorResponse.class);
     }
+    /**
+     * 用户登录。
+     * @param user_name 用户名称
+     * @param password 用户密码
+     * @return 一个CompletableFuture，完成时包含用户操作响应 可能永不完成
+     */
     public CompletableFuture<ProtocolMessage<UserOperatorResponse>> login(String user_name, String password)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -139,6 +166,15 @@ public class AppRepository
 
     /*
      * 发送消息相关
+     */
+
+    /**
+     * 发送消息到指定的接收者。
+     * @param recipient_type 接收者类型，可以是 "USER" 或 "GROUP"
+     * @param recipient_id 接收者的唯一标识符
+     * @param content_type 内容类型，例如 "TEXT" "FILE" 或 "IMAGE"
+     * @param is_encrypted 是否加密消息
+     * @param content 消息内容
      */
     private void sendMessageInternal(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
@@ -154,6 +190,14 @@ public class AppRepository
         sendRequest(MessageType.CHAT_MESSAGE, new ChatMessageRequest(UUID.randomUUID(), recipient_type,
                 recipient_id, content_type, is_encrypted, content));
     }
+    /**
+     * 发送消息到指定的接收者。
+     * @param recipient_type 接收者类型，可以是 "USER" 或 "GROUP"
+     * @param recipient_id 接收者的唯一标识符
+     * @param content_type 内容类型，例如 "TEXT" "FILE" 或 "IMAGE"
+     * @param is_encrypted 是否加密消息
+     * @param content 消息内容
+     */
     public void sendMessage(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
         sendMessageInternal(recipient_type, recipient_id, content_type, is_encrypted, content);
@@ -162,7 +206,14 @@ public class AppRepository
     /*
      * E2EE 相关
      */
-    public void sendEncryptedTextMessage(UUID recipient_id, String plain_text)
+
+    /**
+     * 发送加密的文本消息到指定的接收者。
+     * @param recipient_id 接收者的唯一标识符
+     * @param plain_text 明文消息内容
+     * @throws Exception 如果密钥协商失败或其他错误
+     */
+    public void sendEncryptedTextMessage(UUID recipient_id, String plain_text) throws Exception
     {
         if (current_user_.get() == null)
         {
@@ -174,14 +225,8 @@ public class AppRepository
         SecretKey session_key = session_keys_.get(recipient_id);
         if (session_key != null)
         {
-            try
-            {
-                String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
-                sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
-            } catch (Exception e)
-            {
-                last_error_message_.set("加密失败: " + e.getMessage());
-            }
+            String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
+            sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
             return;
         }
 
@@ -209,7 +254,6 @@ public class AppRepository
 
                     String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
                     sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
-
                 } catch (Exception e)
                 {
                     Platform.runLater(() -> last_error_message_.set("密钥协商失败: " + e.getMessage()));
@@ -220,6 +264,10 @@ public class AppRepository
             }
         });
     }
+    /**
+     * 生成并注册新的密钥对，并将其发布到服务器，私钥存储到本地。
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> generateAndRegisterKeys()
     {
         User current_user = current_user_.get();
@@ -243,12 +291,23 @@ public class AppRepository
             return CompletableFuture.failedFuture(e);
         }
     }
+
+    /**
+     * 从服务器获取指定用户的公钥。
+     * @param user_id
+     * @return
+     */
     public CompletableFuture<ProtocolMessage<FetchKeysResponse>> fetchKeys(UUID user_id)
     {
         UUID client_request_id = UUID.randomUUID();
         return sendRequestWithFuture(MessageType.FETCH_KEYS_REQUEST,
                 new FetchKeysRequest(client_request_id, user_id), client_request_id, FetchKeysResponse.class);
     }
+    /**
+     * 发布密钥到服务器。
+     * @param key_bundle 包含公钥的JSON对象
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> publishKeys(JsonObject key_bundle)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -258,6 +317,13 @@ public class AppRepository
 
     /*
      * 文件相关
+     */
+
+    /**
+     * 上传文件到服务器。
+     * @param file 要上传的文件，一个路径对象。
+     * @param expires_in_hours 过期时间，单位为小时，具体区间取决于服务器设置。
+     * @return 一个CompletableFuture，完成时包含上传后的文件ID
      */
     public CompletableFuture<String> uploadFile(File file, Integer expires_in_hours)
     {
@@ -290,6 +356,12 @@ public class AppRepository
 
         return final_file_id_future;
     }
+    /**
+     * 下载文件到指定位置。
+     * @param file_id 文件的唯一标识符
+     * @param save_location 保存文件的本地路径
+     * @return 一个CompletableFuture，完成时包含下载是否成功的布尔值
+     */
     public CompletableFuture<Boolean> downloadFile(String file_id, File save_location)
     {
         return http_service_.downloadFile(file_id, save_location);
@@ -297,6 +369,15 @@ public class AppRepository
 
     /*
      * 用户资料相关
+     */
+
+    /**
+     * 更新用户资料。
+     * @param nick_name 用户昵称
+     * @param signature 用户签名
+     * @param avatar_file_id 头像文件的唯一标识符（或URI）
+     * @param status 用户状态
+     * @return 一个CompletableFuture，完成时包含状态响应
      */
     public CompletableFuture<ProtocolMessage<StatusResponse>> updateProfile(String nick_name, String signature,
                                                                             String avatar_file_id, UserStatus status)
@@ -306,6 +387,12 @@ public class AppRepository
                 new UpdateProfileRequest(client_request_id, nick_name, signature, avatar_file_id, status),
                 client_request_id, StatusResponse.class);
     }
+    /**
+     * 修改用户名。
+     * @param current_password 当前密码
+     * @param new_user_name 新用户名
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> changeUsername(String current_password, String new_user_name)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -313,6 +400,12 @@ public class AppRepository
                 new ChangeUsernameRequest(client_request_id, new_user_name, current_password), client_request_id,
                 StatusResponse.class);
     }
+    /**
+     * 修改用户密码。
+     * @param current_password 当前密码
+     * @param new_password 新密码
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> changePassword(String current_password, String new_password)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -320,6 +413,11 @@ public class AppRepository
                 new ChangePasswordRequest(client_request_id, current_password, new_password), client_request_id,
                 StatusResponse.class);
     }
+    /**
+     * 获取用户详细信息。
+     * @param user_id 要获取信息的用户ID
+     * @return 一个CompletableFuture，完成时包含用户详细信息响应
+     */
     public CompletableFuture<ProtocolMessage<GetUserDetailsResponse>> getUserDetails(UUID user_id)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -330,12 +428,26 @@ public class AppRepository
     /*
      * 群组相关
      */
+
+    /**
+     * 创建一个新的群组。
+     * @param group_name 群组名称
+     * @param member_ids 初始群组成员的唯一标识符列表
+     * @return
+     */
     public CompletableFuture<ProtocolMessage<GroupResponse>> createGroup(String group_name, List<UUID> member_ids)
     {
         UUID client_request_id = UUID.randomUUID();
         return sendRequestWithFuture(MessageType.CREATE_GROUP_REQUEST,
                 new CreateGroupRequest(client_request_id, group_name, member_ids), client_request_id, GroupResponse.class);
     }
+
+    /**
+     * 请求加入一个群组。
+     * @param group_id 群组的唯一标识符
+     * @param request_message 请求加入群组时的消息内容
+     * @return
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> joinGroup(UUID group_id, String request_message)
     {
         UUID client_request_id = UUID.randomUUID();
@@ -343,6 +455,13 @@ public class AppRepository
                 new JoinGroupRequest(client_request_id, group_id, request_message), client_request_id,
                 StatusResponse.class);
     }
+    /**
+     * 处理加入群组的请求。
+     * @param group_id 群组的唯一标识符
+     * @param request_id 加入请求的唯一标识符
+     * @param approved 是否批准加入请求
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> handleJoinRequest(UUID group_id, UUID request_id,
                                                                                 boolean approved)
     {
@@ -351,17 +470,44 @@ public class AppRepository
                 new HandleJoinRequest(client_request_id, group_id, request_id, approved), client_request_id,
                 StatusResponse.class);
     }
+
+    /**
+     * 离开一个群组。
+     * @param group_id 群组的唯一标识符
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> leaveGroup(UUID group_id)
     {
         UUID client_request_id = UUID.randomUUID();
         return sendRequestWithFuture(MessageType.LEAVE_GROUP_REQUEST,
                 new LeaveGroupRequest(client_request_id, group_id), client_request_id, StatusResponse.class);
     }
+    /**
+     * 从群组中移除成员。
+     * @param group_id 群组的唯一标识符
+     * @param target_user_id 要移除的成员的唯一标识符
+     * @return
+     */
     public CompletableFuture<ProtocolMessage<StatusResponse>> removeMember(UUID group_id, UUID target_user_id)
     {
         UUID client_request_id = UUID.randomUUID();
         return sendRequestWithFuture(MessageType.REMOVE_MEMBER_REQUEST,
                 new RemoveMemberRequest(client_request_id, group_id, target_user_id), client_request_id,
+                StatusResponse.class);
+    }
+    /**
+     * 更改群组成员的角色。
+     * @param group_id 群组的唯一标识符
+     * @param target_user_id 要更改角色的成员的唯一标识符
+     * @param new_role 新的角色枚举值
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
+    public CompletableFuture<ProtocolMessage<StatusResponse>> setGroupMemberRole(UUID group_id, UUID target_user_id,
+                                                                                 GroupMemberRole new_role)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.SET_MEMBER_ROLE_REQUEST,
+                new SetMemberRoleRequest(client_request_id, group_id, target_user_id, new_role.name()), client_request_id,
                 StatusResponse.class);
     }
 
