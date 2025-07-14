@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,53 +27,77 @@ import java.util.function.Function;
 public final class MyBatisUtil
 {
     private static final Map<String, SqlSessionFactory> session_factories_ = new ConcurrentHashMap<>();
+    private static Configuration base_configuration_; // 缓存从XML加载的基础配置
 
     private MyBatisUtil()
+    {  }
+
+    /**
+     * 根据服务器地址和用户ID获取对应的SqlSessionFactory。
+     * 这是与数据库交互的入口。
+     */
+    public static SqlSessionFactory getSessionFactory(String server_address, UUID user_id)
     {
+        if (server_address == null || user_id == null)
+        {
+            throw new IllegalArgumentException("服务器地址和用户ID不能为空。");
+        }
+        String cache_key = server_address + ":" + user_id.toString();
+        return session_factories_.computeIfAbsent(cache_key, key -> createNewSessionFactory(server_address, user_id));
     }
 
-    public static SqlSessionFactory getSessionFactoryForServer(String server_address)
-    {
-        return session_factories_.computeIfAbsent(server_address, MyBatisUtil::createNewSessionFactory);
-    }
-
-    private static SqlSessionFactory createNewSessionFactory(String server_address)
+    private static SqlSessionFactory createNewSessionFactory(String server_address, UUID user_id)
     {
         try
         {
-            String resource = "mybatis-config.xml";
-            InputStream inputStream = MyBatisUtil.class.getClassLoader().getResourceAsStream(resource);
-            XMLConfigBuilder xml_config_builder = new XMLConfigBuilder(inputStream, null, null);
-            Configuration configuration = xml_config_builder.parse();
+            if (base_configuration_ == null)
+            {
+                synchronized (MyBatisUtil.class)
+                {
+                    if (base_configuration_ == null)
+                    {
+                        String resource = "mybatis-config.xml";
+                        InputStream inputStream = MyBatisUtil.class.getClassLoader().getResourceAsStream(resource);
+                        base_configuration_ = new SqlSessionFactoryBuilder().build(inputStream).getConfiguration();
+                    }
+                }
+            }
 
-            DataSource data_source = createHikariDataSource(server_address);
+            DataSource data_source = createHikariDataSource(server_address, user_id);
             TransactionFactory transaction_factory = new JdbcTransactionFactory();
-            Environment environment = new Environment("dynamic-" + server_address, transaction_factory, data_source);
+            String environment_id = "env-" + server_address + "-" + user_id;
+            Environment environment = new Environment(environment_id, transaction_factory, data_source);
 
-            configuration.setEnvironment(environment);
+            Configuration new_config = new Configuration(base_configuration_.getEnvironment());
+            new_config.setEnvironment(environment);
 
-            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(configuration);
+            base_configuration_.getMappedStatements().forEach(new_config::addMappedStatement);
+            base_configuration_.getTypeAliasRegistry().getTypeAliases().forEach(new_config.getTypeAliasRegistry()::registerAlias);
+            base_configuration_.getTypeHandlerRegistry().getTypeHandlers().forEach(new_config.getTypeHandlerRegistry()::register);
+
+            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(new_config);
 
             initializeDatabaseSchema(factory);
 
-            System.out.println("已为服务器 " + server_address + " 成功初始化数据库。");
+            System.out.println("已为服务器[" + server_address + "]上的用户[" + user_id + "]成功初始化数据库。");
             return factory;
 
         } catch (Exception e)
         {
-            throw new RuntimeException("为服务器 " + server_address + " 创建SqlSessionFactory失败", e);
+            throw new RuntimeException("为服务器 " + server_address + " 上的用户 " + user_id + " 创建SqlSessionFactory失败", e);
         }
     }
 
-    private static DataSource createHikariDataSource(String server_address)
+    private static DataSource createHikariDataSource(String server_address, UUID user_id)
     {
         try
         {
             Properties hikari_properties = new Properties();
             hikari_properties.load(MyBatisUtil.class.getClassLoader().getResourceAsStream("hikari.properties"));
 
-            String safe_filename = server_address.replaceAll("[:/\\\\?%*|\"<>]", "_") + ".db";
-            Path db_path = Paths.get(System.getProperty("user.home"), ".cyanchatroom", safe_filename);
+            String safe_server_name = server_address.replaceAll("[:/\\\\?%*|\"<>]", "_");
+            String db_filename = user_id.toString() + ".db";
+            Path db_path = Paths.get(System.getProperty("user.home"), ".cyanchatroom", safe_server_name, db_filename);
 
             Files.createDirectories(db_path.getParent());
             hikari_properties.setProperty("jdbcUrl", "jdbc:sqlite:" + db_path.toAbsolutePath());
@@ -100,17 +125,17 @@ public final class MyBatisUtil
         }
     }
 
-    public static <R> R executeQuery(String server_address, Function<SqlSession, R> func)
+    public static <R> R executeQuery(String server_address, UUID user_id, Function<SqlSession, R> func)
     {
-        try (SqlSession session = getSessionFactoryForServer(server_address).openSession())
+        try (SqlSession session = getSessionFactory(server_address, user_id).openSession())
         {
             return func.apply(session);
         }
     }
 
-    public static void executeUpdate(String server_address, Consumer<SqlSession> action)
+    public static void executeUpdate(String server_address, UUID user_id, Consumer<SqlSession> action)
     {
-        try (SqlSession session = getSessionFactoryForServer(server_address).openSession())
+        try (SqlSession session = getSessionFactory(server_address, user_id).openSession())
         {
             action.accept(session);
             session.commit();

@@ -25,6 +25,8 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
@@ -75,7 +77,7 @@ public class AppRepository
     private final ReadOnlyObjectWrapper<User> current_user_ = new ReadOnlyObjectWrapper<>(null);
     private final ReadOnlyStringWrapper last_error_message_ = new ReadOnlyStringWrapper();
     private final ObservableMap<UUID, ObservableList<Message>> conversation_messages_ = FXCollections.observableMap(new ConcurrentHashMap<>());
-    private final ObservableList<Conversation> conversations_ = FXCollections.observableArrayList();
+    private final ObservableSet<Conversation> conversations_ = FXCollections.observableSet(new ConcurrentHashMap<Conversation, Boolean>().keySet());
 
     private AppRepository()
     {
@@ -94,7 +96,6 @@ public class AppRepository
     /*
      * 初始化部分
      */
-
     /**
      * 连接到指定的服务器地址。
      * @param server_address 服务器地址 不含协议前缀和后缀
@@ -163,6 +164,17 @@ public class AppRepository
 
         return sendRequestWithFuture(MessageType.LOGIN_REQUEST, payload, client_request_id, UserOperatorResponse.class);
     }
+    /**
+     *
+     */
+    public void loadHistoryConversion()
+    {
+        if (server_address_ == null || server_address_.isEmpty() || current_user_.get() == null)
+        {
+            throw new IllegalStateException("INVALID_STATE: 服务器地址或当前用户未设置。");
+        }
+        conversations_.addAll(persistence_service_.getAllConversations(server_address_, current_user_.get().getId()));
+    }
 
     /*
      * 发送消息相关
@@ -185,8 +197,8 @@ public class AppRepository
             return;
         }
         Message local_message = new Message(recipient_id, current_user.getId(), true, content_type, content);
-        persistence_service_.saveMessage(server_address_, local_message);
-        getMessagesForConversation(recipient_id).add(local_message);
+        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
+
         sendRequest(MessageType.CHAT_MESSAGE, new ChatMessageRequest(UUID.randomUUID(), recipient_type,
                 recipient_id, content_type, is_encrypted, content));
     }
@@ -206,7 +218,6 @@ public class AppRepository
     /*
      * E2EE 相关
      */
-
     /**
      * 发送加密的文本消息到指定的接收者。
      * @param recipient_id 接收者的唯一标识符
@@ -291,7 +302,6 @@ public class AppRepository
             return CompletableFuture.failedFuture(e);
         }
     }
-
     /**
      * 从服务器获取指定用户的公钥。
      * @param user_id
@@ -486,7 +496,7 @@ public class AppRepository
      * 从群组中移除成员。
      * @param group_id 群组的唯一标识符
      * @param target_user_id 要移除的成员的唯一标识符
-     * @return
+     * @return 一个CompletableFuture，完成时包含状态响应
      */
     public CompletableFuture<ProtocolMessage<StatusResponse>> removeMember(UUID group_id, UUID target_user_id)
     {
@@ -685,17 +695,22 @@ public class AppRepository
 
         Message local_message = new Message(conversation_id, sender_id, is_outgoing, content_type, content);
 
-        persistence_service_.saveMessage(server_address_, local_message);
+        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
+
+        conversations_.add(new Conversation(
+                conversation_id,
+                sender_id,
+                ConversationType.valueOf(recipient_type),
+                OffsetDateTime.parse(iso_time).toString()));
 
         persistence_service_.upsertConversation(
                 server_address_,
+                current_user.getId(),
                 conversation_id,
                 ConversationType.valueOf(recipient_type),
                 recipient_id,
                 OffsetDateTime.parse(iso_time)
         );
-
-        getMessagesForConversation(conversation_id).add(local_message);
     }
 
     /*
@@ -709,20 +724,35 @@ public class AppRepository
     {
         return current_user_.getReadOnlyProperty();
     }
-    public ObservableList<Conversation> getConversations()
+    public ObservableSet<Conversation> getConversations()
     {
-        return FXCollections.unmodifiableObservableList(conversations_);
+        return FXCollections.unmodifiableObservableSet(conversations_);
     }
     public ReadOnlyStringProperty lastErrorMessageProperty()
     {
         return last_error_message_.getReadOnlyProperty();
     }
-    public ObservableList<Message> getMessagesForConversation(UUID conversation_id)
+    public ObservableList<Message> getClipedMessagesForConversation(UUID conversation_id, int block)
     {
         return conversation_messages_.computeIfAbsent(conversation_id, id ->
         {
-            List<Message> history = persistence_service_.getMessagesForConversation(server_address_, id, 50, 0);
+            List<Message> history = persistence_service_.getClipedMessagesForConversation(server_address_, current_user_.get().getId(),
+                    id, 50, block * 50);
             return FXCollections.observableArrayList(history);
         });
     }
+    public ObservableList<Message> getAllMessagesForConversation(UUID conversation_id, int block)
+    {
+        return conversation_messages_.computeIfAbsent(conversation_id, id ->
+        {
+            List<Message> history = persistence_service_.getAllMessagesForConversation(server_address_, current_user_.get().getId(),
+                    id);
+            return FXCollections.observableArrayList(history);
+        });
+    }
+    public int countMessagesInConversation(UUID conversation_id)
+    {
+        return persistence_service_.countMessagesInConversation(server_address_, current_user_.get().getId(), conversation_id);
+    }
+
 }
