@@ -388,7 +388,17 @@
         /*
          * 用户资料相关
          */
-
+        /**
+         * 根据用户名获取用户的 UUID。
+         * @param username 要查询的用户名
+         * @return 一个 CompletableFuture，完成时包含查询结果的响应
+         */
+        public CompletableFuture<ProtocolMessage<GetUuidByUsernameResponse>> getUuidByUsername(String username)
+        {
+            UUID client_request_id = UUID.randomUUID();
+            GetUuidByUsernameRequest payload = new GetUuidByUsernameRequest(client_request_id, username);
+            return sendRequestWithFuture(MessageType.GET_UUID_BY_USERNAME_REQUEST, payload, client_request_id, GetUuidByUsernameResponse.class);
+        }
         /**
          * 更新用户资料。
          * @param nick_name 用户昵称
@@ -740,6 +750,9 @@
                     case MessageType.GET_FRIENDSHIP_LIST_RESPONSE:
                     case MessageType.GET_ACTIVE_FRIENDSHIP_LIST_RESPONSE:
                         future.complete(JsonUtil.deserializeProtocolMessage(json_message, FriendshipListResponse.class));
+                        break;
+                    case MessageType.GET_UUID_BY_USERNAME_RESPONSE:
+                        future.complete(JsonUtil.deserializeProtocolMessage(json_message, GetUuidByUsernameResponse.class));
                         break;
                     case MessageType.CHECK_FRIENDSHIP_EXISTS_RESPONSE:
                         future.complete(JsonUtil.deserializeProtocolMessage(json_message, CheckFriendshipExistsResponse.class));
