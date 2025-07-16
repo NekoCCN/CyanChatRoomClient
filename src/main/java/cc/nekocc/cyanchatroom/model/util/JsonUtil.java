@@ -6,10 +6,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.time.OffsetDateTime;
 
 public final class JsonUtil
 {
-    private static final Gson GSON = new GsonBuilder().create();
+    final static Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter())
+            .create();
 
     private JsonUtil()
     {
