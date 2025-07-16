@@ -13,7 +13,7 @@ public class Friendship
     private UUID user_two_id_;
     private FriendshipRequestStatus status_;
 
-    private UUID action_user_id_;
+    private UUID action_user_id_ ;
 
     private OffsetDateTime created_at_;
     private OffsetDateTime updated_at_;

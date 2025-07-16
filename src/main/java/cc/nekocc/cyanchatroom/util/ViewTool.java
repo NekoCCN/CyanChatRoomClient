@@ -4,12 +4,14 @@ package cc.nekocc.cyanchatroom.util;
 import cc.nekocc.cyanchatroom.Navigator;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import jdk.jfr.Event;
 
 import java.util.Objects;
 
@@ -60,6 +62,19 @@ public class ViewTool {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+    public static Alert showAlert(Alert.AlertType alert_type, String title, String content,Boolean need_show)
+    {
+        Alert alert = new Alert(alert_type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        if(need_show)
+            alert.showAndWait();
+        return alert;
+    }
+
+
 
 
 }

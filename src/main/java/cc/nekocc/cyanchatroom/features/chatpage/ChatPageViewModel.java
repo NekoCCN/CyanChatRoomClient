@@ -4,8 +4,10 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
+import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.animation.PauseTransition;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -15,19 +17,21 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
+import javafx.util.Duration;
 
 
 import java.util.ArrayList;
 import java.util.UUID;
 
 public class ChatPageViewModel {
-
+    private final ObjectProperty<AnchorPane>  current_chat_window_pane_ = new SimpleObjectProperty<>();
+    private final ObjectProperty<VBox> user_list_box_ = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatWindowsController>  temp_chat_window_ = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatWindowsController>  current_chat_window_ = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatTabController>  current_chat_tab_ = new SimpleObjectProperty<>();
@@ -37,6 +41,7 @@ public class ChatPageViewModel {
     private final BooleanProperty load_over_ = new SimpleBooleanProperty(false);
     private Stage setting_stage_;
     private Stage contact_agree_stage_;
+    private ContactAgreeController contact_agree_controller_ ;
     private final ObservableList<ChatTabController> observableUserList = FXCollections.observableArrayList(
             controller -> new Observable[]{controller.getIsLoaded()}  // 监听每个 isLoaded
     );
@@ -49,33 +54,64 @@ public class ChatPageViewModel {
 
 
     private void initialize(){
-        initUserList();
         setupBindings();
-        addListener();
+
+
+    }
+
+    public void refreshUserList(Boolean need_fresh_user_list){
+        if(need_fresh_user_list) {
+            user_list_.clear();
+            observableUserList.clear();
+            user_list_box_.get().getChildren().clear();
+            initUserList();
+        }
+        else{
+            loadUserList();
+        }
+        System.out.println("刷新用户列表");
     }
 
 
     private void initUserList(){
         ChatTabViewModel copy_info_ = new ChatTabViewModel();
-        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("0197ef89-9434-7056-ba9d-ba56aba677a1")));
-        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("0197f803-9a96-7cd0-8482-234162984117")));
+        AppRepository.getInstance().getFriendshipList(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response -> {
+            UUID current_uuid = AppRepository.getInstance().currentUserProperty().get().getId();
+
+            for (var user_info : response.getPayload().friendships())
+            {
+                UUID temp =  user_info.getUserOneId() == current_uuid ? user_info.getUserTwoId() : user_info.getUserOneId();
+                user_list_.add(new ChatTabController(copy_info_,temp));
+                System.out.println("添加用户: " + temp);
+            }
+            observableUserList.addAll(user_list_);
+            loadUserList();
+        });
+    }
+    //刷新用户列表测试
+    private void ceshi(){
+        ChatTabViewModel copy_info_ = new ChatTabViewModel();
+        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("01980960-c7ee-78b0-8e45-4ef4e3cf4bc1")));
+        user_list_.add(new ChatTabController(copy_info_,UUID.fromString("01980961-8437-7b11-a014-fe5c82f2b708")));
         observableUserList.addAll(user_list_);
     }
 
-    private void addListener(){
-        load_over_.addListener((observableValue, aBoolean, t1) -> {
-            if (t1) {
-                loadSetting();
-                loadContactAgree();
-            }
-        });
+    public void synchronizeStage(){
+        loadSetting();
+        loadContactAgree();
     }
 
+
+
     public void loadContactAgree(){
+
+        FXMLLoader loader = ViewTool.loadFXML("fxml/ContactAgreePage.fxml");
+        contact_agree_controller_ = loader.getController();
+        contact_agree_controller_.setRefreshCallback(() -> refreshUserList(true));
         contact_agree_stage_ = new Stage();
         contact_agree_stage_.setTitle("添加联系人");
         contact_agree_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/contact_agree_page_icon.png")))));
-        contact_agree_stage_.setScene(new Scene(ViewTool.loadFXML("fxml/ContactAgreePage.fxml").getRoot()));
+        contact_agree_stage_.setScene(new Scene(loader.getRoot()));
         contact_agree_stage_.setOnCloseRequest(_ -> contact_agree_shown.set(false));
     }
 
@@ -94,7 +130,8 @@ public class ChatPageViewModel {
         setting_stage_.setOnCloseRequest(_ -> setting_shown.set(false));
     }
 
-    public void loadUserList(VBox vBox, AnchorPane anchorPane){
+    private void loadUserList(){
+
         for(ChatTabController user : user_list_){
             AnchorPane tab = user.getFirstUserTab();
             tab.setOnMouseClicked(_ ->{
@@ -102,27 +139,24 @@ public class ChatPageViewModel {
                     current_chat_window_.set(user.getChatWindow());
                     current_chat_tab_.set(user);
                     tab.setStyle("-fx-background-color: #3574F0");
-                    anchorPane.getChildren().clear();
+                    current_chat_window_pane_.get().getChildren().clear();
                     rewriteUserActive();
                     user.setIsActive(true);
                     var pane = user.getSwitchChatPane().get();
-                    anchorPane.getChildren().add(pane);
+                    current_chat_window_pane_.get().getChildren().add(pane);
                     AnchorPane.setTopAnchor(pane, 0.0);
                     AnchorPane.setBottomAnchor(pane, 0.0);
                     AnchorPane.setLeftAnchor(pane, 0.0);
                     AnchorPane.setRightAnchor(pane, 0.0);
                 }});
 
-            vBox.getChildren().add(tab);
+            user_list_box_.get().getChildren().add(tab);
         }
     }
 
-    // 数据同步（预留接口）
-    public void synchronizeData()
-    {
-        //username_title_label_.textProperty().bindBidirectional(view_model_.getUsername_title_property());
 
-    }
+
+
 
     private void setupBindings() {
         BooleanBinding allLoaded = Bindings.createBooleanBinding(
@@ -143,6 +177,7 @@ public class ChatPageViewModel {
         setting_stage_.show();
     }
     public void showContactAgree(){
+        contact_agree_controller_.refreshUserRequest();
         contact_agree_stage_.show();}
 
 
@@ -195,4 +230,7 @@ public class ChatPageViewModel {
 
 
 
+
+    public ObjectProperty<VBox> user_list_box_Property() {return user_list_box_;}
+    public ObjectProperty<AnchorPane> current_chat_window_pane_Property() {return current_chat_window_pane_;}
 }

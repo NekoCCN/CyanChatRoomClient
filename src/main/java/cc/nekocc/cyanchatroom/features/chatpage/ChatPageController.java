@@ -85,24 +85,20 @@ public class ChatPageController implements Initializable {
     public void initialize(URL url, ResourceBundle resource_bundle)
     {
         setupBind();
-        addListerner();
     }
 
 
-    private void addListerner(){
-        view_model_.getLoadOver().addListener((observableValue, aBoolean, t1) -> {
-            if (t1)
-            {
+    public void loadLeakUI(){
                 setupAnimation();
                 setupStyle();
                 setupUI();
                 contact_list = ViewTool.loadFXML("fxml/ContactList.fxml").getController();
-                synchronizeData();
                 setupEvent();
-                view_model_.loadUserList(user_list_vbox_,chat_windows_pane_);
+                view_model_.refreshUserList(false);
+                view_model_.synchronizeStage();
+                synchronizeData();
 
-            }
-        });
+
     }
 
     // 动画设置
@@ -114,7 +110,6 @@ public class ChatPageController implements Initializable {
 
 
     public void synchronizeData() {
-        view_model_.synchronizeData();
         contact_list.syncContact(view_model_.getUserList());
     }
 
@@ -169,6 +164,7 @@ public class ChatPageController implements Initializable {
         talk_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  talk_icon_)
             {
+                view_model_.refreshUserList(true);
                 view_model_.loadLastWindow();
                 if(!view_model_.isCurrentChatWindowNULL())
                     chat_windows_pane_.getChildren().add(view_model_.getCurrentChatWindow());
@@ -274,6 +270,8 @@ public class ChatPageController implements Initializable {
         setting_shown_.bindBidirectional(view_model_.getSettingShown());
         contact_agreement_shown_.bindBidirectional(view_model_.getContactAgreeShown());
         enter_button_.disableProperty().bind(view_model_.getCurrentChatWindowProperty().isNull());
+        view_model_.user_list_box_Property().set(user_list_vbox_);
+        view_model_.current_chat_window_pane_Property().set(chat_windows_pane_);
     }
 
     public AnchorPane getRootPane()

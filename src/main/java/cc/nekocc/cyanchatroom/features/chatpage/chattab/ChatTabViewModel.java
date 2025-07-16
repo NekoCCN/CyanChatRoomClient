@@ -62,7 +62,7 @@ public class ChatTabViewModel {
         {
             user_name_property_.set(response.getPayload().nick_name());
             status_property_.set(StatusFactory.fromUser(response.getPayload()));
-            is_loaded_property_.bind(user_name_property_.isNotEqualTo("未加载").and(status_property_.isNotNull().and(user_name_property_.isNotEmpty())));
+            is_loaded_property_.bind(status_property_.isNotNull().and(user_name_property_.isNotEmpty()));
             System.out.println("用户数据同步成功,username :"+user_name_property_.get()+" status:"+status_property_.get().toString());
         });
 
