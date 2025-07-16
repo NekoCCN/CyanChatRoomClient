@@ -51,21 +51,18 @@ public class ContactAgreeController implements Initializable {
         refreshUserRequest();
         setupStyle();
         setupEvent();
-        refresh_button_.setOnAction(_-> {
-            if (refresh_callback_ != null)
-                refresh_callback_.refresh();
-        });
+
     }
 
 
-    private void addUserRequest(Friendship firendship,String usename, String avatar_url){
-
+    private void addUserRequest(Friendship firendship,String username, String avatar_url){
+        System.out.println("addUserRequest username : "+ username);
         AnchorPane user_request_box = new AnchorPane();
-        StackPane default_avatar = ViewTool.getDefaultAvatar(usename);
+        StackPane default_avatar = ViewTool.getDefaultAvatar(username);
         AnchorPane.setTopAnchor(default_avatar, 10.0);
         AnchorPane.setLeftAnchor(default_avatar, 10.0);
         AnchorPane.setBottomAnchor(default_avatar, 10.0);
-        Label username_label = new Label(usename);
+        Label username_label = new Label(username);
         AnchorPane.setTopAnchor(username_label, 20.0);
         AnchorPane.setLeftAnchor(username_label, 80.0);
         username_label.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 18));
@@ -97,6 +94,18 @@ public class ContactAgreeController implements Initializable {
                     });
 
                 });
+                refuse_button.setOnAction(_->{
+                    AppRepository.getInstance().rejectFriendshipRequest(firendship.getId()).thenAccept(response -> {
+                        if(response.getPayload().status()) {
+                            ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已拒绝好友请求");
+                            if (refresh_callback_ != null)
+                                refresh_callback_.refresh();
+                        }else{
+                            ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "拒绝好友请求失败");
+                        }
+                        refreshUserRequest();
+                    });
+                });
                 AnchorPane.setTopAnchor(accept_button, 50.0);
                 AnchorPane.setLeftAnchor(accept_button, 80.0);
                 AnchorPane.setTopAnchor(refuse_button, 50.0);
@@ -105,7 +114,22 @@ public class ContactAgreeController implements Initializable {
 
             }
         }
-        else if(firendship.getStatus() == FriendshipRequestStatus.ACCEPTED)
+        else if(firendship.getStatus() == FriendshipRequestStatus.ACCEPTED){
+            Label status_label = new Label("已接受 ");
+            status_label.getStyleClass().add(Styles.TEXT_UNDERLINED);
+            AnchorPane.setTopAnchor(status_label, 50.0);
+            AnchorPane.setLeftAnchor(status_label, 80.0);
+            status_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 14));
+            user_request_box.getChildren().addAll(default_avatar,username_label,status_label);
+        }
+        else if(firendship.getStatus() == FriendshipRequestStatus.REJECTED){
+            Label status_label = new Label("拒绝");
+            status_label.getStyleClass().add(Styles.WARNING);
+            AnchorPane.setTopAnchor(status_label, 50.0);
+            AnchorPane.setLeftAnchor(status_label, 80.0);
+            status_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 14));
+            user_request_box.getChildren().addAll(default_avatar,username_label,status_label);
+        }
 
         user_request_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
         user_request_box.setPrefWidth(Control.USE_COMPUTED_SIZE);
@@ -118,7 +142,8 @@ public class ContactAgreeController implements Initializable {
 
 
     public void refreshUserRequest() {
-
+        System.out.println("refreshUserRequest");
+        scroll_contain_pane.getChildren().clear();
         AppRepository.getInstance().getFriendshipList(current_uuid).thenAccept(response -> {
             if(!response.getPayload().status() ){
                 ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "无法获取好友列表");
@@ -182,6 +207,7 @@ public class ContactAgreeController implements Initializable {
                                        userid_input_.clear();
                                        if (refresh_callback_ != null)
                                            refresh_callback_.refresh();
+                                       refreshUserRequest();
                                    }
                                    else{
                                        ViewTool.showAlert(Alert.AlertType.ERROR, "发送好友请求失败", "请检查网络");
@@ -191,6 +217,9 @@ public class ContactAgreeController implements Initializable {
                         }
                     });
                 }
+            });
+            refresh_button_.setOnAction(_-> {
+                refreshUserRequest();
             });
 
         });
