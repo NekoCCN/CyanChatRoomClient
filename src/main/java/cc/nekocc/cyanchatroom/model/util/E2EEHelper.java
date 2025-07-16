@@ -77,7 +77,7 @@ public class E2EEHelper
         GCMParameterSpec gcm_spec = new GCMParameterSpec(128, iv);
         cipher.init(Cipher.DECRYPT_MODE, key, gcm_spec);
         byte[] decrypted_text = cipher.doFinal(cipher_text);
-        return new String(decrypted_text, "UTF-8");
+        return new String(decrypted_text, StandardCharsets.UTF_8);
     }
 
     public static PublicKey publicKeyFromBase64(String base64_public_key) throws Exception

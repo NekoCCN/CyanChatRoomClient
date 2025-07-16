@@ -1,4 +1,4 @@
-package cc.nekocc.cyanchatroom.model.dto.request;
+package cc.nekocc.cyanchatroom.model.dto.request.e2ee;
 
 import com.google.gson.JsonObject;
 import java.util.UUID;

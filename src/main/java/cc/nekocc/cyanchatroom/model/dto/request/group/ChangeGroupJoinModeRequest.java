@@ -1,4 +1,4 @@
-package cc.nekocc.cyanchatroom.model.dto.request;
+package cc.nekocc.cyanchatroom.model.dto.request.group;
 
 import cc.nekocc.cyanchatroom.model.entity.GroupJoinMode;
 import java.util.UUID;
