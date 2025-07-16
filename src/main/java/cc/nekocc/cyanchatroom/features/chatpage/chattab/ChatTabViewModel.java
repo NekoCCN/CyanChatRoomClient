@@ -1,15 +1,13 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab;
 
 import atlantafx.base.theme.Styles;
-import cc.nekocc.cyanchatroom.domain.User;
+import cc.nekocc.cyanchatroom.Buffer.Buffer;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
 import cc.nekocc.cyanchatroom.util.ViewTool;
-import javafx.application.Platform;
 import javafx.beans.property.*;
-import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -20,50 +18,85 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 
 // 聊天标签视图模型以及对应的聊天窗的父类节点
 public class ChatTabViewModel {
 
 
-       private final ChatWindowsController chat_windows_controller ;
-       private final ObjectProperty<Parent> chat_windows_property_ = new SimpleObjectProperty<>();
+       private ChatWindowsController chat_windows_controller ;
        private UUID opposite_user_id;
        private final StringProperty user_name_property_ = new SimpleStringProperty(" ");
        private final SimpleObjectProperty<Status> status_property_ = new SimpleObjectProperty<>();
-       private final BooleanProperty is_loaded_property_ = new SimpleBooleanProperty();
-
+       private  BiConsumer<String, Status> sync_data_callback_ = null;
 
 
     public ChatTabViewModel() {
         //   this.opposite_user_id = UUID.fromString("0197ef89-9434-7056-ba9d-ba56aba677a1");
            chat_windows_controller = ViewTool.loadFXML("fxml/ChatWindow.fxml").getController();
-        if (chat_windows_controller != null) {
-            chat_windows_property_.set(chat_windows_controller.getRoot_pane_());
-        }else{
+        if (chat_windows_controller == null) {
             throw new NullPointerException("聊天窗加载失败");
         }
     }
 
-    public ChatTabViewModel(ChatTabViewModel copy_,UUID uuid){
+    /**
+     *  现在tab的创建会先尝试绑定buffer中的现存的窗口，如果没有就新建
+     *  需要优化的点是这个切换的过程有明显的撕裂感
+     *  我需要尽快优化这个刷新的过程
+     */
+    public ChatTabViewModel(ChatTabViewModel copy_, UUID uuid, ChatTabController chattab, SimpleObjectProperty<AnchorPane> callback, BiConsumer<String, Status>  Datacallback){
         this.opposite_user_id = uuid;
-        chat_windows_controller = copy_.getChatWindowCopy();
+        chat_windows_controller = findChatWindowBuffer();
+        if(chat_windows_controller == null) {
+            chat_windows_controller = copy_.getChatWindowCopy();
+            Buffer.chat_window_list_.add(chat_windows_controller);
+        }
         if (chat_windows_controller != null) {
             chat_windows_controller.reLoad();
-            chat_windows_property_.set(chat_windows_controller.getRoot_pane_());
         }else{
             throw new NullPointerException("聊天窗加载失败");
         }
-        synchronizeData();
+        this.sync_data_callback_ = Datacallback;
+        synchronizeData(chattab,callback);
     }
 
-    public void synchronizeData(){
+    private ChatWindowsController findChatWindowBuffer(){
+        for(ChatWindowsController chat_windows_controller_:Buffer.chat_window_list_)
+            if(chat_windows_controller_.getUserID().equals(opposite_user_id)) {
+                return chat_windows_controller_;
+            }
+        return null;
+    }
+
+
+    // 核心操作，刷新数据
+    public void synchronizeData(ChatTabController chattab,SimpleObjectProperty<AnchorPane>  callback){
         AppRepository.getInstance().getUserDetails(opposite_user_id).thenAccept(response ->
         {
             user_name_property_.set(response.getPayload().nick_name());
             status_property_.set(StatusFactory.fromUser(response.getPayload()));
-            is_loaded_property_.bind(status_property_.isNotNull().and(user_name_property_.isNotEmpty()));
             System.out.println("用户数据同步成功,username :"+user_name_property_.get()+" status:"+status_property_.get().toString());
+            synchronizeToWindow();
+            callback.set(this.getChatTabPane(chattab));
+            callback.get().setOnMouseClicked(_ ->{
+                Buffer.rewriteUserActive();
+                chattab.setIsActive( true);
+                callback.get().setStyle("-fx-background-color: #3574F0");
+                Buffer.chat_windows_contain_.get().getChildren().clear();
+                AnchorPane.setLeftAnchor(chat_windows_controller.getRoot_pane_(), 0.0);
+                AnchorPane.setRightAnchor(chat_windows_controller.getRoot_pane_(), 0.0);
+                AnchorPane.setTopAnchor(chat_windows_controller.getRoot_pane_(), 0.0);
+                AnchorPane.setBottomAnchor(chat_windows_controller.getRoot_pane_(), 0.0);
+                Buffer.current_chat_window_.set(chat_windows_controller);
+                Buffer.chat_windows_contain_.get().getChildren().add(chat_windows_controller.getRoot_pane_());
+            });
+            if(Buffer.current_chat_window_.get() == chat_windows_controller ) {
+                chattab.setIsActive(true);
+                callback.get().setStyle("-fx-background-color: #3574F0");
+            }
+            sync_data_callback_.accept(user_name_property_.get(),status_property_.get());
+            Buffer.user_list_box_.get().getChildren().add(callback.get());
         });
 
     }
@@ -95,11 +128,11 @@ public class ChatTabViewModel {
         user_status_label_.setStyle("-fx-text-fill:"+status_property_.get().getColor() );
         AnchorPane tab = new AnchorPane(tab_circle,tab_data_);
         tab.getStyleClass().addAll(Styles.ACCENT);
-        tab.setOnMouseEntered(e->{
+        tab.setOnMouseEntered(_ ->{
             if(!chattab.isActive())
                 tab.setStyle("-fx-background-color: #E7E7E7");
         });
-        tab.setOnMouseExited(e->{
+        tab.setOnMouseExited(_ ->{
             if(!chattab.isActive())
                 tab.setStyle("-fx-background-color: transparent");
         });
@@ -114,11 +147,7 @@ public class ChatTabViewModel {
     }
 
     public void synchronizeToWindow() {
-        chat_windows_controller.syncUserData(user_name_property_.get());
-    }
-
-    public ObjectProperty<Parent> getChatWindowPane() {
-        return chat_windows_property_;
+        chat_windows_controller.syncUserData(user_name_property_.get(),opposite_user_id);
     }
 
     public UUID getOppositeID() {
@@ -143,5 +172,5 @@ public class ChatTabViewModel {
 
 
     public ChatWindowsController getChatWindow(){return chat_windows_controller;}
-    public BooleanProperty getLoadingProperty(){return is_loaded_property_;}
 }
+

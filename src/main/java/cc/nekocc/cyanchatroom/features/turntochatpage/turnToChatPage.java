@@ -4,17 +4,14 @@ package cc.nekocc.cyanchatroom.features.turntochatpage;
 
 import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.Navigator;
-import cc.nekocc.cyanchatroom.features.chatpage.ChatPageController;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.animation.*;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -45,26 +42,23 @@ public class turnToChatPage implements Initializable {
 
     private RotateTransition rotate;
     private String local_name ;
-    private ChatPageController chat_page_controller;
+    private FXMLLoader chat_page_loader;
     private FadeTransition username_animation;
     private final PauseTransition pauseTransition = new PauseTransition(Duration.millis(1000));
-    private final PauseTransition long_pauseTransition = new PauseTransition(Duration.millis(10000));
     private final EventHandler<WindowEvent> windowShownHandler = _ -> {
         rotate.playFromStart();
         username_animation.playFromStart();
         pauseTransition.playFromStart();
     };
-    private ChangeListener<Boolean> loadOverListener;
 
 
 
     public turnToChatPage(){}
     public void initialize(URL var1, ResourceBundle var2) {
         local_name =AppRepository.getInstance().currentUserProperty().get().getNickname();
-        chat_page_controller = ViewTool.loadFXML("fxml/ChatPage.fxml").getController();
+        chat_page_loader = ViewTool.loadFXML("fxml/ChatPage.fxml");
         sysnotifydata();
         setupStyle();
-        setupResponsiveLayout();
         setupAnimation();
         setupTips();
     }
@@ -107,22 +101,7 @@ public class turnToChatPage implements Initializable {
         tip_label_.getStyleClass().addAll(Styles.TEXT_NORMAL);
     }
 
-    private void setupResponsiveLayout()
-    {
 
-        pack_pane_.sceneProperty().addListener((scene_observable, old_scene, new_scene) ->
-        {
-            if (old_scene == null && new_scene != null)
-            {
-                new_scene.windowProperty().addListener((window_observable, old_window, new_window) -> {
-                    if (old_window == null && new_window != null) {
-                        loading_backgound_.fitWidthProperty().bind(pack_pane_.widthProperty());
-                        loading_backgound_.fitHeightProperty().bind(pack_pane_.heightProperty());
-                    }
-                });
-            }
-        });
-    }
     private void setupAnimation(){
 
         rotate = new RotateTransition(Duration.seconds(1), loading_icon_);
@@ -134,46 +113,21 @@ public class turnToChatPage implements Initializable {
         username_animation.setFromValue(0);
         username_animation.setToValue(1);
         Navigator.getStage().getScene().getWindow().addEventHandler(WindowEvent.WINDOW_SHOWN, windowShownHandler);
-        long_pauseTransition.setOnFinished(event-> {
-            Platform.runLater(()->{ViewTool.showAlert(Alert.AlertType.WARNING,"警告","加载失败，可能是加载列表的错误，建议清理缓存和数据后重试\n小概率代码的错误（并非小概率）",false).showAndWait().ifPresent(response->{
-                if(response == ButtonType.OK){
-                    Platform.exit();
-                    System.exit(0);
-                }
-            });});
-            chat_page_controller.getLoadOver().removeListener(loadOverListener);
 
 
-        });
 
-        pauseTransition.setOnFinished(event-> {
-            if(chat_page_controller.getLoadOver().get())
-                turnToNextPage();
-            else {
-                addListener();
-                long_pauseTransition.playFromStart();
-            }
-        });
+
+
+        pauseTransition.setOnFinished(_ -> turnToNextPage());
         pauseTransition.setCycleCount(1);
     }
-    private void addListener()
-    {
-        loadOverListener = (observable, oldValue, newValue) -> {
-            if (newValue) {
-                turnToNextPage();
-            }
-        };
-        chat_page_controller.getLoadOver().addListener(loadOverListener);
-
-    }
-
     public void turnToNextPage()
     {
         System.out.println("turn to next page");
         Navigator.getStage().getScene().getWindow().removeEventHandler(WindowEvent.WINDOW_SHOWN, windowShownHandler);
         Navigator.getStage().setResizable(true);
-        chat_page_controller.loadLeakUI();
-        Navigator.navigateTo(chat_page_controller.getRootPane(), Navigator.AnimationType.FADE);
+        Navigator.navigateTo((Parent)chat_page_loader.getRoot(), Navigator.AnimationType.FADE);
+
     }
 
 

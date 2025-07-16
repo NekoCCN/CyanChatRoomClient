@@ -1,20 +1,15 @@
 package cc.nekocc.cyanchatroom.features.chatpage.contact;
 
-import cc.nekocc.cyanchatroom.domain.User;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
-import com.sun.source.tree.Tree;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class ContactListController implements Initializable {
@@ -33,6 +28,8 @@ public class ContactListController implements Initializable {
     private final TreeItem<String> Do_not_disturb_root = new TreeItem<>("");
     private final TreeItem<String> Offline_root = new TreeItem<>("");
     private final TreeItem<String> Black_root = new TreeItem<>("");
+
+
 
 
     public ContactListController() {}
@@ -81,25 +78,27 @@ public class ContactListController implements Initializable {
         return contact_tree_;
     }
 
-
-
-    public void syncContact(ArrayList<ChatTabController> users) {
-        for(ChatTabController user: users)
-        {
-            switch(user.getStatus()) {
-                case ONLINE -> view_model_.syncContact(Online_root,user);
-                case BUSY -> view_model_.syncContact(Busy_root,user);
-                case AWAY -> view_model_.syncContact(Away_root,user);
-                case DO_NOT_DISTURB -> view_model_.syncContact(Do_not_disturb_root,user);
-                case OFFLINE-> view_model_.syncContact(Offline_root,user);
-            }
-        }
+    public void clearContactList() {
+        Online_root.getChildren().clear();
+        Busy_root.getChildren().clear();
+        Away_root.getChildren().clear();
+        Do_not_disturb_root.getChildren().clear();
+        Offline_root.getChildren().clear();
+        Black_root.getChildren().clear();
     }
 
+    public void addContact(String username,Status user) {
+        switch (user) {
+            case ONLINE -> view_model_.syncContact(Online_root,username);
+            case BUSY -> view_model_.syncContact(Busy_root,username);
+            case AWAY -> view_model_.syncContact(Away_root,username);
+            case DO_NOT_DISTURB -> view_model_.syncContact(Do_not_disturb_root, username);
+            case OFFLINE -> view_model_.syncContact(Offline_root, username);
 
 
+        }
 
 
-
+    }
 
 }

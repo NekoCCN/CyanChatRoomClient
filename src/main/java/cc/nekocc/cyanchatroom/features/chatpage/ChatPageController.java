@@ -1,8 +1,8 @@
 package cc.nekocc.cyanchatroom.features.chatpage;
 
 
+import cc.nekocc.cyanchatroom.Buffer.Buffer;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
 import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
@@ -74,7 +74,6 @@ public class ChatPageController implements Initializable {
     private Node current_list_node;
     private final DropShadow glow_effect_ = new DropShadow();
     private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
-    private ContactListController   contact_list ;
     private final KeyCodeCombination send_message_ = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
     private final ContextMenu message_input_menu_ = new ContextMenu();
 
@@ -85,22 +84,13 @@ public class ChatPageController implements Initializable {
     public void initialize(URL url, ResourceBundle resource_bundle)
     {
         setupBind();
-    }
-
-
-    public void loadLeakUI(){
-                setupAnimation();
-                setupStyle();
-                setupUI();
-                contact_list = ViewTool.loadFXML("fxml/ContactList.fxml").getController();
-                setupEvent();
-                view_model_.refreshUserList(false);
-                view_model_.synchronizeStage();
-                synchronizeData();
-
+        setupAnimation();
+        setupStyle();
+        setupUI();
+        setupEvent();
+        view_model_.synchronizeStage();
 
     }
-
     // 动画设置
     private void setupAnimation() {
         glow_effect_.setColor(Color.rgb(73,136,240)); // 设置发光颜色
@@ -109,9 +99,7 @@ public class ChatPageController implements Initializable {
     }
 
 
-    public void synchronizeData() {
-        contact_list.syncContact(view_model_.getUserList());
-    }
+
 
 
 
@@ -145,10 +133,10 @@ public class ChatPageController implements Initializable {
         deleteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
         MenuItem sendItem = new MenuItem("发送");
         sendItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
-        copyItem.setOnAction(event -> message_input.copy());
-        pasteItem.setOnAction(event -> message_input.paste());
-        deleteItem.setOnAction(event -> message_input.clear());
-        sendItem.setOnAction(event -> enter_button_.fire());
+        copyItem.setOnAction(_ -> message_input.copy());
+        pasteItem.setOnAction(_ -> message_input.paste());
+        deleteItem.setOnAction(_ -> message_input.clear());
+        sendItem.setOnAction(_ -> enter_button_.fire());
         message_input_menu_.getItems().addAll(copyItem, pasteItem, deleteItem, sendItem);
         message_input.setContextMenu(message_input_menu_);
         username_label_.setText(AppRepository.getInstance().currentUserProperty().get().getNickname());
@@ -164,10 +152,9 @@ public class ChatPageController implements Initializable {
         talk_icon_.setOnMouseClicked(_ ->{
             if(current_list_node !=  talk_icon_)
             {
-                view_model_.refreshUserList(true);
-                view_model_.loadLastWindow();
-                if(!view_model_.isCurrentChatWindowNULL())
-                    chat_windows_pane_.getChildren().add(view_model_.getCurrentChatWindow());
+                Buffer.current_chat_window_.set(Buffer.last_window_.get());
+                if(!Buffer.current_chat_window_.isNull().get())
+                    chat_windows_pane_.getChildren().add(Buffer.current_chat_window_.get().getRoot_pane_());
                 current_list_node.setEffect(null);
                 current_list_node = talk_icon_;
                 talk_icon_.setEffect(glow_effect_);
@@ -179,12 +166,13 @@ public class ChatPageController implements Initializable {
             if(current_list_node !=  contact_icon_)
             {
                 chat_windows_pane_.getChildren().clear();
-                view_model_.setCurrentChatWindowNULL();
+                Buffer.last_window_.set(Buffer.current_chat_window_.get());
+                Buffer.current_chat_window_.set(null);
                 current_list_node.setEffect(null);
                 current_list_node = contact_icon_;
                 contact_icon_.setEffect(glow_effect_);
                 scroll_root_pane_.getChildren().clear();
-                scroll_root_pane_.getChildren().add(contact_list.getRootPane());
+                scroll_root_pane_.getChildren().add(view_model_.getContactListPane());
 
             }
         });
@@ -208,7 +196,7 @@ public class ChatPageController implements Initializable {
         });
 
         enter_button_.setOnAction(_ ->{
-            if(!view_model_.isCurrentChatWindowNULL() && !message_input.getText().isEmpty()){
+            if(Buffer.current_chat_window_ != null && !message_input.getText().isEmpty()){
                 view_model_.sendMessageFromMe(message_input.getText());
                 message_input.clear();
                 Input_box_.toFront();
@@ -221,7 +209,7 @@ public class ChatPageController implements Initializable {
         });
 
 
-        user_status_.valueProperty().addListener((observable, oldValue, newValue) -> {
+        user_status_.valueProperty().addListener((_, oldValue, newValue) -> {
             if(newValue != Status.OFFLINE){
             CompletableFuture<ProtocolMessage<GetUserDetailsResponse>> details_future = AppRepository.getInstance().getUserDetails(
                     AppRepository.getInstance().currentUserProperty().get().getId()
@@ -269,20 +257,15 @@ public class ChatPageController implements Initializable {
     private void setupBind(){
         setting_shown_.bindBidirectional(view_model_.getSettingShown());
         contact_agreement_shown_.bindBidirectional(view_model_.getContactAgreeShown());
-        enter_button_.disableProperty().bind(view_model_.getCurrentChatWindowProperty().isNull());
-        view_model_.user_list_box_Property().set(user_list_vbox_);
-        view_model_.current_chat_window_pane_Property().set(chat_windows_pane_);
-    }
+        enter_button_.disableProperty().bind(Buffer.current_chat_window_.isNull());
+        Buffer.user_list_box_.set(user_list_vbox_);
+        Buffer.chat_windows_contain_.set(chat_windows_pane_);
 
-    public AnchorPane getRootPane()
-    {
-        return root_pane_;
     }
 
 
-    public BooleanProperty getLoadOver(){
-        return view_model_.getLoadOver();
-    }
+
+
 
 
 

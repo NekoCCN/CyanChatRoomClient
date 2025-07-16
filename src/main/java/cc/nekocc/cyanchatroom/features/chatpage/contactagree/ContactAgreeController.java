@@ -11,7 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -67,7 +66,7 @@ public class ContactAgreeController implements Initializable {
         AnchorPane.setLeftAnchor(username_label, 80.0);
         username_label.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 18));
         if(firendship.getStatus() == FriendshipRequestStatus.PENDING){
-            if(firendship.getActionUserId() == current_uuid){
+            if(firendship.getActionUserId().equals(current_uuid)){
                 Label status_label = new Label("等待对方接受");
                 AnchorPane.setTopAnchor(status_label, 50.0);
                 AnchorPane.setLeftAnchor(status_label, 80.0);
@@ -81,31 +80,28 @@ public class ContactAgreeController implements Initializable {
                 refuse_button.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 14));
                 accept_button.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
                 refuse_button.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
-                accept_button.setOnAction(_->{
-                    AppRepository.getInstance().acceptFriendshipRequest(firendship.getId()).thenAccept(response -> {
-                        if(response.getPayload().status()) {
-                            ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已接受好友请求");
-                            if (refresh_callback_ != null)
-                                refresh_callback_.refresh();
-                        }else{
-                            ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "接受好友请求失败");
-                        }
+                accept_button.setOnAction(_-> AppRepository.getInstance().acceptFriendshipRequest(firendship.getId()).thenAccept(response -> {
+                    if(response.getPayload().status()) {
+                        ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已接受好友请求");
+                        if (refresh_callback_ != null)
+                            refresh_callback_.refresh();
                         refreshUserRequest();
-                    });
+                    }else{
+                        ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "接受好友请求失败");
+                    }
 
-                });
-                refuse_button.setOnAction(_->{
-                    AppRepository.getInstance().rejectFriendshipRequest(firendship.getId()).thenAccept(response -> {
-                        if(response.getPayload().status()) {
-                            ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已拒绝好友请求");
-                            if (refresh_callback_ != null)
-                                refresh_callback_.refresh();
-                        }else{
-                            ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "拒绝好友请求失败");
-                        }
+                }));
+                refuse_button.setOnAction(_-> AppRepository.getInstance().rejectFriendshipRequest(firendship.getId()).thenAccept(response -> {
+                    if(response.getPayload().status()) {
+                        ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已拒绝好友请求");
+                        if (refresh_callback_ != null)
+                            refresh_callback_.refresh();
                         refreshUserRequest();
-                    });
-                });
+                    }else{
+                        ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "拒绝好友请求失败");
+                    }
+                    refreshUserRequest();
+                }));
                 AnchorPane.setTopAnchor(accept_button, 50.0);
                 AnchorPane.setLeftAnchor(accept_button, 80.0);
                 AnchorPane.setTopAnchor(refuse_button, 50.0);
@@ -180,47 +176,41 @@ public class ContactAgreeController implements Initializable {
     }
 
     private void setupEvent(){
-        search_button_.setOnAction(e->{
-            AppRepository.getInstance().getUuidByUsername(userid_input_.getText().trim()).thenAccept(response->{
-                if (!response.getPayload().request_status())
-                {
-                    ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "用户不存在");
-                }
-                else {
-                    AppRepository.getInstance().getUserDetails(response.getPayload().user_id()).thenAccept(response2 -> {
-                        if (!response2.getPayload().request_status())
-                        {
-                            ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "无法获取用户信息");
-                        }
-                        else{
+        search_button_.setOnAction(e-> AppRepository.getInstance().getUuidByUsername(userid_input_.getText().trim()).thenAccept(response->{
+            if (!response.getPayload().request_status())
+            {
+                ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "用户不存在");
+            }
+            else {
+                AppRepository.getInstance().getUserDetails(response.getPayload().user_id()).thenAccept(response2 -> {
+                    if (!response2.getPayload().request_status())
+                    {
+                        ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "无法获取用户信息");
+                    }
+                    else{
 
-                            username_label_.setText("用户名："+response2.getPayload().username());
-                            user_info_vbox_.getChildren().set(0,ViewTool.getDefaultAvatar(response2.getPayload().nick_name()));
-                            user_nickname_.setText("昵称："+response2.getPayload().nick_name());
-                            user_words_label.setText("个性签名："+response2.getPayload().signature());
-                            user_info_send_requset_.setVisible( true);
-                            send_request_button_.setOnAction(_->{
-                                AppRepository.getInstance().sendFriendshipRequest(response.getPayload().user_id()).thenAccept(response3 ->{
-                                   if(response3.getPayload().status()) {
-                                       ViewTool.showAlert(Alert.AlertType.INFORMATION, "发送好友请求", "已发送好友请求");
-                                       user_info_send_requset_.setVisible(false);
-                                       userid_input_.clear();
-                                       if (refresh_callback_ != null)
-                                           refresh_callback_.refresh();
-                                       refreshUserRequest();
-                                   }
-                                   else{
-                                       ViewTool.showAlert(Alert.AlertType.ERROR, "发送好友请求失败", "请检查网络");
-                                   }
-                                });
-                            });
-                        }
-                    });
-                }
-            });
-
-
-        });
+                        username_label_.setText("用户名："+response2.getPayload().username());
+                        user_info_vbox_.getChildren().set(0,ViewTool.getDefaultAvatar(response2.getPayload().nick_name()));
+                        user_nickname_.setText("昵称："+response2.getPayload().nick_name());
+                        user_words_label.setText("个性签名："+response2.getPayload().signature());
+                        user_info_send_requset_.setVisible( true);
+                        send_request_button_.setOnAction(_-> AppRepository.getInstance().sendFriendshipRequest(response.getPayload().user_id()).thenAccept(response3 ->{
+                           if(response3.getPayload().status()) {
+                               ViewTool.showAlert(Alert.AlertType.INFORMATION, "发送好友请求", "已发送好友请求");
+                               user_info_send_requset_.setVisible(false);
+                               userid_input_.clear();
+                               if (refresh_callback_ != null)
+                                   refresh_callback_.refresh();
+                               refreshUserRequest();
+                           }
+                           else{
+                               ViewTool.showAlert(Alert.AlertType.ERROR, "发送好友请求失败", "请检查网络");
+                           }
+                        }));
+                    }
+                });
+            }
+        }));
 
 
         refresh_button_.setOnAction(_-> {

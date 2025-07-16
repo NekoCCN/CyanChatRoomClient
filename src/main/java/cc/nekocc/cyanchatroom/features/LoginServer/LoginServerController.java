@@ -47,26 +47,14 @@ public class LoginServerController implements Initializable {
 
     private void setupAnimation(){
         connecting_animation_.getKeyFrames().addAll(
-                new KeyFrame(Duration.seconds(0.3), e -> {
-                    connection_status_.setText("正在链接服务器.");
-                }),
-                new KeyFrame(Duration.seconds(0.6), e -> {
-                    connection_status_.setText("正在链接服务器. .");
-                }),
-                new KeyFrame(Duration.seconds(0.9), e -> {
-                    connection_status_.setText("正在链接服务器. . .");
-                })
+                new KeyFrame(Duration.seconds(0.3), _ -> connection_status_.setText("正在链接服务器.")),
+                new KeyFrame(Duration.seconds(0.6), _ -> connection_status_.setText("正在链接服务器. .")),
+                new KeyFrame(Duration.seconds(0.9), _ -> connection_status_.setText("正在链接服务器. . ."))
         );
         reconnecting_animation_.getKeyFrames().addAll(
-                new KeyFrame(Duration.seconds(0.3), e -> {
-                    connection_status_.setText("正在重连服务器.");
-                }),
-                new KeyFrame(Duration.seconds(0.6), e -> {
-                    connection_status_.setText("正在重连服务器. .");
-                }),
-                new KeyFrame(Duration.seconds(0.9), e -> {
-                    connection_status_.setText("正在重连服务器. . .");
-                })
+                new KeyFrame(Duration.seconds(0.3), _ -> connection_status_.setText("正在重连服务器.")),
+                new KeyFrame(Duration.seconds(0.6), _ -> connection_status_.setText("正在重连服务器. .")),
+                new KeyFrame(Duration.seconds(0.9), _ -> connection_status_.setText("正在重连服务器. . ."))
         );
         reconnecting_animation_.setCycleCount(Timeline.INDEFINITE);
         connecting_animation_.setCycleCount(Timeline.INDEFINITE);
@@ -74,8 +62,8 @@ public class LoginServerController implements Initializable {
     private void setupEvent(){
         login_button_.setOnAction(_ ->{
 
-            AppRepository.getInstance().connectToServer(server_ip_input_.getText());
-            AppRepository.getInstance().connectionStatusProperty().addListener(((observableValue, connectionStatus, t1) -> {
+            AppRepository.getInstance().connectToServer(server_ip_input_.getText().trim());
+            AppRepository.getInstance().connectionStatusProperty().addListener(((_, _, t1) -> {
                 if(t1 == AppRepository.ConnectionStatus.CONNECTING) {
                     connecting_animation_.playFromStart();
                     login_button_.setDisable(true);

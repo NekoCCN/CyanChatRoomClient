@@ -1,13 +1,11 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab;
 
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.scene.Parent;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.layout.AnchorPane;
 
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 
 // 聊天界面中右侧聊天窗口的索引窗
@@ -19,26 +17,19 @@ public class ChatTabController {
     private final ChatTabViewModel view_model;
 
     // 用户标签
-    private AnchorPane tab_ = new AnchorPane();
+    private final SimpleObjectProperty<AnchorPane> tab_ = new SimpleObjectProperty<>();
 
-    public ChatTabController(ChatTabViewModel copy,UUID uuid){
-        view_model = new ChatTabViewModel(copy,uuid);
-    }
-
-    public ObjectProperty<Parent> getSwitchChatPane(){
-        return view_model.getChatWindowPane();
+    public ChatTabController(ChatTabViewModel copy, UUID uuid,  BiConsumer<String, Status> callback){
+        view_model = new ChatTabViewModel(copy,uuid,this,tab_,callback);
     }
 
 
-    public AnchorPane getFirstUserTab(){
-        tab_ =view_model.getChatTabPane(this);
-        view_model.synchronizeToWindow();
-        return tab_;
-    }
+
+
 
     public AnchorPane getUserTab(){
 
-        return tab_;}
+        return tab_.get();}
 
 
 
@@ -54,20 +45,6 @@ public class ChatTabController {
         return view_model.getOppositeStatus();
     }
 
-    public String getUserName() {
-        return view_model.getOppositeUserName();
-    }
-
-    public BooleanProperty getIsLoaded() {
-        return view_model.getLoadingProperty();
-    }
 
 
-    public ChatWindowsController getChatWindow(){
-        return view_model.getChatWindow();
-    }
-
-    public boolean isLoaded() {
-        return view_model.getLoadingProperty().get();
-    }
 }

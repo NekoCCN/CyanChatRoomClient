@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 public class ChatWindowsController implements Initializable,Cloneable{
 
@@ -54,13 +55,13 @@ public class ChatWindowsController implements Initializable,Cloneable{
         setupAnimation();
     }
     private void setupAnimation() {
-        delay.setOnFinished(event ->
+        delay.setOnFinished(_ ->
                 scroll_pane_.setVvalue(1.0));
 
     }
-
-
-
+    public UUID getUserID() {
+        return view_model_.getOppositeID();
+    }
     public void reLoad(){
         setupUI();
         setupAnimation();
@@ -76,19 +77,14 @@ public class ChatWindowsController implements Initializable,Cloneable{
         withdrawItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
         MenuItem deleteItem = new MenuItem("删除");
         deleteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
-        copyItem.setOnAction(event -> {
+        copyItem.setOnAction(_ -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
             content.putString(label.getText());
             clipboard.setContent(content);
         });
-        withdrawItem.setOnAction(event -> {
-            container_pane_.getChildren().remove(container);
-        });
-        deleteItem.setOnAction(event -> {
-            container_pane_.getChildren().remove(container);
-
-        });
+        withdrawItem.setOnAction(_ -> container_pane_.getChildren().remove(container));
+        deleteItem.setOnAction(_ -> container_pane_.getChildren().remove(container));
         message_menu_.getItems().addAll(copyItem,repostItem);
         if(enabledWithDraw)
             message_menu_.getItems().add(withdrawItem);
@@ -184,7 +180,7 @@ public class ChatWindowsController implements Initializable,Cloneable{
         Text username = new Text(view_model_.getUserName());
         username.setStyle("-fx-fill: black;");
         username.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD,14));
-        Text time = new Text(LocalDate.now().toString()+" "+ LocalTime.now().toString().substring(0, 5));
+        Text time = new Text(LocalDate.now() +" "+ LocalTime.now().toString().substring(0, 5));
         time.setStyle("-fx-fill: #B0B0B0");
         time.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL,10));
         VBox message_box_with_name = new VBox(username,message_label,time);
@@ -206,9 +202,10 @@ public class ChatWindowsController implements Initializable,Cloneable{
 
 
     // 同步User数据
-    public void syncUserData(String username) {
+    public void syncUserData(String username, UUID opposite_id) {
         username_label_.setText(username);
         view_model_.setUserName(username);
+        view_model_.setOppositeID(opposite_id);
     }
 
 
@@ -246,7 +243,6 @@ public class ChatWindowsController implements Initializable,Cloneable{
             clone.username_label_.setTextFill(this.username_label_.getTextFill()); // #1e1f22
 
             if (this.username_label_.getFont() != null) {
-                Font originalFont = this.username_label_.getFont();
                 clone.username_label_.setFont(new Font(
                         "Microsoft YaHei UI", // 字体名称
                         20.0 // 字体大小
