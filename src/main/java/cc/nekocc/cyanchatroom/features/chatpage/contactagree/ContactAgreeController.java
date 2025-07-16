@@ -109,7 +109,7 @@ public class ContactAgreeController implements Initializable {
                 AnchorPane.setTopAnchor(accept_button, 50.0);
                 AnchorPane.setLeftAnchor(accept_button, 80.0);
                 AnchorPane.setTopAnchor(refuse_button, 50.0);
-                AnchorPane.setLeftAnchor(refuse_button, 120.0);
+                AnchorPane.setLeftAnchor(refuse_button, 150.0);
                 user_request_box.getChildren().addAll(default_avatar,username_label,accept_button,refuse_button);
 
             }
@@ -142,7 +142,7 @@ public class ContactAgreeController implements Initializable {
 
 
     public void refreshUserRequest() {
-        System.out.println("refreshUserRequest");
+        System.out.println("刷新好友申请 UUID" + current_uuid );
         scroll_contain_pane.getChildren().clear();
         AppRepository.getInstance().getFriendshipList(current_uuid).thenAccept(response -> {
             if(!response.getPayload().status() ){
@@ -218,13 +218,15 @@ public class ContactAgreeController implements Initializable {
                     });
                 }
             });
-            refresh_button_.setOnAction(_-> {
-                refreshUserRequest();
-            });
+
 
         });
 
 
+        refresh_button_.setOnAction(_-> {
+            System.out.println("刷新按钮按下");
+            refreshUserRequest();
+        });
 
 
     }
