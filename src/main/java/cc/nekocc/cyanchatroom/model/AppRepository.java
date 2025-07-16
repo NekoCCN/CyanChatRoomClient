@@ -4,6 +4,7 @@
     import cc.nekocc.cyanchatroom.model.dto.request.*;
     import cc.nekocc.cyanchatroom.model.dto.request.e2ee.FetchKeysRequest;
     import cc.nekocc.cyanchatroom.model.dto.request.e2ee.PublishKeysRequest;
+    import cc.nekocc.cyanchatroom.model.dto.request.friendship.*;
     import cc.nekocc.cyanchatroom.model.dto.request.group.*;
     import cc.nekocc.cyanchatroom.model.dto.request.user.*;
     import cc.nekocc.cyanchatroom.model.dto.response.*;
@@ -288,7 +289,8 @@
         public CompletableFuture<ProtocolMessage<StatusResponse>> generateAndRegisterKeys()
         {
             User current_user = current_user_.get();
-            if (current_user == null) return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
+            if (current_user == null)
+                return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
 
             try
             {
@@ -527,6 +529,89 @@
         }
 
         /*
+         * 好友相关
+         */
+        /**
+         * 发送好友请求。
+         * @param receiver_id 接收者用户的唯一标识符
+         * @return 一个CompletableFuture，完成时包含状态响应
+         */
+        public CompletableFuture<ProtocolMessage<StatusResponse>> sendFriendshipRequest(UUID receiver_id)
+        {
+            User current_user = current_user_.get();
+            if (current_user == null)
+            {
+                return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
+            }
+
+            UUID client_request_id = UUID.randomUUID();
+            SendFriendshipRequest payload = new SendFriendshipRequest(client_request_id, current_user.getId(), receiver_id);
+
+            return sendRequestWithFuture(MessageType.SEND_FRIENDSHIP_REQUEST, payload, client_request_id, StatusResponse.class);
+        }
+
+        /**
+         * 接受好友请求。
+         * @param request_id 好友请求的唯一标识符
+         * @return 一个CompletableFuture，完成时包含状态响应
+         */
+        public CompletableFuture<ProtocolMessage<StatusResponse>> acceptFriendshipRequest(UUID request_id)
+        {
+            UUID client_request_id = UUID.randomUUID();
+            AcceptFriendshipRequest payload = new AcceptFriendshipRequest(client_request_id, request_id);
+            return sendRequestWithFuture(MessageType.ACCEPT_FRIENDSHIP_REQUEST, payload, client_request_id, StatusResponse.class);
+        }
+
+        /**
+         * 拒绝好友请求。
+         * @param request_id 好友请求的唯一标识符
+         * @return 一个CompletableFuture，完成时包含状态响应
+         */
+        public CompletableFuture<ProtocolMessage<StatusResponse>> rejectFriendshipRequest(UUID request_id)
+        {
+            UUID client_request_id = UUID.randomUUID();
+            RejectFriendshipRequest payload = new RejectFriendshipRequest(client_request_id, request_id);
+            return sendRequestWithFuture(MessageType.REJECT_FRIENDSHIP_REQUEST, payload, client_request_id, StatusResponse.class);
+        }
+
+        /**
+         * 获取指定用户的所有好友关系列表（包括待处理的）。
+         * @param user_id 用户的唯一标识符
+         * @return 一个CompletableFuture，完成时包含好友列表响应
+         */
+        public CompletableFuture<ProtocolMessage<FriendshipListResponse>> getFriendshipList(UUID user_id)
+        {
+            UUID client_request_id = UUID.randomUUID();
+            GetFriendshipListRequest payload = new GetFriendshipListRequest(client_request_id, user_id);
+            return sendRequestWithFuture(MessageType.GET_FRIENDSHIP_LIST_REQUEST, payload, client_request_id, FriendshipListResponse.class);
+        }
+
+        /**
+         * 获取指定用户的已激活的好友列表。
+         * @param user_id 用户的唯一标识符
+         * @return 一个CompletableFuture，完成时包含好友列表响应
+         */
+        public CompletableFuture<ProtocolMessage<FriendshipListResponse>> getActiveFriendshipList(UUID user_id)
+        {
+            UUID client_request_id = UUID.randomUUID();
+            GetFriendshipListRequest payload = new GetFriendshipListRequest(client_request_id, user_id);
+            return sendRequestWithFuture(MessageType.GET_ACTIVE_FRIENDSHIP_LIST_REQUEST, payload, client_request_id, FriendshipListResponse.class);
+        }
+
+        /**
+         * 检查两个用户之间是否存在好友关系。
+         * @param user_id1 用户1的ID
+         * @param user_id2 用户2的ID
+         * @return 一个CompletableFuture，完成时包含检查结果的响应
+         */
+        public CompletableFuture<ProtocolMessage<CheckFriendshipExistsResponse>> checkFriendshipExists(UUID user_id1, UUID user_id2)
+        {
+            UUID client_request_id = UUID.randomUUID();
+            CheckFriendshipExistsRequest payload = new CheckFriendshipExistsRequest(client_request_id, user_id1, user_id2);
+            return sendRequestWithFuture(MessageType.CHECK_FRIENDSHIP_EXISTS_REQUEST, payload, client_request_id, CheckFriendshipExistsResponse.class);
+        }
+
+        /*
          * 请求通用方法
          */
         private <T> void sendRequest(String type, T payload)
@@ -651,6 +736,13 @@
                         break;
                     case "GET_USER_DETAILS_RESPONSE":
                         future.complete(JsonUtil.deserializeProtocolMessage(json_message, GetUserDetailsResponse.class));
+                        break;
+                    case MessageType.GET_FRIENDSHIP_LIST_RESPONSE:
+                    case MessageType.GET_ACTIVE_FRIENDSHIP_LIST_RESPONSE:
+                        future.complete(JsonUtil.deserializeProtocolMessage(json_message, FriendshipListResponse.class));
+                        break;
+                    case MessageType.CHECK_FRIENDSHIP_EXISTS_RESPONSE:
+                        future.complete(JsonUtil.deserializeProtocolMessage(json_message, CheckFriendshipExistsResponse.class));
                         break;
                     case "ERROR_RESPONSE":
                         ErrorResponse error_payload = JsonUtil.deserializeProtocolMessage(json_message, ErrorResponse.class).getPayload();
