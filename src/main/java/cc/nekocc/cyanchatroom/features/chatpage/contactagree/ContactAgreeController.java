@@ -47,7 +47,6 @@ public class ContactAgreeController implements Initializable {
     @Override
     public void initialize(java.net.URL url, java.util.ResourceBundle resourceBundle) {
         current_uuid  = AppRepository.getInstance().currentUserProperty().get().getId();
-        refreshUserRequest();
         setupStyle();
         setupEvent();
 
@@ -138,7 +137,7 @@ public class ContactAgreeController implements Initializable {
 
 
     public void refreshUserRequest() {
-        System.out.println("刷新好友申请 UUID" + current_uuid );
+        System.out.println("刷新好友申请 UUID:" + current_uuid );
         scroll_contain_pane.getChildren().clear();
         AppRepository.getInstance().getFriendshipList(current_uuid).thenAccept(response -> {
             if(!response.getPayload().status() ){

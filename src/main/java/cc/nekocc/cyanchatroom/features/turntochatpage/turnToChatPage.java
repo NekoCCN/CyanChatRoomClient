@@ -44,7 +44,7 @@ public class turnToChatPage implements Initializable {
     private String local_name ;
     private FXMLLoader chat_page_loader;
     private FadeTransition username_animation;
-    private final PauseTransition pauseTransition = new PauseTransition(Duration.millis(1000));
+    private final PauseTransition pauseTransition = new PauseTransition(Duration.millis(2000));
     private final EventHandler<WindowEvent> windowShownHandler = _ -> {
         rotate.playFromStart();
         username_animation.playFromStart();
