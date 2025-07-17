@@ -1,56 +1,56 @@
 package cc.nekocc.cyanchatroom.features.chatpage;
 
-
-import cc.nekocc.cyanchatroom.Buffer.Buffer;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import cc.nekocc.cyanchatroom.model.AppRepository;
-import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
-import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
-import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
-import cc.nekocc.cyanchatroom.util.ViewTool;
-import javafx.application.Platform;
-import javafx.beans.property.*;
-import javafx.fxml.FXML;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
+import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import atlantafx.base.theme.Styles;
+import cc.nekocc.cyanchatroom.model.entity.ConversationType;
+import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.effect.*;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.beans.binding.Bindings;
 
-
-import java.util.ResourceBundle;
+import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.CompletableFuture;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
-
-public class ChatPageController implements Initializable {
-
-    @FXML
-    public TextArea message_input;
-    @FXML
-    public ImageView talk_icon_;
-    @FXML
-    public ImageView contact_icon_;
-    @FXML
-    public ImageView setting_icon_;
-    @FXML
-    public AnchorPane scroll_root_pane_;
-    @FXML
-    public ImageView contact_agreement_icon_;
-    @FXML
-    public AnchorPane Input_box_;
-    @FXML
-    public AnchorPane root_pane_;
+public class ChatPageController implements Initializable
+{
 
     @FXML
-    private Label username_title_label_;   // 用户名
+    private TextArea message_input;
+    @FXML
+    private ImageView talk_icon_;
+    @FXML
+    private ImageView contact_icon_;
+    @FXML
+    private ImageView setting_icon_;
+    @FXML
+    private AnchorPane scroll_root_pane_;
+    @FXML
+    private ImageView contact_agreement_icon_;
+    @FXML
+    private Label username_title_label_;
     @FXML
     private Label username_label_;
     @FXML
@@ -58,216 +58,278 @@ public class ChatPageController implements Initializable {
     @FXML
     private ChoiceBox<Status> user_status_;
     @FXML
-    private Rectangle user_background_rectangle_;
-    @FXML
-    private HBox user_tool_pane_;
-    @FXML
     private AnchorPane chat_windows_pane_;
     @FXML
     private VBox user_list_vbox_;
     @FXML
     private Button enter_button_;
+    @FXML
+    private Button e2ee_enter_button_;
 
+    private ChatPageViewModel view_model_;
+    private ChatWindowsController chat_window_controller_;
+    private ContactListController contact_list_controller_;
+    private Node contact_list_node_;
 
-    private final BooleanProperty setting_shown_  = new SimpleBooleanProperty(false);
-    private final BooleanProperty contact_agreement_shown_ = new SimpleBooleanProperty(false);
-    private Node current_list_node;
+    private final Map<ChatTabViewModel, Node> tab_node_map_ = new HashMap<>();
     private final DropShadow glow_effect_ = new DropShadow();
-    private final ChatPageViewModel view_model_ =  new ChatPageViewModel();
-    private final KeyCodeCombination send_message_ = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
-    private final ContextMenu message_input_menu_ = new ContextMenu();
+    private Node current_active_icon_;
 
-
-
-    public ChatPageController(){}
-    // 初始化
-    public void initialize(URL url, ResourceBundle resource_bundle)
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle)
     {
-        setupBind();
-        setupAnimation();
-        setupStyle();
-        setupUI();
-        setupEvent();
-        view_model_.synchronizeStage();
-
+        this.view_model_ = new ChatPageViewModel();
+        loadSubViews();
+        setupStylesAndEffects();
+        setupBindings();
+        setupEventListeners();
+        setupTabListListener();
     }
-    // 动画设置
-    private void setupAnimation() {
-        glow_effect_.setColor(Color.rgb(73,136,240)); // 设置发光颜色
-        glow_effect_.setSpread(0.8);       // 控制发光范围
+
+    private void loadSubViews()
+    {
+        try
+        {
+            FXMLLoader chat_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ChatWindow.fxml"));
+            AnchorPane chat_window_node = chat_loader.load();
+            chat_window_controller_ = chat_loader.getController();
+            chat_windows_pane_.getChildren().add(chat_window_node);
+            AnchorPane.setTopAnchor(chat_window_node, 0.0);
+            AnchorPane.setBottomAnchor(chat_window_node, 0.0);
+            AnchorPane.setLeftAnchor(chat_window_node, 0.0);
+            AnchorPane.setRightAnchor(chat_window_node, 0.0);
+            chat_window_node.setVisible(false);
+
+            FXMLLoader contact_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ContactList.fxml"));
+            contact_list_node_ = contact_loader.load();
+            contact_list_controller_ = contact_loader.getController();
+            contact_list_controller_.setViewModel(view_model_.getContactListViewModel());
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupStylesAndEffects()
+    {
+        glow_effect_.setColor(Color.rgb(73, 136, 240));
+        glow_effect_.setSpread(0.8);
         glow_effect_.setRadius(12);
-    }
 
-
-
-
-
-
-    // 样式设置
-    private void setupStyle() {
-        user_background_rectangle_.getStyleClass().addAll(Styles.ROUNDED);
-        user_status_.getStyleClass().addAll(Styles.ROUNDED,Styles.ACCENT);
-        username_title_label_.getStyleClass().addAll(Styles.TEXT_MUTED);
-        username_label_.getStyleClass().addAll(Styles.TITLE_1);
-        list_scrollPane_.getStyleClass().addAll(Styles.CENTER_PILL);
-        user_tool_pane_.getStyleClass().addAll(Styles.ROUNDED);
-        enter_button_.getStyleClass().addAll(Styles.ROUNDED,Styles.ACCENT);
-        message_input.getStyleClass().addAll(Styles.BG_ACCENT_MUTED);
-
-
+        current_active_icon_ = talk_icon_;
         talk_icon_.setEffect(glow_effect_);
+
+        user_status_.getStyleClass().addAll(Styles.ROUNDED, Styles.ACCENT);
+        enter_button_.getStyleClass().addAll(Styles.ROUNDED, Styles.ACCENT);
+        e2ee_enter_button_.getStyleClass().addAll(Styles.ROUNDED, Styles.ACCENT);
     }
 
+    private void setupBindings()
+    {
+        username_label_.textProperty().bind(view_model_.currentUsernameProperty());
+        username_title_label_.textProperty().bind(Bindings.createStringBinding(
+                () ->
+                {
+                    String name = view_model_.currentUsernameProperty().get();
+                    return (name == null || name.isEmpty()) ? "" : name.substring(0, 1).toUpperCase();
+                },
+                view_model_.currentUsernameProperty()
+        ));
 
+        user_status_.setItems(FXCollections.observableArrayList(Status.values()));
+        user_status_.valueProperty().bindBidirectional(view_model_.currentUserStatusProperty());
+        enter_button_.disableProperty().bind(view_model_.selectedChatTabProperty().isNull());
 
+        BooleanBinding isGroupChatBinding = Bindings.createBooleanBinding(() ->
+        {
+            ChatTabViewModel selected_tab = view_model_.selectedChatTabProperty().get();
+            if (selected_tab == null)
+            {
+                return false;
+            }
 
-    private void setupUI(){
-        user_status_.getItems().addAll(Status.ONLINE, Status.BUSY, Status.DO_NOT_DISTURB, Status.AWAY,Status.OFFLINE);
-        user_status_.setValue(Status.ONLINE);
-        current_list_node = talk_icon_;
-        MenuItem copyItem = new MenuItem("复制");
-        copyItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
-        MenuItem pasteItem = new MenuItem("粘贴");
-        pasteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
-        MenuItem deleteItem = new MenuItem("清空");
-        deleteItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
-        MenuItem sendItem = new MenuItem("发送");
-        sendItem.setStyle("-fx-text-font: 'Microsoft YaHei';-fx-font-size: 12px");
-        copyItem.setOnAction(_ -> message_input.copy());
-        pasteItem.setOnAction(_ -> message_input.paste());
-        deleteItem.setOnAction(_ -> message_input.clear());
-        sendItem.setOnAction(_ -> enter_button_.fire());
-        message_input_menu_.getItems().addAll(copyItem, pasteItem, deleteItem, sendItem);
-        message_input.setContextMenu(message_input_menu_);
-        username_label_.setText(AppRepository.getInstance().currentUserProperty().get().getNickname());
+            return selected_tab.getConversationType() == ConversationType.GROUP;
+        }, view_model_.selectedChatTabProperty());
 
-
+        e2ee_enter_button_.disableProperty().bind(
+                view_model_.selectedChatTabProperty().isNull()
+                        .or(isGroupChatBinding));
     }
 
-    // 事件设置
-    private void setupEvent()
+    private void setupEventListeners()
     {
         initIconEffect(talk_icon_);
+        talk_icon_.setOnMouseClicked(e -> switchSidePane(ChatPageViewModel.SidePane.TALK, talk_icon_));
+
         initIconEffect(contact_icon_);
-        talk_icon_.setOnMouseClicked(_ ->{
-            if(current_list_node !=  talk_icon_)
+        contact_icon_.setOnMouseClicked(e -> switchSidePane(ChatPageViewModel.SidePane.CONTACTS, contact_icon_));
+
+        initIconEffect(contact_agreement_icon_);
+        contact_agreement_icon_.setOnMouseClicked(e -> view_model_.showContactAgree());
+
+        initIconEffect(setting_icon_);
+        setting_icon_.setOnMouseClicked(e -> view_model_.showSetting());
+
+        final KeyCodeCombination sendMessageCombination = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
+        message_input.setOnKeyPressed(e ->
+        {
+            if (sendMessageCombination.match(e) && view_model_.selectedChatTabProperty().get() != null)
             {
-                Buffer.current_chat_window_.set(Buffer.last_window_.get());
-                if(!Buffer.current_chat_window_.isNull().get())
-                    chat_windows_pane_.getChildren().add(Buffer.current_chat_window_.get().getRoot_pane_());
-                current_list_node.setEffect(null);
-                current_list_node = talk_icon_;
-                talk_icon_.setEffect(glow_effect_);
-                scroll_root_pane_.getChildren().clear();
-                scroll_root_pane_.getChildren().add(list_scrollPane_);
+                view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendMessage();
             }
         });
-        contact_icon_.setOnMouseClicked(_ ->{
-            if(current_list_node !=  contact_icon_)
+
+        enter_button_.setOnAction(e ->
+        {
+            if (view_model_.selectedChatTabProperty().get() != null)
             {
-                chat_windows_pane_.getChildren().clear();
-                Buffer.last_window_.set(Buffer.current_chat_window_.get());
-                Buffer.current_chat_window_.set(null);
-                current_list_node.setEffect(null);
-                current_list_node = contact_icon_;
-                contact_icon_.setEffect(glow_effect_);
-                scroll_root_pane_.getChildren().clear();
-                scroll_root_pane_.getChildren().add(view_model_.getContactListPane());
-
+                view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendMessage();
             }
         });
-        contact_agreement_icon_.setOnMouseEntered(_ -> contact_agreement_icon_.setEffect(new Glow(0.6)));
-        contact_agreement_icon_.setOnMouseExited(_ -> contact_agreement_icon_.setEffect(null));
-        contact_agreement_icon_.setOnMouseClicked(_ ->{
-            if(!contact_agreement_shown_.get())
+
+        e2ee_enter_button_.setOnAction(e ->
+        {
+            if (view_model_.selectedChatTabProperty().get() != null)
             {
-                contact_agreement_shown_.set(true);
-                view_model_.showContactAgree();
+                view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendE2EEMessage();
             }
         });
-        setting_icon_.setOnMouseEntered(_ -> setting_icon_.setEffect(new Glow(0.6)));
-        setting_icon_.setOnMouseExited(_ -> setting_icon_.setEffect(null));
-        setting_icon_.setOnMouseClicked(_ ->{
-            if(!setting_shown_.get())
+
+        view_model_.selectedChatTabProperty().addListener((obs, old_tab, new_tab) ->
+        {
+            updateChatWindow(old_tab, new_tab);
+            updateTabSelectionStyles(new_tab);
+        });
+
+        view_model_.activeSidePaneProperty().addListener((obs, oldPane, newPane) ->
+        {
+            if (newPane == ChatPageViewModel.SidePane.TALK)
             {
-                setting_shown_.set(true);
-                view_model_.showSetting();
+                scroll_root_pane_.getChildren().setAll(list_scrollPane_);
+                chat_windows_pane_.setVisible(true);
+                updateChatWindow(null, view_model_.selectedChatTabProperty().get());
+            } else
+            {
+                scroll_root_pane_.getChildren().setAll(contact_list_node_);
+                chat_windows_pane_.setVisible(false);
             }
         });
+    }
 
-        enter_button_.setOnAction(_ ->{
-            if(Buffer.current_chat_window_ != null && !message_input.getText().isEmpty()){
-                view_model_.sendMessageFromMe(message_input.getText());
-                message_input.clear();
-                Input_box_.toFront();
-
-            }
-        });
-        message_input.setOnKeyPressed(e -> {
-            if(send_message_.match(e))
-                enter_button_.fire();
-        });
-
-
-        user_status_.valueProperty().addListener((_, oldValue, newValue) -> {
-            if(newValue != Status.OFFLINE){
-            CompletableFuture<ProtocolMessage<GetUserDetailsResponse>> details_future = AppRepository.getInstance().getUserDetails(
-                    AppRepository.getInstance().currentUserProperty().get().getId()
-            );
-
-            details_future.thenAccept(response -> {
-                var update_future = AppRepository.getInstance().updateProfile(
-                        response.getPayload().nick_name(),
-                        response.getPayload().signature(),
-                        response.getPayload().avatar_url(),
-                        StatusFactory.fromStatus(newValue)
-                );
-
-                update_future.thenAccept(update_response -> {
-                    if (!update_response.getPayload().status()) {
-                        user_status_.setValue(oldValue);
-                        ViewTool.showAlert(Alert.AlertType.ERROR, "更新状态失败", "发生错误:账户状态修改事件无法正常执行，请检查网路是否链接或者服务器是否还在运行");
+    private void setupTabListListener()
+    {
+        view_model_.getChatTabs().addListener((ListChangeListener<ChatTabViewModel>) c ->
+        {
+            while (c.next())
+            {
+                if (c.wasRemoved())
+                {
+                    c.getRemoved().forEach(tab_node_map_::remove);
+                }
+                if (c.wasAdded())
+                {
+                    for (ChatTabViewModel vm : c.getAddedSubList())
+                    {
+                        if (!tab_node_map_.containsKey(vm))
+                        {
+                            createTabNode(vm);
+                        }
                     }
-                });
+                }
+            }
+            Platform.runLater(this::renderTabsInOrder);
+        });
+    }
 
+    private void createTabNode(ChatTabViewModel vm)
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ChatTab.fxml"));
+            Node tab_node = loader.load();
+            ChatTabController tabController = loader.getController();
+            tabController.setData(vm, () ->
+            {
+                if (view_model_.activeSidePaneProperty().get() != ChatPageViewModel.SidePane.TALK)
+                {
+                    switchSidePane(ChatPageViewModel.SidePane.TALK, talk_icon_);
+                }
+                view_model_.selectedChatTabProperty().set(vm);
             });
+            tab_node_map_.put(vm, tab_node);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
         }
-            else{
-                ViewTool.showAlert(Alert.AlertType.INFORMATION, "离线切换失败", "你要切换离线状态直接退出程序就行。");
-                Platform.runLater(() -> user_status_.setValue(oldValue));
+    }
 
+    private void renderTabsInOrder()
+    {
+        user_list_vbox_.getChildren().setAll(
+                view_model_.getChatTabs().stream()
+                        .map(tab_node_map_::get)
+                        .collect(Collectors.toList())
+        );
+        updateTabSelectionStyles(view_model_.selectedChatTabProperty().get());
+    }
+
+    private void updateTabSelectionStyles(ChatTabViewModel selectedViewModel)
+    {
+        tab_node_map_.forEach((vm, node) ->
+        {
+            if (node != null)
+            {
+                if (vm.equals(selectedViewModel))
+                {
+                    node.setStyle("-fx-background-color: #3574F0; -fx-background-radius: 8;");
+                } else
+                {
+                    node.setStyle("-fx-background-color: transparent;");
+                }
             }
         });
-
-
     }
 
-    // 图标悬停效果初始化
-    private void initIconEffect(ImageView icon) {
-        icon.setOnMouseEntered(_ ->{
-            if(current_list_node !=  icon)
-                icon.setEffect(new Glow(0.6));
+    private void updateChatWindow(ChatTabViewModel oldTab, ChatTabViewModel newTab)
+    {
+        if (newTab == null)
+        {
+            chat_window_controller_.getRootPane().setVisible(false);
+        } else
+        {
+            if (oldTab != null)
+            {
+                message_input.textProperty().unbindBidirectional(oldTab.getChatWindowViewModel().messageInputTextProperty());
+            }
+            message_input.textProperty().bindBidirectional(newTab.getChatWindowViewModel().messageInputTextProperty());
+            message_input.clear();
+
+            chat_window_controller_.setViewModel(newTab.getChatWindowViewModel());
+            chat_window_controller_.getRootPane().setVisible(true);
+        }
+    }
+
+    private void switchSidePane(ChatPageViewModel.SidePane pane, ImageView icon)
+    {
+        if (current_active_icon_ != icon)
+        {
+            current_active_icon_.setEffect(null);
+            icon.setEffect(glow_effect_);
+            current_active_icon_ = icon;
+            view_model_.activeSidePaneProperty().set(pane);
+        }
+    }
+
+    private void initIconEffect(ImageView icon)
+    {
+        icon.setOnMouseEntered(e ->
+        {
+            if (current_active_icon_ != icon) icon.setEffect(new Glow(0.6));
         });
-        icon.setOnMouseExited(_ ->{
-            if(current_list_node !=  icon)
-                icon.setEffect(null);
+        icon.setOnMouseExited(e ->
+        {
+            if (current_active_icon_ != icon) icon.setEffect(null);
         });
     }
-
-    private void setupBind(){
-        setting_shown_.bindBidirectional(view_model_.getSettingShown());
-        contact_agreement_shown_.bindBidirectional(view_model_.getContactAgreeShown());
-        enter_button_.disableProperty().bind(Buffer.current_chat_window_.isNull());
-        Buffer.user_list_box_.set(user_list_vbox_);
-        Buffer.chat_windows_contain_.set(chat_windows_pane_);
-
-    }
-
-
-
-
-
-
-
-
 }

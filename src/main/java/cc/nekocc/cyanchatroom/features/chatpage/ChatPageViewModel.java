@@ -1,156 +1,253 @@
 package cc.nekocc.cyanchatroom.features.chatpage;
 
-
-import cc.nekocc.cyanchatroom.Buffer.Buffer;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
-import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
-import cc.nekocc.cyanchatroom.features.chatpage.contact.SyncDataCallBack;
+import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
+import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeViewModel;
 import cc.nekocc.cyanchatroom.model.AppRepository;
+import cc.nekocc.cyanchatroom.model.entity.ConversationType;
+import cc.nekocc.cyanchatroom.model.entity.Message;
+import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
 import cc.nekocc.cyanchatroom.util.ViewTool;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.application.Platform;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
-
+import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import static cc.nekocc.cyanchatroom.Buffer.Buffer.current_chat_window_;
+public class ChatPageViewModel
+{
 
-public class ChatPageViewModel implements SyncDataCallBack {
+    private final AppRepository app_repository_ = AppRepository.getInstance();
 
+    private final StringProperty current_username_ = new SimpleStringProperty();
+    private final ObjectProperty<Status> current_user_status_ = new SimpleObjectProperty<>();
 
-    // 设置这个窗口是否在显示
-    private final BooleanProperty setting_shown = new SimpleBooleanProperty();
-    // 好友申请是否在显示
-    private final BooleanProperty contact_agree_shown = new SimpleBooleanProperty();
-    // 这个是设置窗口
+    private final ConcurrentHashMap<UUID, ChatTabViewModel> chat_tab_map_ = new ConcurrentHashMap<>();
+    private final ObservableList<ChatTabViewModel> chat_tabs_ = FXCollections.observableArrayList();
+    private final ObjectProperty<ChatTabViewModel> selected_chat_tab_ = new SimpleObjectProperty<>();
+
+    public enum SidePane
+    {TALK, CONTACTS}
+
+    private final ObjectProperty<SidePane> active_side_pane_ = new SimpleObjectProperty<>(SidePane.TALK);
+
+    private final BooleanProperty setting_shown_ = new SimpleBooleanProperty(false);
+    private final BooleanProperty contact_agree_shown_ = new SimpleBooleanProperty(false);
     private Stage setting_stage_;
-    // 这个是好友申请窗口
     private Stage contact_agree_stage_;
-    // 这个是好友申请窗口控制器
-    private ContactAgreeController contact_agree_controller_ ;
-    // 这个是ChatWindow那个源本，后续的chatwindow都是从这个深拷贝的
-    private final ChatTabViewModel copy_info_ = new ChatTabViewModel();
-    // 好友列表的控制器
-    private ContactListController contact_list ;
+    private final ContactListViewModel contact_list_view_model_ = new ContactListViewModel();
 
-    public ChatPageViewModel(){
-        initialize();
+    public ChatPageViewModel()
+    {
+        setupListeners();
+        loadInitialData();
     }
 
-    private void initialize(){
-        initUserList();
-    }
-
-    /**
-     * 这个方法用于刷新用户的列表，动画表现上就是先删除用户然后突然出现
-     * 目前这个函数的调用只会在好友申请中完成了添加，删除好友，和关闭窗口的时候实现
-     * 然后有一点没有优化的是，我的chatwindow目前还在chattab里面没有分开，意味着刷新的时候你当前的聊天窗口也会直接消失
-     * 我目前打算将所有chatwindow存到缓存池当中，然后这样列表的刷新不影响当天聊天窗口的存在
-     *刷新用户列表操作**/
-    public void refreshUserList(){
-        Buffer.user_tab_list_.clear();
-        Buffer.user_list_box_.get().getChildren().clear();
-        initUserList();
-        System.out.println("刷新用户列表");
-    }
-
-    // 初始化用户列表
-    private void initUserList(){
-        if(contact_list != null)
-            contact_list.clearContactList();
-        AppRepository.getInstance().getActiveFriendshipList(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response -> {
-            UUID current_uuid = AppRepository.getInstance().currentUserProperty().get().getId();
-            for (var user_info : response.getPayload().friendships())
+    private void setupListeners()
+    {
+        app_repository_.currentUserProperty().addListener((obs, oldUser, newUser) -> Platform.runLater(() ->
+        {
+            if (newUser != null)
             {
-                UUID temp =  user_info.getUserOneId().equals(current_uuid) ? user_info.getUserTwoId() : user_info.getUserOneId();
-                Buffer.user_tab_list_.add(new ChatTabController(copy_info_,temp, this::syncContact));
-                System.out.println("添加用户: " + temp);
+                current_username_.set(newUser.getNickname());
+                AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
+                {
+                    currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
+                });
+                loadActiveFriendships();
+            } else
+            {
+                chat_tabs_.clear();
+                chat_tab_map_.clear();
+                current_username_.set("");
+            }
+        }));
+        app_repository_.addMessageListener(this::handleIncomingMessage);
+    }
+
+    private void loadInitialData()
+    {
+        if (app_repository_.currentUserProperty().get() != null)
+        {
+            current_username_.set(app_repository_.currentUserProperty().get().getNickname());
+            AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
+            {
+                currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
+            });
+            loadActiveFriendships();
+        }
+    }
+
+    public void loadActiveFriendships()
+    {
+        UUID currentUserId = app_repository_.currentUserProperty().get().getId();
+        app_repository_.getActiveFriendshipList(currentUserId).thenAccept(response ->
+        {
+            if (response != null && response.getPayload().friendships() != null)
+            {
+                // Java 流比 C++ Ranges 舒服不少看起来
+                var newTabs = response.getPayload().friendships().stream()
+                        .map(friendship ->
+                        {
+                            UUID oppositeId = friendship.getUserOneId().equals(currentUserId) ? friendship.getUserTwoId() : friendship.getUserOneId();
+                            return chat_tab_map_.computeIfAbsent(oppositeId, id -> new ChatTabViewModel(id, ConversationType.USER, contact_list_view_model_::addOrUpdateContact));
+                        })
+                        .collect(Collectors.toList());
+                Platform.runLater(() -> chat_tabs_.setAll(newTabs));
             }
         });
     }
 
-    // 这个是给好友列表添加好友的回调函数，使用的BiConsumer<String, Status>
-    @Override
-    public void syncContact(String  username, Status status){
-        contact_list.addContact(username,status);
-    }
-
-    // 前端Controller喊viewmodel初始化一些舞台的函数
-    public void synchronizeStage(){
-        loadSetting();
-        loadContactAgree();
-        loadContactList();
-    }
-
-    private void loadContactList(){
-        contact_list = ViewTool.loadFXML("fxml/ContactList.fxml").getController();
-
-    }
-
-    public AnchorPane getContactListPane(){
-        return contact_list.getRootPane();
-    }
-
-
-    public void loadContactAgree(){
-
-        FXMLLoader loader = ViewTool.loadFXML("fxml/ContactAgreePage.fxml");
-        contact_agree_controller_ = loader.getController();
-        contact_agree_controller_.setRefreshCallback(this::refreshUserList);
-        contact_agree_stage_ = new Stage();
-        contact_agree_stage_.setTitle("添加联系人");
-        contact_agree_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/contact_agree_page_icon.png")))));
-        contact_agree_stage_.setScene(new Scene(loader.getRoot()));
-        contact_agree_stage_.setOnCloseRequest(_ -> {
-            contact_agree_shown.set(false);
-            refreshUserList();
-        });
-    }
-
-    public void sendMessageFromMe(String message)
+    public void updateUserStatus(Status new_status)
     {
-        AppRepository.getInstance().sendMessage("USER",current_chat_window_.get().getUserID(), "TEXT", false, message);
-        Buffer.current_chat_window_.get().sendMessageFromMe(message);
+        if (new_status == null || new_status == current_user_status_.get())
+            return;
+
+        if (new_status == Status.OFFLINE)
+        {
+            Platform.runLater(() -> AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
+            {
+                currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
+            }));
+            ViewTool.showAlert(Alert.AlertType.INFORMATION, "离线切换失败", "你要切换离线状态直接退出程序就行。");
+            return;
+        }
+
+        UUID currentUserId = app_repository_.currentUserProperty().get().getId();
+        app_repository_.getUserDetails(currentUserId)
+                .thenCompose(response -> app_repository_.updateProfile(
+                        response.getPayload().nick_name(),
+                        response.getPayload().signature(),
+                        response.getPayload().avatar_url(),
+                        StatusFactory.fromStatus(new_status)
+                ))
+                .thenAccept(updateResponse ->
+                {
+                    if (updateResponse != null && updateResponse.getPayload().status())
+                    {
+                        Platform.runLater(() -> current_user_status_.set(new_status));
+                    } else
+                    {
+                        Platform.runLater(() ->
+                        {
+                            AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
+                            {
+                                currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
+                            });
+                            ViewTool.showAlert(Alert.AlertType.ERROR, "更新状态失败", "发生错误:账户状态修改事件无法正常执行，请检查网络是否链接或者服务器是否还在运行");
+                        });
+                    }
+                });
     }
 
-
-    public void loadSetting(){
-        setting_stage_ = new Stage();
-        setting_stage_.setTitle("设置");
-        setting_stage_.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/setting_stage_icon.png")))));
-        setting_stage_.setScene(new Scene(ViewTool.loadFXML("fxml/Setting.fxml").getRoot()));
-        setting_stage_.setOnCloseRequest(_ -> setting_shown.set(false));
+    private void handleIncomingMessage(Message message)
+    {
+        if (message.isOutgoing())
+            return;
+        ChatTabViewModel targetTab = chat_tab_map_.get(message.getConversationId());
+        if (targetTab != null)
+        {
+            targetTab.getChatWindowViewModel().receiveMessage(message);
+        } else
+        {
+            loadActiveFriendships();
+        }
     }
 
-    public void showSetting(){
+    public void showSetting()
+    {
+        if (setting_stage_ == null)
+        {
+            setting_stage_ = new Stage();
+            setting_stage_.setTitle("设置");
+            setting_stage_.getIcons().add((new Image(Objects.requireNonNull(getClass().getResource("/Image/setting_stage_icon.png")).toExternalForm())));
+            setting_stage_.setScene(new Scene(ViewTool.loadFXML("fxml/Setting.fxml").getRoot()));
+            setting_shown_.bind(setting_stage_.showingProperty());
+        }
         setting_stage_.show();
-    }
-    public void showContactAgree(){
-        contact_agree_controller_.refreshUserRequest();
-        contact_agree_stage_.show();}
-
-
-
-
-    public BooleanProperty getSettingShown(){
-        return setting_shown;
+        setting_stage_.toFront();
     }
 
+    public void showContactAgree()
+    {
+        if (contact_agree_stage_ == null)
+        {
+            try
+            {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ContactAgreePage.fxml"));
+                Scene scene = new Scene(loader.load());
+                ContactAgreeController controller = loader.getController();
+                controller.setViewModel(new ContactAgreeViewModel(this::loadActiveFriendships));
 
-
-
-    public BooleanProperty getContactAgreeShown() {
-        return contact_agree_shown;
+                contact_agree_stage_ = new Stage();
+                contact_agree_stage_.setTitle("好友管理");
+                contact_agree_stage_.getIcons().add((new Image(Objects.requireNonNull(getClass().getResource("/Image/contact_agree_page_icon.png")).toExternalForm())));
+                contact_agree_stage_.setScene(scene);
+                contact_agree_stage_.setUserData(controller);
+                contact_agree_shown_.bind(contact_agree_stage_.showingProperty());
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        contact_agree_stage_.show();
+        contact_agree_stage_.toFront();
+        ContactAgreeController controller = (ContactAgreeController) contact_agree_stage_.getUserData();
+        if (controller != null)
+        {
+            controller.refreshUserRequest();
+        }
     }
 
+    public ObservableList<ChatTabViewModel> getChatTabs()
+    {
+        return chat_tabs_;
+    }
 
+    public ObjectProperty<ChatTabViewModel> selectedChatTabProperty()
+    {
+        return selected_chat_tab_;
+    }
 
+    public StringProperty currentUsernameProperty()
+    {
+        return current_username_;
+    }
+
+    public ObjectProperty<Status> currentUserStatusProperty()
+    {
+        return current_user_status_;
+    }
+
+    public BooleanProperty settingShownProperty()
+    {
+        return setting_shown_;
+    }
+
+    public BooleanProperty contactAgreeShownProperty()
+    {
+        return contact_agree_shown_;
+    }
+
+    public ObjectProperty<SidePane> activeSidePaneProperty()
+    {
+        return active_side_pane_;
+    }
+
+    public ContactListViewModel getContactListViewModel()
+    {
+        return contact_list_view_model_;
+    }
 }

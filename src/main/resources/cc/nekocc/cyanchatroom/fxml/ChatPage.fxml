@@ -31,43 +31,39 @@
                </padding></TextArea>
                 <Button fx:id="enter_button_" mnemonicParsing="false" prefHeight="30.0" prefWidth="70.0" text="发送" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
                     <font>
-                        <Font name="Arial Narrow Bold" size="14.0" />
+                        <Font name="Arial Narrow Bold" size="12.0" />
                     </font>
                 </Button>
+            <Button fx:id="e2ee_enter_button_" layoutX="539.0" layoutY="88.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="70.0" text="E2EE发送" AnchorPane.bottomAnchor="55.0" AnchorPane.rightAnchor="10.0">
+               <font>
+                  <Font name="Arial Narrow Bold" size="12.0" />
+               </font>
+            </Button>
             </AnchorPane>
         </AnchorPane>
         <HBox fx:id="user_tool_pane_" style="-fx-border-color: #CDCDCD; -fx-border-width: 2; -fx-background-radius: 5; -fx-border-radius: 5;">
             <AnchorPane>
-                <AnchorPane layoutY="3.0" prefHeight="80.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                            AnchorPane.topAnchor="0.0">
-                    <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4"
-                               height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" visible="false"
-                               width="200.0"/>
+                <AnchorPane layoutY="3.0" prefHeight="80.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <Rectangle fx:id="user_background_rectangle_" arcHeight="20.0" arcWidth="20.0" fill="#f4f4f4" height="80.0" stroke="#bbbbbb" strokeType="INSIDE" strokeWidth="2.0" visible="false" width="200.0" />
                     <StackPane layoutX="10.0" layoutY="10.0">
-                        <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE"/>
+                        <Circle fill="#dbdbdb" radius="30.0" stroke="#dbdbdb" strokeType="INSIDE" />
                         <Label fx:id="username_title_label_" alignment="CENTER" text="G">
                             <font>
-                                <Font name="Microsoft YaHei Bold" size="29.0"/>
+                                <Font name="Microsoft YaHei Bold" size="29.0" />
                             </font>
                         </Label>
                     </StackPane>
                     <Label fx:id="username_label_" layoutX="81.0" layoutY="-3.0" text="Geonstar">
                         <font>
-                            <Font name="Segoe UI Symbol" size="23.0"/>
+                            <Font name="Segoe UI Symbol" size="23.0" />
                         </font>
                     </Label>
-                    <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0"/>
+                    <ChoiceBox fx:id="user_status_" layoutX="81.0" layoutY="34.0" prefHeight="30.0" prefWidth="92.0" />
                 </AnchorPane>
-                <Line endX="100.0" layoutX="101.0" layoutY="84.0" startX="-100.0" stroke="#cdcdcd" strokeWidth="2.0"
-                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0"/>
-                <AnchorPane fx:id="scroll_root_pane_" layoutY="80.0" maxWidth="202.0" AnchorPane.bottomAnchor="0.0"
-                            AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
-                    <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER"
-                                maxWidth="202.0"
-                                style="-fx-background: transparent; -fx-background-color: transparent;"
-                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <VBox fx:id="user_list_vbox_" maxWidth="202.0"/>
+                <Line endX="100.0" layoutX="101.0" layoutY="84.0" startX="-100.0" stroke="#cdcdcd" strokeWidth="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0" />
+                <AnchorPane fx:id="scroll_root_pane_" layoutY="80.0" maxWidth="202.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
+                    <ScrollPane fx:id="list_scrollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxWidth="202.0" style="-fx-background: transparent; -fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox fx:id="user_list_vbox_" maxWidth="202.0" />
                     </ScrollPane>
                 </AnchorPane>
             </AnchorPane>
@@ -79,13 +75,11 @@
                 <ImageView fx:id="contact_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
                     <Image url="@../../../../Image/contack_icon.png" />
                 </ImageView>
-                <ImageView fx:id="contact_agreement_icon_" fitHeight="42.0" fitWidth="42.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@../../../../Image/contact_agrement_icon.png"/>
+                <ImageView fx:id="contact_agreement_icon_" fitHeight="42.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../../../../Image/contact_agrement_icon.png" />
                 </ImageView>
-                <ImageView fx:id="setting_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@../../../../Image/setting_icon.png"/>
+                <ImageView fx:id="setting_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../../../../Image/setting_icon.png" />
                 </ImageView>
             </VBox>
         </HBox>
