@@ -189,71 +189,73 @@ public class AppRepository
     /*
      * 发送消息相关
      */
-
+    public ObservableList<Message> getObservableMessagesForConversation(UUID conversation_id)
+    {
+        User current_user = current_user_.get();
+        if (current_user == null)
+        {
+            return FXCollections.observableArrayList();
+        }
+        return conversation_messages_.computeIfAbsent(conversation_id, id ->
+        {
+            System.out.println("缓存未命中，正在为对话 " + id + " 从数据库加载历史消息...");
+            List<Message> history = persistence_service_.getAllMessagesForConversation(server_address_, current_user.getId(), id);
+            System.out.println("为对话 " + id + " 加载了 " + history.size() + " 条历史消息。");
+            return FXCollections.observableArrayList(history);
+        });
+    }
     /**
-     * 发送消息到指定的接收者。
+     * 异步发送聊天消息请求。
      * @param recipient_type 接收者类型，可以是 "USER" 或 "GROUP"
      * @param recipient_id 接收者的唯一标识符
      * @param content_type 内容类型，例如 "TEXT" "FILE" 或 "IMAGE"
      * @param is_encrypted 是否加密消息
      * @param content 消息内容
+     * @return 一个 CompletableFuture，完成时包含发送状态的响应
      */
-    private void sendMessageInternal(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
+    private CompletableFuture<ProtocolMessage<StatusResponse>> sendChatMessageRequestAsync(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
     {
         User current_user = current_user_.get();
         if (current_user == null)
         {
-            last_error_message_.set("错误: 发送消息前必须登录。");
-            return;
+            return CompletableFuture.failedFuture(new IllegalStateException("用户未登录，无法发送消息。"));
         }
         Message local_message = new Message(recipient_id, current_user.getId(), true, content_type, content);
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
-        sendRequest(MessageType.CHAT_MESSAGE, new ChatMessageRequest(UUID.randomUUID(), recipient_type,
-                recipient_id, content_type, is_encrypted, content));
+        UUID client_request_id = UUID.randomUUID();
+        ChatMessageRequest payload = new ChatMessageRequest(client_request_id, recipient_type, recipient_id, content_type, is_encrypted, content);
+
+        return sendRequestWithFuture(MessageType.CHAT_MESSAGE, payload, client_request_id, StatusResponse.class);
     }
     /**
-     * 发送消息到指定的接收者。
+     * 发送普通（非加密）消息到指定的接收者。
      * @param recipient_type 接收者类型，可以是 "USER" 或 "GROUP"
      * @param recipient_id 接收者的唯一标识符
      * @param content_type 内容类型，例如 "TEXT" "FILE" 或 "IMAGE"
      * @param is_encrypted 是否加密消息
      * @param content 消息内容
+     * @return 一个 CompletableFuture，完成时包含发送状态的响应
      */
-    public void sendMessage(String recipient_type, UUID recipient_id, String content_type, boolean is_encrypted, String content)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> sendMessage(String recipient_type, UUID recipient_id, String content_type,
+                                                                          boolean is_encrypted, String content)
     {
-        sendMessageInternal(recipient_type, recipient_id, content_type, is_encrypted, content);
+        return sendChatMessageRequestAsync(recipient_type, recipient_id, content_type, is_encrypted, content);
     }
 
-    /*
-     * E2EE 相关
-     */
     /**
      * 发送加密的文本消息到指定的接收者。
      * @param recipient_id 接收者的唯一标识符
-     * @param plain_text 明文消息内容
-     * @throws Exception 如果密钥协商失败或其他错误
+     * @param plain_text 明文内容
+     * @return 一个 CompletableFuture，完成时包含发送状态的响应
      */
-    /**
-
-     * 发送加密的文本消息到指定的接收者。
-
-     * @param recipient_id 接收者的唯一标识符
-
-     * @param plain_text 明文消息内容
-
-     * @throws Exception 如果密钥协商失败或其他错误
-
-     */
-
-    public void sendEncryptedTextMessage(UUID recipient_id, String plain_text)
+    public CompletableFuture<ProtocolMessage<StatusResponse>> sendEncryptedTextMessage(UUID recipient_id, String plain_text)
     {
         User current_user = current_user_.get();
-
         if (current_user == null)
         {
             last_error_message_.set("用户未登录");
-            return;
+            return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
         }
 
         SecretKey session_key = session_keys_.get(recipient_id);
@@ -263,54 +265,49 @@ public class AppRepository
             try
             {
                 String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
-                sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
+                return sendChatMessageRequestAsync("USER", recipient_id, "TEXT", true, encrypted_content);
             } catch (Exception e)
             {
                 last_error_message_.set("加密失败: " + e.getMessage());
+                return CompletableFuture.failedFuture(e);
             }
-            return;
         }
 
         System.out.println("没有找到会话密钥, 开始密钥交换...");
-        fetchKeys(recipient_id).thenAccept(responseMsg ->
+        return fetchKeys(recipient_id).thenComposeAsync(responseMsg ->
         {
             FetchKeysResponse payload = responseMsg.getPayload();
 
-            if (payload.succeed())
+            if (!payload.succeed())
             {
-                try
-                {
-                    // 生成自己的临时密钥对 前向加密
-                    KeyPair ephemeral_key_pair = E2EEHelper.generateKeyPair();
+                String error_msg = "无法获取对方密钥，无法发送加密消息。";
+                Platform.runLater(() -> last_error_message_.set(error_msg));
+                return CompletableFuture.failedFuture(new RuntimeException(error_msg));
+            }
 
-                    // 解析对方的身份公钥
-
-                    JsonObject key_bundle = JsonParser.parseString(payload.public_key_bundle()).getAsJsonObject();
-                    String identity_key_base64 = key_bundle.get("identityKey").getAsString();
-                    PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
-
-                    // 派生会话密钥
-                    SecretKey new_session_key = E2EEHelper.deriveSharedSecret(ephemeral_key_pair.getPrivate(), recipient_identity_key);
-                    session_keys_.put(recipient_id, new_session_key);
-
-                    // 加密真实消息
-                    String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
-
-                    // 创建包含临时公钥和密文的特殊内容
-                    JsonObject init_payload = new JsonObject();
-
-                    init_payload.addProperty("ephemeral_pub_key", Base64.getEncoder().encodeToString(ephemeral_key_pair.getPublic().getEncoded()));
-                    init_payload.addProperty("ciphertext", encrypted_content);
-
-                    // 发送E2EE初始化消息
-                    sendMessageInternal("USER", recipient_id, "E2EE_INIT", true, init_payload.toString());
-                } catch (Exception e)
-                {
-                    Platform.runLater(() -> last_error_message_.set("密钥协商失败: " + e.getMessage()));
-                }
-            } else
+            try
             {
-                Platform.runLater(() -> last_error_message_.set("无法获取对方密钥，无法发送加密消息。"));
+                KeyPair ephemeral_key_pair = E2EEHelper.generateKeyPair();
+                JsonObject key_bundle = JsonParser.parseString(payload.public_key_bundle()).getAsJsonObject();
+                String identity_key_base64 = key_bundle.get("identityKey").getAsString();
+                PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
+
+                SecretKey new_session_key = E2EEHelper.deriveSharedSecret(ephemeral_key_pair.getPrivate(), recipient_identity_key);
+                session_keys_.put(recipient_id, new_session_key);
+
+                String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
+
+                JsonObject init_payload = new JsonObject();
+                init_payload.addProperty("ephemeral_pub_key", Base64.getEncoder().encodeToString(ephemeral_key_pair.getPublic().getEncoded()));
+                init_payload.addProperty("ciphertext", encrypted_content);
+
+                return sendChatMessageRequestAsync("USER", recipient_id, "E2EE_INIT", true, init_payload.toString());
+
+            } catch (Exception e)
+            {
+                String error_msg = "密钥协商失败: " + e.getMessage();
+                Platform.runLater(() -> last_error_message_.set(error_msg));
+                return CompletableFuture.failedFuture(new RuntimeException(error_msg, e));
             }
         });
     }
@@ -882,6 +879,12 @@ public class AppRepository
 
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
+        final UUID final_conversation_id = conversation_id;
+        Platform.runLater(() -> {
+            ObservableList<Message> messageList = getObservableMessagesForConversation(final_conversation_id);
+            messageList.add(local_message);
+        });
+
         for (Consumer<Message> listener : message_listeners_)
         {
             Platform.runLater(() -> listener.accept(local_message));
@@ -939,7 +942,7 @@ public class AppRepository
             return FXCollections.observableArrayList(history);
         });
     }
-    public ObservableList<Message> getAllMessagesForConversation(UUID conversation_id, int block)
+    public ObservableList<Message> getAllMessagesForConversation(UUID conversation_id, UUID block)
     {
         return conversation_messages_.computeIfAbsent(conversation_id, id ->
         {
