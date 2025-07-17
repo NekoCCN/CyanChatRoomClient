@@ -1,6 +1,8 @@
 package cc.nekocc.cyanchatroom.features.chatpage.contact;
 
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TreeItem;
@@ -11,94 +13,95 @@ import javafx.scene.text.Text;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
-public class ContactListController implements Initializable {
+public class ContactListController implements Initializable
+{
 
     @FXML
     private AnchorPane contact_tree_;
     @FXML
-    private TreeView root_list_;
+    private TreeView<String> root_list_;
 
-    private final ContactListViewModel view_model_ = new ContactListViewModel();
-    private final TreeItem<String> contact_root = new TreeItem<>("联系人");
-    private final TreeItem<String> group_root  = new TreeItem<>("群聊");
-    private final TreeItem<String> Online_root = new TreeItem<>("");
-    private final TreeItem<String> Busy_root = new TreeItem<>("");
-    private final TreeItem<String> Away_root = new TreeItem<>("");
-    private final TreeItem<String> Do_not_disturb_root = new TreeItem<>("");
-    private final TreeItem<String> Offline_root = new TreeItem<>("");
-    private final TreeItem<String> Black_root = new TreeItem<>("");
+    private ContactListViewModel view_model_;
+    private final TreeItem<String> contact_root_ = new TreeItem<>("好友");
+    private final TreeItem<String> group_root_ = new TreeItem<>("");
+    private final TreeItem<String> online_root_ = new TreeItem<>("");
+    private final TreeItem<String> busy_root_ = new TreeItem<>("");
+    private final TreeItem<String> away_root_ = new TreeItem<>("");
+    private final TreeItem<String> do_not_disturb_root_ = new TreeItem<>("");
+    private final TreeItem<String> offline_root_ = new TreeItem<>("");
 
+    public void setViewModel(ContactListViewModel viewModel)
+    {
+        this.view_model_ = viewModel;
+        bindLists();
+    }
 
-
-
-    public ContactListController() {}
-    public void initialize(URL url, ResourceBundle resource_bundle) {
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle)
+    {
         setupList();
         setupStyle();
-
     }
 
-    private void setupStyle(){
-        AnchorPane.setBottomAnchor(contact_tree_,0.0);
-        AnchorPane.setTopAnchor(contact_tree_,0.0);
-        AnchorPane.setLeftAnchor(contact_tree_,0.0);
-        AnchorPane.setRightAnchor(contact_tree_,0.0);
+    private void setupStyle()
+    {
+        AnchorPane.setBottomAnchor(contact_tree_, 0.0);
+        AnchorPane.setTopAnchor(contact_tree_, 0.0);
+        AnchorPane.setLeftAnchor(contact_tree_, 0.0);
+        AnchorPane.setRightAnchor(contact_tree_, 0.0);
     }
 
-
-    private void setupList() {
+    private void setupList()
+    {
         TreeItem<String> root = new TreeItem<>();
         root_list_.setRoot(root);
-        root.getChildren().addAll(contact_root,group_root);
-        contact_root.getChildren().addAll(Online_root,Busy_root,Away_root,Do_not_disturb_root,Offline_root,Black_root);
-        Text online = new Text("在线");
-        online.setFill(Color.web(Status.ONLINE.getColor(),1.0));
-        Online_root.setGraphic(online);
-        Text busy = new Text("忙碌");
-        busy.setFill(Color.web(Status.BUSY.getColor(),1.0));
-        Busy_root.setGraphic(busy);
-        Text away = new Text("离开");
-        away.setFill(Color.web(Status.AWAY.getColor(),1.0));
-        Away_root.setGraphic(away);
-        Text do_not_disturb = new Text("勿打扰");
-        do_not_disturb.setFill(Color.web(Status.DO_NOT_DISTURB.getColor(),1.0));
-        Do_not_disturb_root.setGraphic(do_not_disturb);
-        Text offline = new Text("离线");
-        offline.setFill(Color.web(Status.OFFLINE.getColor(),1.0));
-        Offline_root.setGraphic(offline);
-        Text black = new Text("黑名单");
-        black.setFill(Color.rgb(214,77,91));
-        Black_root.setGraphic(black);
+        root.getChildren().addAll(contact_root_, group_root_);
 
+        contact_root_.setExpanded(true);
+        contact_root_.getChildren().addAll(online_root_, busy_root_, away_root_, do_not_disturb_root_, offline_root_);
+
+        online_root_.setGraphic(createStatusText("在线", Status.ONLINE.getColor()));
+        busy_root_.setGraphic(createStatusText("忙碌", Status.BUSY.getColor()));
+        away_root_.setGraphic(createStatusText("离开", Status.AWAY.getColor()));
+        do_not_disturb_root_.setGraphic(createStatusText("勿打扰", Status.DO_NOT_DISTURB.getColor()));
+        offline_root_.setGraphic(createStatusText("离线", Status.OFFLINE.getColor()));
     }
 
-
-    public AnchorPane getRootPane(){
-        return contact_tree_;
+    private void bindLists()
+    {
+        bindListToTreeItem(view_model_.getOnlineContacts(), online_root_);
+        bindListToTreeItem(view_model_.getBusyContacts(), busy_root_);
+        bindListToTreeItem(view_model_.getAwayContacts(), away_root_);
+        bindListToTreeItem(view_model_.getDoNotDisturbContacts(), do_not_disturb_root_);
+        bindListToTreeItem(view_model_.getOfflineContacts(), offline_root_);
     }
 
-    public void clearContactList() {
-        Online_root.getChildren().clear();
-        Busy_root.getChildren().clear();
-        Away_root.getChildren().clear();
-        Do_not_disturb_root.getChildren().clear();
-        Offline_root.getChildren().clear();
-        Black_root.getChildren().clear();
+    private void bindListToTreeItem(ObservableList<String> list, TreeItem<String> treeItem)
+    {
+        treeItem.getChildren().setAll(list.stream().map(TreeItem::new).collect(Collectors.toList()));
+
+        list.addListener((ListChangeListener<String>) c ->
+        {
+            while (c.next())
+            {
+                if (c.wasAdded())
+                {
+                    c.getAddedSubList().forEach(name -> treeItem.getChildren().add(new TreeItem<>(name)));
+                }
+                if (c.wasRemoved())
+                {
+                    c.getRemoved().forEach(name -> treeItem.getChildren().removeIf(item -> item.getValue().equals(name)));
+                }
+            }
+        });
     }
 
-    public void addContact(String username,Status user) {
-        switch (user) {
-            case ONLINE -> view_model_.syncContact(Online_root,username);
-            case BUSY -> view_model_.syncContact(Busy_root,username);
-            case AWAY -> view_model_.syncContact(Away_root,username);
-            case DO_NOT_DISTURB -> view_model_.syncContact(Do_not_disturb_root, username);
-            case OFFLINE -> view_model_.syncContact(Offline_root, username);
-
-
-        }
-
-
+    private Text createStatusText(String text, String color)
+    {
+        Text statusText = new Text(text);
+        statusText.setFill(Color.web(color));
+        return statusText;
     }
-
 }

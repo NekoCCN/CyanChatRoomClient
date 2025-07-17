@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="tabRootPane" prefHeight="70.0" prefWidth="250.0" style="-fx-cursor: hand;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController">
+    <children>
+        <StackPane fx:id="avatarPane" layoutX="14.0" layoutY="10.0" prefHeight="50.0" prefWidth="50.0">
+            <children>
+                <Circle fx:id="avatarCircle" fill="DODGERBLUE" radius="25.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" />
+                <Label fx:id="avatarLabel" text="U" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                </Label>
+            </children>
+        </StackPane>
+        <VBox alignment="CENTER_LEFT" layoutX="75.0" layoutY="13.0" spacing="2.0">
+            <children>
+                <Label fx:id="usernameLabel" text="Username">
+                    <font>
+                        <Font name="System Bold" size="16.0" />
+                    </font>
+                </Label>
+                <Label fx:id="statusLabel" text="Online" textFill="#5d9e5d" />
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

@@ -1,50 +1,52 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab;
 
-import cc.nekocc.cyanchatroom.domain.userstatus.Status;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.binding.Bindings;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
-import java.util.UUID;
-import java.util.function.BiConsumer;
+public class ChatTabController
+{
+    @FXML
+    private AnchorPane tabRootPane;
+    @FXML
+    private StackPane avatarPane;
+    @FXML
+    private Circle avatarCircle;
+    @FXML
+    private Label avatarLabel;
+    @FXML
+    private Label usernameLabel;
+    @FXML
+    private Label statusLabel;
 
+    public void setData(ChatTabViewModel viewModel, Runnable onClickAction)
+    {
+        usernameLabel.textProperty().bind(viewModel.oppositeUserNameProperty());
 
-// 聊天界面中右侧聊天窗口的索引窗
-public class ChatTabController {
-    private boolean is_active = false;
+        avatarLabel.textProperty().bind(Bindings.createStringBinding(
+                () -> viewModel.getOppositeUserName().isEmpty() ? "" : viewModel.getOppositeUserName().substring(0, 1).toUpperCase(),
+                viewModel.oppositeUserNameProperty()
+        ));
 
+        statusLabel.textProperty().bind(Bindings.createStringBinding(
+                () -> viewModel.oppositeStatusProperty().get().toDisplayString(),
+                viewModel.oppositeStatusProperty()
+        ));
 
-    // 后端工具,包含聊天窗
-    private final ChatTabViewModel view_model;
+        statusLabel.textFillProperty().bind(Bindings.createObjectBinding(
+                () -> Color.web(viewModel.oppositeStatusProperty().get().getColor()),
+                viewModel.oppositeStatusProperty()
+        ));
 
-    // 用户标签
-    private final SimpleObjectProperty<AnchorPane> tab_ = new SimpleObjectProperty<>();
-
-    public ChatTabController(ChatTabViewModel copy, UUID uuid,  BiConsumer<String, Status> callback){
-        view_model = new ChatTabViewModel(copy,uuid,this,tab_,callback);
+        tabRootPane.setOnMouseClicked(e -> onClickAction.run());
     }
 
-
-
-
-
-    public AnchorPane getUserTab(){
-
-        return tab_.get();}
-
-
-
-    public UUID getUserID() {
-        return view_model.getOppositeID();
+    public AnchorPane getRoot()
+    {
+        return tabRootPane;
     }
-
-    public boolean isActive() {return is_active;}
-
-    public void setIsActive(boolean is_active) {this.is_active = is_active;}
-
-    public Status getStatus() {
-        return view_model.getOppositeStatus();
-    }
-
-
-
 }
