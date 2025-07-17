@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 /**
  * 应用程序级别的存储库，负责管理应用状态、网络连接和数据交互。
@@ -85,6 +87,8 @@ public class AppRepository
     private final ObservableMap<UUID, ObservableList<Message>> conversation_messages_ = FXCollections.observableMap(new ConcurrentHashMap<>());
 
     private ResponseCallback message_recrived_callback_ = null;
+
+    private final List<Consumer<Message>> message_listeners_ = new CopyOnWriteArrayList<>();
 
     private final Set<Conversation> conversations_backing_ = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final ObservableSet<Conversation> conversations_ = FXCollections.observableSet(conversations_backing_);
@@ -230,47 +234,76 @@ public class AppRepository
      * @param plain_text 明文消息内容
      * @throws Exception 如果密钥协商失败或其他错误
      */
-    public void sendEncryptedTextMessage(UUID recipient_id, String plain_text) throws Exception
+    /**
+
+     * 发送加密的文本消息到指定的接收者。
+
+     * @param recipient_id 接收者的唯一标识符
+
+     * @param plain_text 明文消息内容
+
+     * @throws Exception 如果密钥协商失败或其他错误
+
+     */
+
+    public void sendEncryptedTextMessage(UUID recipient_id, String plain_text)
     {
-        if (current_user_.get() == null)
+        User current_user = current_user_.get();
+
+        if (current_user == null)
         {
             last_error_message_.set("用户未登录");
             return;
         }
 
-        // 检查是否已有会话密钥
         SecretKey session_key = session_keys_.get(recipient_id);
+
         if (session_key != null)
         {
-            String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
-            sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
+            try
+            {
+                String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
+                sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
+            } catch (Exception e)
+            {
+                last_error_message_.set("加密失败: " + e.getMessage());
+            }
             return;
         }
 
-        // 如果没有会话密钥, 则发起密钥交换流程
         System.out.println("没有找到会话密钥, 开始密钥交换...");
         fetchKeys(recipient_id).thenAccept(responseMsg ->
         {
             FetchKeysResponse payload = responseMsg.getPayload();
+
             if (payload.succeed())
             {
                 try
                 {
+                    // 生成自己的临时密钥对 前向加密
+                    KeyPair ephemeral_key_pair = E2EEHelper.generateKeyPair();
+
+                    // 解析对方的身份公钥
+
                     JsonObject key_bundle = JsonParser.parseString(payload.public_key_bundle()).getAsJsonObject();
                     String identity_key_base64 = key_bundle.get("identityKey").getAsString();
                     PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
 
-                    KeyPair my_key_pair = key_storage_service_.loadKeyPair(server_address_, current_user_.get().getId());
-                    if (my_key_pair == null)
-                    {
-                        throw new Exception("找不到本地私钥!");
-                    }
-
-                    SecretKey new_session_key = E2EEHelper.deriveSharedSecret(my_key_pair.getPrivate(), recipient_identity_key);
+                    // 派生会话密钥
+                    SecretKey new_session_key = E2EEHelper.deriveSharedSecret(ephemeral_key_pair.getPrivate(), recipient_identity_key);
                     session_keys_.put(recipient_id, new_session_key);
 
+                    // 加密真实消息
                     String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
-                    sendMessageInternal("USER", recipient_id, "TEXT", true, encrypted_content);
+
+                    // 创建包含临时公钥和密文的特殊内容
+                    JsonObject init_payload = new JsonObject();
+
+                    init_payload.addProperty("ephemeral_pub_key", Base64.getEncoder().encodeToString(ephemeral_key_pair.getPublic().getEncoded()));
+                    init_payload.addProperty("ciphertext", encrypted_content);
+
+                    // 发送E2EE初始化消息
+                    sendMessageInternal("USER", recipient_id, "E2EE_INIT", true, init_payload.toString());
                 } catch (Exception e)
                 {
                     Platform.runLater(() -> last_error_message_.set("密钥协商失败: " + e.getMessage()));
@@ -802,13 +835,56 @@ public class AppRepository
         long timestamp_long = ((Double) payload.get("timestamp")).longValue();
         String iso_time = Instant.ofEpochMilli(timestamp_long).toString();
 
+        boolean is_encrypted = (boolean)payload.get("is_encrypted");
+
+        if (is_encrypted)
+        {
+            try
+            {
+                SecretKey session_key = session_keys_.get(sender_id);
+                if (session_key == null)
+                {
+                    if ("E2EE_INIT".equals(content_type))
+                    {
+                        System.out.println("收到E2EE初始化消息, 开始计算会话密钥...");
+
+                        JsonObject init_payload = JsonParser.parseString(content).getAsJsonObject();
+
+                        String ephemeral_pub_key_base64 = init_payload.get("ephemeral_pub_key").getAsString();
+                        String ciphertext = init_payload.get("ciphertext").getAsString();
+
+                        PublicKey sender_ephemeral_key = E2EEHelper.publicKeyFromBase64(ephemeral_pub_key_base64);
+                        KeyPair my_key_pair = key_storage_service_.loadKeyPair(server_address_, current_user.getId());
+                        if (my_key_pair == null)
+                            throw new Exception("找不到本地私钥!");
+
+                        SecretKey new_session_key = E2EEHelper.deriveSharedSecret(my_key_pair.getPrivate(), sender_ephemeral_key);
+                        session_keys_.put(sender_id, new_session_key);
+
+                        content = E2EEHelper.decrypt(ciphertext, new_session_key);
+                        content_type = "TEXT";
+                    } else
+                    {
+                        throw new Exception("收到加密消息, 但没有找到会话密钥。");
+                    }
+                } else
+                {
+                    content = E2EEHelper.decrypt(content, session_key);
+                }
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+                content = "[无法解密的消息]";
+            }
+        }
+
         Message local_message = new Message(conversation_id, sender_id, is_outgoing, content_type, content);
 
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
-        if (message_recrived_callback_ != null)
+        for (Consumer<Message> listener : message_listeners_)
         {
-            message_recrived_callback_.onResponse(local_message);
+            Platform.runLater(() -> listener.accept(local_message));
         }
 
         conversations_.add(new Conversation(
@@ -830,6 +906,14 @@ public class AppRepository
     /*
      * Property 相关
      */
+    public void addMessageListener(Consumer<Message> listener)
+    {
+        message_listeners_.add(listener);
+    }
+    public void removeMessageListener(Consumer<Message> listener)
+    {
+        message_listeners_.remove(listener);
+    }
     public ReadOnlyObjectProperty<ConnectionStatus> connectionStatusProperty()
     {
         return connection_status_.getReadOnlyProperty();

@@ -1,5 +1,9 @@
 package cc.nekocc.cyanchatroom.model.util;
 
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
+import org.bouncycastle.crypto.params.HKDFParameters;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -29,7 +33,7 @@ public class E2EEHelper
     }
 
     /**
-     * 执行ECDH密钥交换, 计算共享密钥
+     * 执行ECDH密钥交换, 并使用HKDF派生出共享密钥
      */
     public static SecretKey deriveSharedSecret(PrivateKey private_key, PublicKey public_key) throws Exception
     {
@@ -37,8 +41,16 @@ public class E2EEHelper
         ka.init(private_key);
         ka.doPhase(public_key, true);
         byte[] shared_secret = ka.generateSecret();
-        // 使用共享密钥的前32字节作为AES-256的密钥
-        return new SecretKeySpec(shared_secret, 0, 32, "AES");
+
+        HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA256Digest());
+
+        // 初始化HKDF
+        hkdf.init(new HKDFParameters(shared_secret, null, "cyanchatroom-aes-gcm-key".getBytes(StandardCharsets.UTF_8)));
+
+        byte[] derivedKey = new byte[32];
+        hkdf.generateBytes(derivedKey, 0, 32);
+
+        return new SecretKeySpec(derivedKey, "AES");
     }
 
     /**
@@ -47,17 +59,20 @@ public class E2EEHelper
     public static String encrypt(String plain_text, SecretKey key) throws Exception
     {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+
         byte[] iv = new byte[12];
         new SecureRandom().nextBytes(iv);
+
         GCMParameterSpec gcm_spec = new GCMParameterSpec(128, iv);
         cipher.init(Cipher.ENCRYPT_MODE, key, gcm_spec);
 
-        byte[] cipher_text = cipher.doFinal(plain_text.getBytes(StandardCharsets.UTF_8));
-        byte[] encrypted_payload = new byte[iv.length + cipher_text.length];
+        byte[] cipherTextWithTag = cipher.doFinal(plain_text.getBytes(StandardCharsets.UTF_8));
 
-        System.arraycopy(iv, 0, encrypted_payload, 0, iv.length);
-        System.arraycopy(cipher_text, 0, encrypted_payload, iv.length, cipher_text.length);
-        return Base64.getEncoder().encodeToString(encrypted_payload);
+        byte[] encryptedPayload = new byte[iv.length + cipherTextWithTag.length];
+        System.arraycopy(iv, 0, encryptedPayload, 0, iv.length);
+        System.arraycopy(cipherTextWithTag, 0, encryptedPayload, iv.length, cipherTextWithTag.length);
+
+        return Base64.getEncoder().encodeToString(encryptedPayload);
     }
 
     /**
@@ -65,18 +80,19 @@ public class E2EEHelper
      */
     public static String decrypt(String base64_encrypted, SecretKey key) throws Exception
     {
-        byte[] encrypted_payload = Base64.getDecoder().decode(base64_encrypted);
+        byte[] encryptedPayload = Base64.getDecoder().decode(base64_encrypted);
 
         byte[] iv = new byte[12];
-        byte[] cipher_text = new byte[encrypted_payload.length - 12];
+        System.arraycopy(encryptedPayload, 0, iv, 0, iv.length);
 
-        System.arraycopy(encrypted_payload, 0, iv, 0, iv.length);
-        System.arraycopy(encrypted_payload, iv.length, cipher_text, 0, cipher_text.length);
+        byte[] cipherTextWithTag = new byte[encryptedPayload.length - iv.length];
+        System.arraycopy(encryptedPayload, iv.length, cipherTextWithTag, 0, cipherTextWithTag.length);
 
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
         GCMParameterSpec gcm_spec = new GCMParameterSpec(128, iv);
         cipher.init(Cipher.DECRYPT_MODE, key, gcm_spec);
-        byte[] decrypted_text = cipher.doFinal(cipher_text);
+
+        byte[] decrypted_text = cipher.doFinal(cipherTextWithTag);
         return new String(decrypted_text, StandardCharsets.UTF_8);
     }
 
