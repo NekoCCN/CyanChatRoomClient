@@ -1011,5 +1011,13 @@ public class AppRepository
             persistence_service_.deleteOldestMessages(server_address_, current_user_.get().getId(), conversation.getId(), conversion_message_size);
             conversation_messages_.remove(conversation.getId());
         }
+
+        for (Conversation conversation : conversations_)
+        {
+            if (conversation_messages_.containsKey(conversation.getId()))
+            {
+                conversation_messages_.get(conversation.getId()).clear();
+            }
+        }
     }
 }

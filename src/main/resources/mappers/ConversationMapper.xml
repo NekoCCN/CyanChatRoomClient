@@ -9,4 +9,10 @@
         ON CONFLICT(id) DO UPDATE SET
             last_message_time = excluded.last_message_time;
     </insert>
+
+    <select id="findAllConversationsByUserId" resultType="cc.nekocc.cyanchatroom.model.Conversation">
+        SELECT * FROM conversations
+        WHERE sender_id = #{user_id}
+        ORDER BY last_message_time DESC;
+    </select>
 </mapper>

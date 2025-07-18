@@ -15,5 +15,5 @@ public interface ConversationMapper
             @Param("last_message_time") String last_message_time
     );
 
-    List<Conversation> findAll();
+    List<Conversation> findAllConversationsByUserId(@Param("user_id") UUID user_id);
 }

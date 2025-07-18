@@ -29,7 +29,6 @@ import java.util.ResourceBundle;
 
 public class ChatWindowsController implements Initializable
 {
-
     @FXML
     private AnchorPane root_pane_;
     @FXML
