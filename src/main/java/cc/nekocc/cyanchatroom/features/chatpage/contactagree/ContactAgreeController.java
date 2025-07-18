@@ -62,6 +62,11 @@ public class ContactAgreeController
     {
         user_info_send_requset_.setVisible(false);
         search_button_.getStyleClass().addAll(Styles.BOTTOM);
+
+        search_button_.setOnAction(event ->
+        {
+            handleSearch();
+        });
     }
 
     private void setupRequestListListener()
