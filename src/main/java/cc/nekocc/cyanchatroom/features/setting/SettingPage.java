@@ -1,5 +1,6 @@
 package cc.nekocc.cyanchatroom.features.setting;
 
+import atlantafx.base.controls.PasswordTextField;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.fxml.FXML;
@@ -7,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 
 import java.net.URL;
@@ -19,6 +21,8 @@ public class SettingPage implements Initializable {
     public Button set_key_button_;
     public Button refresh_key_button_;
     public Label situation_label_;
+    public PasswordTextField old_password_input_;
+    public TextField new_password_input_;
 
     public SettingPage() {}
     public void initialize(URL url, ResourceBundle resource_bundle) {
@@ -34,7 +38,7 @@ public class SettingPage implements Initializable {
             AppRepository.getInstance().generateAndRegisterKeys().thenAccept(response -> {
                 if(response.getPayload().status()){
                     ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已生成并注册密钥");
-
+                    refreshKey();
                 }
                 else{
                     ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "发布密钥失败：" +response.getPayload().message());

@@ -21,6 +21,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
@@ -41,7 +43,7 @@ public class ChatWindowsController implements Initializable
 
     private ChatWindowViewModel view_model_;
     private ListChangeListener<Message> message_listener_;
-    private final DateTimeFormatter time_formatter_ = DateTimeFormatter.ofPattern("HH:mm");
+    private final DateTimeFormatter time_formatter_ = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle)
@@ -66,6 +68,7 @@ public class ChatWindowsController implements Initializable
         {
             while (c.next())
             {
+
                 if (c.wasAdded())
                 {
                     c.getAddedSubList().forEach(this::addMessageNode);
@@ -77,19 +80,22 @@ public class ChatWindowsController implements Initializable
 
     private void addMessageNode(Message message)
     {
+
+
         boolean is_outgoing = message.isOutgoing();
 
+
+
         VBox message_container = new VBox();
-        message_container.setAlignment(is_outgoing ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+
 
         HBox message_box = new HBox(10);
-        message_box.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
-        message_box.setMaxWidth(Double.MAX_VALUE);
+
+
 
         Label message_label = new Label(message.getVal());
         message_label.setWrapText(true);
-        message_label.setMaxWidth(350);
-        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 18));
+
 
         if (is_outgoing)
         {
@@ -98,6 +104,8 @@ public class ChatWindowsController implements Initializable
         {
             message_label.setStyle("-fx-padding: 8; -fx-background-color: #FFFFFF; -fx-text-fill: black; -fx-background-radius: 12 12 12 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 1, 2);");
         }
+
+
 
         String sender_nickname = is_outgoing
                 ? AppRepository.getInstance().currentUserProperty().get().getNickname()
@@ -110,10 +118,10 @@ public class ChatWindowsController implements Initializable
         time_text.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 10));
 
         VBox message_bubble = new VBox(username_text, message_label, time_text);
-        message_bubble.setSpacing(2);
-        message_bubble.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+
 
         StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
+
 
         if (is_outgoing)
         {
@@ -126,7 +134,39 @@ public class ChatWindowsController implements Initializable
         message_container.getChildren().add(message_box);
         message_label.setContextMenu(setupMessageMenu(message_label, message_container, is_outgoing));
 
-        Platform.runLater(() -> container_pane_.getChildren().add(message_container));
+
+
+        message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_container.setMaxWidth(Double.MAX_VALUE);
+        message_container.setMaxHeight(Double.MAX_VALUE);
+
+        message_container.setAlignment(is_outgoing ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        message_box.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+        message_box.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_box.setMaxWidth(Double.MAX_VALUE);
+        message_box.setMaxHeight(Double.MAX_VALUE);
+
+        message_label.maxWidthProperty().bind(container_pane_.widthProperty().multiply(0.6));
+        message_label.setMaxHeight(Double.MAX_VALUE);
+        message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 18));
+
+        message_bubble.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_bubble.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_bubble.setMaxWidth(Double.MAX_VALUE);
+        message_bubble.setMaxHeight(Double.MAX_VALUE);
+        message_bubble.setSpacing(2);
+        message_bubble.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+
+
+        Platform.runLater(() ->{
+
+
+
+            container_pane_.getChildren().add(message_container);});
     }
 
     private ContextMenu setupMessageMenu(Label label, VBox container, boolean can_withdraw)

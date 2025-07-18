@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="root_pane_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController">
+<AnchorPane fx:id="root_pane_" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController">
       <AnchorPane fx:id="user_label_pane_" prefHeight="46.0" prefWidth="600.0" style="-fx-background-color: #E0E0E0;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <ImageView fx:id="personal_icon_" fitHeight="45.0" fitWidth="45.0" layoutX="520.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
               <Image url="@../../../../Image/personal.png" />
@@ -20,8 +20,8 @@
               </font>
           </Label>
       </AnchorPane>
-    <ScrollPane fx:id="scroll_pane_" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
-      <VBox fx:id="container_pane_" maxHeight="1.7976931348623157E308" prefHeight="350.0" prefWidth="482.0" spacing="20.0">
+    <ScrollPane fx:id="scroll_pane_" fitToWidth="true" hbarPolicy="NEVER" prefHeight="354.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
+      <VBox fx:id="container_pane_" prefWidth="597.0" spacing="20.0">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>

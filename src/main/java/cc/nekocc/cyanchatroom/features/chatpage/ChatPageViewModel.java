@@ -113,7 +113,7 @@ public class ChatPageViewModel
 
     public void updateUserStatus(Status new_status)
     {
-        if (new_status == null || new_status == current_user_status_.get())
+        if (new_status == null || new_status.equals(current_user_status_.get()))
             return;
 
         if (new_status == Status.OFFLINE)
@@ -123,6 +123,7 @@ public class ChatPageViewModel
                 currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
             }));
             ViewTool.showAlert(Alert.AlertType.INFORMATION, "离线切换失败", "你要切换离线状态直接退出程序就行。");
+
             return;
         }
 
