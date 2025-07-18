@@ -38,6 +38,8 @@ public class ChatPageController implements Initializable
 {
 
     @FXML
+    public Button refresh_user_list_button_;
+    @FXML
     private TextArea message_input;
     @FXML
     private ImageView talk_icon_;
@@ -93,11 +95,11 @@ public class ChatPageController implements Initializable
             FXMLLoader chat_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ChatWindow.fxml"));
             AnchorPane chat_window_node = chat_loader.load();
             chat_window_controller_ = chat_loader.getController();
-            chat_windows_pane_.getChildren().add(chat_window_node);
             AnchorPane.setTopAnchor(chat_window_node, 0.0);
             AnchorPane.setBottomAnchor(chat_window_node, 0.0);
             AnchorPane.setLeftAnchor(chat_window_node, 0.0);
             AnchorPane.setRightAnchor(chat_window_node, 0.0);
+            chat_windows_pane_.getChildren().add(chat_window_node);
             chat_window_node.setVisible(false);
 
             FXMLLoader contact_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ContactList.fxml"));
@@ -159,6 +161,11 @@ public class ChatPageController implements Initializable
 
     private void setupEventListeners()
     {
+
+        refresh_user_list_button_.setOnAction(e ->
+
+        );
+
         initIconEffect(talk_icon_);
         talk_icon_.setOnMouseClicked(e -> switchSidePane(ChatPageViewModel.SidePane.TALK, talk_icon_));
 
