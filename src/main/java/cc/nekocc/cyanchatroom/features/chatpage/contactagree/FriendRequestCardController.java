@@ -10,7 +10,6 @@ import javafx.scene.layout.StackPane;
 
 public class FriendRequestCardController
 {
-
     @FXML
     private StackPane avatar_pane_;
     @FXML

@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -72,7 +73,7 @@ public class AppRepository
     private final LocalPersistenceService persistence_service_;
 
     private final LocalKeyStorageService key_storage_service_;
-    private final Map<UUID, SecretKey> session_keys_ = new ConcurrentHashMap<>();
+        private final Map<UUID, SecretKey> session_keys_ = new ConcurrentHashMap<>();
 
     private String server_address_;
 
@@ -259,62 +260,79 @@ public class AppRepository
             return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
         }
 
+        AtomicReference<CompletableFuture<ProtocolMessage<StatusResponse>>> res = new AtomicReference<>();
+
         SecretKey session_key = session_keys_.get(recipient_id);
 
         Message local_message = new Message(recipient_id, current_user.getId(), true,
                 "TEXT", plain_text);
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
-        if (session_key != null)
-        {
-            try
-            {
-                String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
-                return sendChatMessageRequestAsync("USER", recipient_id, "TEXT", true, encrypted_content);
-            } catch (Exception e)
-            {
-                last_error_message_.set("加密失败: " + e.getMessage());
-                return CompletableFuture.failedFuture(e);
-            }
-        }
+        AppRepository.getInstance().getUserDetails(recipient_id)
+                .thenAccept(response ->
+                {
+                    if (session_keys_.containsKey(recipient_id))
+                    {
+                        if (!response.getPayload().is_online())
+                        {
+                            session_keys_.remove(recipient_id);
+                        }
+                    }
 
-        System.out.println("没有找到会话密钥, 开始密钥交换...");
-        return fetchKeys(recipient_id).thenComposeAsync(responseMsg ->
-        {
-            FetchKeysResponse payload = responseMsg.getPayload();
+                    if (session_key != null)
+                    {
+                        try
+                        {
+                            String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
+                            res.set(sendChatMessageRequestAsync("USER",
+                                    recipient_id, "TEXT", true, encrypted_content));
+                        } catch (Exception e)
+                        {
+                            last_error_message_.set("加密失败: " + e.getMessage());
+                            res.set(CompletableFuture.failedFuture(e));
+                        }
+                    }
 
-            if (!payload.succeed())
-            {
-                String error_msg = "无法获取对方密钥，无法发送加密消息。";
-                Platform.runLater(() -> last_error_message_.set(error_msg));
-                return CompletableFuture.failedFuture(new RuntimeException(error_msg));
-            }
+                    System.out.println("没有找到会话密钥, 开始密钥交换...");
+                    res.set(fetchKeys(recipient_id).thenComposeAsync(responseMsg ->
+                    {
+                        FetchKeysResponse payload = responseMsg.getPayload();
 
-            try
-            {
-                KeyPair ephemeral_key_pair = E2EEHelper.generateKeyPair();
-                JsonObject key_bundle = JsonParser.parseString(payload.public_key_bundle()).getAsJsonObject();
-                String identity_key_base64 = key_bundle.get("identityKey").getAsString();
-                PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
+                        if (!payload.succeed())
+                        {
+                            String error_msg = "无法获取对方密钥，无法发送加密消息。";
+                            Platform.runLater(() -> last_error_message_.set(error_msg));
+                            return CompletableFuture.failedFuture(new RuntimeException(error_msg));
+                        }
 
-                SecretKey new_session_key = E2EEHelper.deriveSharedSecret(ephemeral_key_pair.getPrivate(), recipient_identity_key);
-                session_keys_.put(recipient_id, new_session_key);
+                        try
+                        {
+                            KeyPair ephemeral_key_pair = E2EEHelper.generateKeyPair();
+                            JsonObject key_bundle = JsonParser.parseString(payload.public_key_bundle()).getAsJsonObject();
+                            String identity_key_base64 = key_bundle.get("identityKey").getAsString();
+                            PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
 
-                String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
+                            SecretKey new_session_key = E2EEHelper.deriveSharedSecret(ephemeral_key_pair.getPrivate(), recipient_identity_key);
+                            session_keys_.put(recipient_id, new_session_key);
 
-                JsonObject init_payload = new JsonObject();
-                init_payload.addProperty("ephemeral_pub_key", Base64.getEncoder().encodeToString(ephemeral_key_pair.getPublic().getEncoded()));
-                init_payload.addProperty("ciphertext", encrypted_content);
+                            String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
 
-                return sendChatMessageRequestAsync("USER", recipient_id, "E2EE_INIT", true, init_payload.toString());
+                            JsonObject init_payload = new JsonObject();
+                            init_payload.addProperty("ephemeral_pub_key", Base64.getEncoder().encodeToString(ephemeral_key_pair.getPublic().getEncoded()));
+                            init_payload.addProperty("ciphertext", encrypted_content);
 
-            } catch (Exception e)
-            {
-                String error_msg = "密钥协商失败: " + e.getMessage();
-                Platform.runLater(() -> last_error_message_.set(error_msg));
-                return CompletableFuture.failedFuture(new RuntimeException(error_msg, e));
-            }
-        });
+                            return sendChatMessageRequestAsync("USER", recipient_id, "E2EE_INIT", true, init_payload.toString());
+
+                        } catch (Exception e)
+                        {
+                            String error_msg = "密钥协商失败: " + e.getMessage();
+                            Platform.runLater(() -> last_error_message_.set(error_msg));
+                            return CompletableFuture.failedFuture(new RuntimeException(error_msg, e));
+                        }
+                    }));
+
+                });
+        return res.get();
     }
     /**
      * 生成并注册新的密钥对，并将其发布到服务器，私钥存储到本地。
@@ -346,8 +364,8 @@ public class AppRepository
     }
     /**
      * 从服务器获取指定用户的公钥。
-     * @param user_id
-     * @return
+     * @param user_id 要获取公钥的用户ID
+     * @return 一个CompletableFuture，完成时包含FetchKeysResponse
      */
     public CompletableFuture<ProtocolMessage<FetchKeysResponse>> fetchKeys(UUID user_id)
     {
