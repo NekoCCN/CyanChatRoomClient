@@ -95,7 +95,7 @@ public class ChatWindowViewModel
 
     public void receiveMessage(Message message)
     {
-        Platform.runLater(() -> messages_.add(message));
+        // Platform.runLater(() -> messages_.add(message));
     }
 
     public ObservableList<Message> getMessages()
