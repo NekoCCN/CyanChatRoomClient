@@ -914,6 +914,13 @@ public class AppRepository
 
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
+        conversation_messages_.computeIfAbsent(conversation_id, id ->
+        {
+            List<Message> history = persistence_service_.getAllMessagesForConversation(server_address_, current_user_.get().getId(),
+                    id);
+            return FXCollections.observableArrayList(history);
+        });
+
         final UUID final_conversation_id = conversation_id;
         Platform.runLater(() -> {
             ObservableList<Message> messageList = getObservableMessagesForConversation(final_conversation_id);
