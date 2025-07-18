@@ -62,4 +62,9 @@ public class LocalPersistenceService
     {
         return MyBatisUtil.executeQuery(server_address, user_id, session -> session.getMapper(ConversationMapper.class).findAll());
     }
+
+    public void deleteOldestMessages(String server_address, UUID user_id, UUID conversation_id, int limit)
+    {
+        MyBatisUtil.executeUpdate(server_address, user_id, session -> session.getMapper(MessageMapper.class).deleteOldestMessages(conversation_id, limit));
+    }
 }

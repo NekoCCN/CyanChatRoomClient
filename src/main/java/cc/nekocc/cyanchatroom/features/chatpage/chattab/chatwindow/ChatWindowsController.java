@@ -80,8 +80,6 @@ public class ChatWindowsController implements Initializable
 
     private void addMessageNode(Message message)
     {
-
-
         boolean is_outgoing = message.isOutgoing();
 
 
@@ -119,9 +117,7 @@ public class ChatWindowsController implements Initializable
 
         VBox message_bubble = new VBox(username_text, message_label, time_text);
 
-
         StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
-
 
         if (is_outgoing)
         {
@@ -133,8 +129,6 @@ public class ChatWindowsController implements Initializable
 
         message_container.getChildren().add(message_box);
         message_label.setContextMenu(setupMessageMenu(message_label, message_container, is_outgoing));
-
-
 
         message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
@@ -160,7 +154,6 @@ public class ChatWindowsController implements Initializable
         message_bubble.setMaxHeight(Double.MAX_VALUE);
         message_bubble.setSpacing(2);
         message_bubble.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
-
 
         Platform.runLater(() ->{
 

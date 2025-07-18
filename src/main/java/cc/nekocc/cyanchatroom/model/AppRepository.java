@@ -998,4 +998,18 @@ public class AppRepository
         return persistence_service_.countMessagesInConversation(server_address_, current_user_.get().getId(), conversation_id);
     }
 
+    /*
+     * 聊天记录相关
+     */
+    public void deleteAllConversations()
+    {
+        List<Conversation> conversations = persistence_service_.getAllConversations(server_address_, current_user_.get().getId());
+
+        for (Conversation conversation : conversations)
+        {
+            int conversion_message_size = persistence_service_.countMessagesInConversation(server_address_, current_user_.get().getId(), conversation.getId());
+            persistence_service_.deleteOldestMessages(server_address_, current_user_.get().getId(), conversation.getId(), conversion_message_size);
+            conversation_messages_.remove(conversation.getId());
+        }
+    }
 }
