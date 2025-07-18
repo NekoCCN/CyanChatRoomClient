@@ -220,8 +220,6 @@ public class AppRepository
         {
             return CompletableFuture.failedFuture(new IllegalStateException("用户未登录，无法发送消息。"));
         }
-        Message local_message = new Message(recipient_id, current_user.getId(), true, content_type, content);
-        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
         UUID client_request_id = UUID.randomUUID();
         ChatMessageRequest payload = new ChatMessageRequest(client_request_id, recipient_type, recipient_id, content_type, is_encrypted, content);
@@ -240,6 +238,9 @@ public class AppRepository
     public CompletableFuture<ProtocolMessage<StatusResponse>> sendMessage(String recipient_type, UUID recipient_id, String content_type,
                                                                           boolean is_encrypted, String content)
     {
+        User current_user = current_user_.get();
+        Message local_message = new Message(recipient_id, current_user.getId(), true, "TEXT", content);
+        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
         return sendChatMessageRequestAsync(recipient_type, recipient_id, content_type, is_encrypted, content);
     }
 
@@ -259,6 +260,10 @@ public class AppRepository
         }
 
         SecretKey session_key = session_keys_.get(recipient_id);
+
+        Message local_message = new Message(recipient_id, current_user.getId(), true,
+                "TEXT", plain_text);
+        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
         if (session_key != null)
         {
