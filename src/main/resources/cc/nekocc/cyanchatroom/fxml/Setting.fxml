@@ -1,21 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import atlantafx.base.controls.PasswordTextField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <AnchorPane fx:id="root_pane_" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.setting.SettingPage">
     <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="常规设置">
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="537.0" />
+            <ScrollPane hbarPolicy="NEVER" minHeight="370.0" minWidth="600.0" prefHeight="370.0" prefWidth="600.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="583.0" prefWidth="600.0">
+                    <Text layoutX="26.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="配色方案" wrappingWidth="90.24021530151367" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
+                        <font>
+                            <Font name="Microsoft YaHei" size="20.0" />
+                        </font>
+                    </Text>
+                    <CheckBox layoutX="43.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" selected="true" text="默认" AnchorPane.leftAnchor="43.0" AnchorPane.topAnchor="51.0" />
+                    <CheckBox layoutX="168.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="黑色" AnchorPane.leftAnchor="168.0" AnchorPane.topAnchor="51.0" />
+                </AnchorPane>
+            </ScrollPane>
         </Tab>
         <Tab text="安全设置">
+            <ScrollPane hbarPolicy="NEVER">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="373.0" prefWidth="600.0">
+                    <Text layoutX="31.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="修改密码" wrappingWidth="108.90698623657227" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
+                        <font>
+                            <Font name="Microsoft YaHei UI" size="20.0" />
+                        </font>
+                    </Text>
+                    <PasswordTextField layoutX="134.0" layoutY="47.0" prefHeight="35.0" prefWidth="289.0" AnchorPane.leftAnchor="134.0" AnchorPane.topAnchor="47.0" />
+                    <Label layoutX="440.0" layoutY="48.0" prefHeight="33.0" prefWidth="98.0" text="输入密码不正确" textFill="RED" visible="false">
+                        <font>
+                            <Font size="13.0" />
+                        </font>
+                    </Label>
+                    <Text fill="#424242" layoutX="36.0" layoutY="71.0" strokeType="OUTSIDE" strokeWidth="0.0" text="输入原密码" wrappingWidth="97.57367324829102" AnchorPane.leftAnchor="36.0" AnchorPane.topAnchor="52.71875">
+                        <font>
+                            <Font name="Microsoft YaHei UI" size="15.0" />
+                        </font>
+                    </Text>
+                    <Text fill="#424242" layoutX="36.0" layoutY="120.0" strokeType="OUTSIDE" strokeWidth="0.0" text="输入新密码" wrappingWidth="97.57367324829102" AnchorPane.leftAnchor="36.0" AnchorPane.topAnchor="100.0">
+                        <font>
+                            <Font name="Microsoft YaHei UI" size="15.0" />
+                        </font>
+                    </Text>
+                    <TextField layoutX="134.0" layoutY="100.0" prefHeight="35.0" prefWidth="289.0" AnchorPane.leftAnchor="134.0" AnchorPane.topAnchor="100.0" />
+                    <Label layoutX="440.0" layoutY="101.0" prefHeight="33.0" prefWidth="150.0" text="输入密码不能有非法字符" textFill="RED" visible="false">
+                        <font>
+                            <Font size="13.0" />
+                        </font>
+                    </Label>
+                    <Button layoutX="423.0" layoutY="157.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="99.0" text="更新密码">
+                        <font>
+                            <Font size="17.0" />
+                        </font>
+                    </Button>
+                    <Text layoutX="25.0" layoutY="225.0" strokeType="OUTSIDE" strokeWidth="0.0" text="E2EE密钥设置" wrappingWidth="144.90698623657227" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="204.6875">
+                        <font>
+                            <Font name="Microsoft YaHei UI" size="20.0" />
+                        </font>
+                    </Text>
+                    <Label layoutX="36.0" layoutY="255.0" prefHeight="20.0" prefWidth="86.0" text="密钥状态：" AnchorPane.leftAnchor="36.0" AnchorPane.topAnchor="255.0">
+                        <font>
+                            <Font size="15.0" />
+                        </font>
+                    </Label>
+                    <Label fx:id="situation_label_" layoutX="107.0" layoutY="250.0" prefHeight="29.0" prefWidth="100.0" text="未设置....." AnchorPane.leftAnchor="107.0" AnchorPane.topAnchor="250.0">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <Button fx:id="set_key_button_" layoutX="233.0" layoutY="253.0" mnemonicParsing="false" text="设置密钥" AnchorPane.leftAnchor="233.0" AnchorPane.topAnchor="253.0" />
+                    <Button fx:id="refresh_key_button_" layoutX="327.0" layoutY="253.0" mnemonicParsing="false" text="更新密钥" AnchorPane.leftAnchor="350.0" AnchorPane.topAnchor="253.33333333333334" />
+                </AnchorPane>
+            </ScrollPane>
+        </Tab>
+        <Tab text="聊天记录管理">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
         </Tab>
-      <Tab text="聊天记录管理">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-        </content>
-      </Tab>
     </TabPane>
 </AnchorPane>

@@ -162,9 +162,7 @@ public class ChatPageController implements Initializable
     private void setupEventListeners()
     {
 
-        refresh_user_list_button_.setOnAction(e ->
 
-        );
 
         initIconEffect(talk_icon_);
         talk_icon_.setOnMouseClicked(e -> switchSidePane(ChatPageViewModel.SidePane.TALK, talk_icon_));
