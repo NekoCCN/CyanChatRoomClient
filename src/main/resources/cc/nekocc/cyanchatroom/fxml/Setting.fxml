@@ -16,14 +16,22 @@
     <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="常规设置">
             <ScrollPane hbarPolicy="NEVER" minHeight="370.0" minWidth="600.0" prefHeight="370.0" prefWidth="600.0">
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="583.0" prefWidth="600.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="403.0" prefWidth="600.0">
                     <Text layoutX="26.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="配色方案" wrappingWidth="90.24021530151367" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
                         <font>
                             <Font name="Microsoft YaHei" size="20.0" />
                         </font>
                     </Text>
-                    <CheckBox layoutX="43.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" selected="true" text="默认" AnchorPane.leftAnchor="43.0" AnchorPane.topAnchor="51.0" />
-                    <CheckBox layoutX="168.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="黑色" AnchorPane.leftAnchor="168.0" AnchorPane.topAnchor="51.0" />
+                    <CheckBox fx:id="default_color_plan_" layoutX="43.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" selected="true" text="默认" AnchorPane.leftAnchor="43.0" AnchorPane.topAnchor="51.0" />
+                    <CheckBox fx:id="black_color_plan_" layoutX="168.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="黑色" AnchorPane.leftAnchor="168.0" AnchorPane.topAnchor="51.0" />
+               <Button layoutX="273.0" layoutY="51.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="101.0" text="应用配色方案" AnchorPane.leftAnchor="273.0" AnchorPane.topAnchor="51.0" />
+               <Text layoutX="25.0" layoutY="133.0" strokeType="OUTSIDE" strokeWidth="0.0" text="启用shift+enter发送消息" wrappingWidth="270.90683364868164">
+                  <font>
+                     <Font name="Microsoft YaHei" size="20.0" />
+                  </font>
+               </Text>
+               <CheckBox fx:id="turn_false_" layoutX="168.0" layoutY="157.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="关闭" />
+               <CheckBox fx:id="turn_on_" layoutX="43.0" layoutY="157.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" selected="true" text="开启" />
                 </AnchorPane>
             </ScrollPane>
         </Tab>
@@ -36,7 +44,7 @@
                         </font>
                     </Text>
                     <PasswordTextField fx:id="old_password_input_" layoutX="134.0" layoutY="47.0" prefHeight="35.0" prefWidth="289.0" AnchorPane.leftAnchor="134.0" AnchorPane.topAnchor="47.0" />
-                    <Label layoutX="440.0" layoutY="48.0" prefHeight="33.0" prefWidth="98.0" text="输入密码不正确" textFill="RED" visible="false">
+                    <Label fx:id="old_password_warning_" layoutX="440.0" layoutY="48.0" prefHeight="33.0" prefWidth="98.0" text="输入密码不正确" textFill="RED" visible="false">
                         <font>
                             <Font size="13.0" />
                         </font>
@@ -52,7 +60,7 @@
                         </font>
                     </Text>
                     <TextField fx:id="new_password_input_" layoutX="134.0" layoutY="100.0" prefHeight="35.0" prefWidth="289.0" AnchorPane.leftAnchor="134.0" AnchorPane.topAnchor="100.0" />
-                    <Label layoutX="440.0" layoutY="101.0" prefHeight="33.0" prefWidth="150.0" text="输入密码不能有非法字符" textFill="RED" visible="false">
+                    <Label fx:id="new_password_warning_" layoutX="440.0" layoutY="101.0" prefHeight="33.0" prefWidth="150.0" text="输入密码不能有非法字符" textFill="RED" visible="false">
                         <font>
                             <Font size="13.0" />
                         </font>
@@ -83,7 +91,20 @@
             </ScrollPane>
         </Tab>
         <Tab text="聊天记录管理">
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+         <ScrollPane hbarPolicy="NEVER">
+            <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="373.0" prefWidth="600.0">
+                  <children>
+                     <Text layoutX="22.0" layoutY="53.0" strokeType="OUTSIDE" strokeWidth="0.0" text="一键清空所有聊天记录" wrappingWidth="230.90690231323242" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="32.0">
+                        <font>
+                           <Font name="Microsoft YaHei" size="20.0" />
+                        </font>
+                     </Text>
+                     <Button fx:id="clear_chat_data_" layoutX="311.0" layoutY="59.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="71.0" text="清空" AnchorPane.leftAnchor="311.0" AnchorPane.topAnchor="59.0" />
+                  </children>
+               </AnchorPane>
+            </content>
+         </ScrollPane>
         </Tab>
     </TabPane>
 </AnchorPane>
