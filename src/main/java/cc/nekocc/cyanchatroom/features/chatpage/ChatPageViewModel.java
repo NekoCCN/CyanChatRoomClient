@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 public class ChatPageViewModel
 {
-
     private final AppRepository app_repository_ = AppRepository.getInstance();
 
     private final StringProperty current_username_ = new SimpleStringProperty();

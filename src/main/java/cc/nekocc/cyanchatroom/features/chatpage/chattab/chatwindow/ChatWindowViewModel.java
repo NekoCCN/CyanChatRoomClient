@@ -84,17 +84,19 @@ public class ChatWindowViewModel
         );
         messages_.add(optimistic_message);
 
-        AppRepository.getInstance().sendEncryptedTextMessage(opposite_id_, text.trim()).exceptionally(e ->
-                {
-                    Platform.runLater(() -> ViewTool.showAlert(
-                            javafx.scene.control.Alert.AlertType.ERROR,
-                            "E2EE 失败",
-                            "E2EE 消息发送失败: " + e.getMessage())
-                    );
-                    messages_.remove(optimistic_message);
+        AppRepository.getInstance().sendEncryptedTextMessage(opposite_id_, text.trim()).thenAccept(future -> {
+           future.exceptionally(e ->
+           {
+               Platform.runLater(() -> ViewTool.showAlert(
+                       javafx.scene.control.Alert.AlertType.ERROR,
+                       "E2EE 失败",
+                       "E2EE 消息发送失败: " + e.getMessage())
+               );
+               messages_.remove(optimistic_message);
 
-                    return null;
-                });
+               return null;
+           });
+        });
         message_input_text_.set("");
     }
 

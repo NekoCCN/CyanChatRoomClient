@@ -66,6 +66,9 @@ public class AppRepository
         }
     }
 
+    public record KeyCache(boolean last_online_, SecretKey key)
+    {  }
+
     private static final AppRepository INSTANCE = new AppRepository();
 
     private final NetworkService network_service_;
@@ -73,7 +76,7 @@ public class AppRepository
     private final LocalPersistenceService persistence_service_;
 
     private final LocalKeyStorageService key_storage_service_;
-        private final Map<UUID, SecretKey> session_keys_ = new ConcurrentHashMap<>();
+    private final Map<UUID, KeyCache> session_keys_ = new ConcurrentHashMap<>();
 
     private String server_address_;
 
@@ -251,7 +254,7 @@ public class AppRepository
      * @param plain_text 明文内容
      * @return 一个 CompletableFuture，完成时包含发送状态的响应
      */
-    public CompletableFuture<ProtocolMessage<StatusResponse>> sendEncryptedTextMessage(UUID recipient_id, String plain_text)
+    public CompletableFuture<CompletableFuture<ProtocolMessage<StatusResponse>>> sendEncryptedTextMessage(UUID recipient_id, String plain_text)
     {
         User current_user = current_user_.get();
         if (current_user == null)
@@ -260,9 +263,10 @@ public class AppRepository
             return CompletableFuture.failedFuture(new IllegalStateException("用户未登录"));
         }
 
-        AtomicReference<CompletableFuture<ProtocolMessage<StatusResponse>>> res = new AtomicReference<>();
+        CompletableFuture<CompletableFuture<ProtocolMessage<StatusResponse>>> res =
+                new CompletableFuture<>();
 
-        SecretKey session_key = session_keys_.get(recipient_id);
+        KeyCache session_key = session_keys_.get(recipient_id);
 
         Message local_message = new Message(recipient_id, current_user.getId(), true,
                 "TEXT", plain_text);
@@ -273,7 +277,7 @@ public class AppRepository
                 {
                     if (session_keys_.containsKey(recipient_id))
                     {
-                        if (!response.getPayload().is_online())
+                        if (session_keys_.get(recipient_id).last_online_ != response.getPayload().is_online())
                         {
                             session_keys_.remove(recipient_id);
                         }
@@ -283,18 +287,18 @@ public class AppRepository
                     {
                         try
                         {
-                            String encrypted_content = E2EEHelper.encrypt(plain_text, session_key);
-                            res.set(sendChatMessageRequestAsync("USER",
+                            String encrypted_content = E2EEHelper.encrypt(plain_text, session_key.key());
+                            res.complete(sendChatMessageRequestAsync("USER",
                                     recipient_id, "TEXT", true, encrypted_content));
                         } catch (Exception e)
                         {
                             last_error_message_.set("加密失败: " + e.getMessage());
-                            res.set(CompletableFuture.failedFuture(e));
+                            res.complete(CompletableFuture.failedFuture(e));
                         }
                     }
 
                     System.out.println("没有找到会话密钥, 开始密钥交换...");
-                    res.set(fetchKeys(recipient_id).thenComposeAsync(responseMsg ->
+                    res.complete(fetchKeys(recipient_id).thenComposeAsync(responseMsg ->
                     {
                         FetchKeysResponse payload = responseMsg.getPayload();
 
@@ -313,7 +317,8 @@ public class AppRepository
                             PublicKey recipient_identity_key = E2EEHelper.publicKeyFromBase64(identity_key_base64);
 
                             SecretKey new_session_key = E2EEHelper.deriveSharedSecret(ephemeral_key_pair.getPrivate(), recipient_identity_key);
-                            session_keys_.put(recipient_id, new_session_key);
+                            session_keys_.put(recipient_id,
+                                    new KeyCache(response.getPayload().is_online(), new_session_key));
 
                             String encrypted_content = E2EEHelper.encrypt(plain_text, new_session_key);
 
@@ -332,7 +337,8 @@ public class AppRepository
                     }));
 
                 });
-        return res.get();
+
+        return res;
     }
     /**
      * 生成并注册新的密钥对，并将其发布到服务器，私钥存储到本地。
@@ -861,7 +867,7 @@ public class AppRepository
         {
             try
             {
-                SecretKey session_key = session_keys_.get(sender_id);
+                KeyCache session_key = session_keys_.get(sender_id);
                 if (session_key == null)
                 {
                     if ("E2EE_INIT".equals(content_type))
@@ -879,7 +885,13 @@ public class AppRepository
                             throw new Exception("找不到本地私钥!");
 
                         SecretKey new_session_key = E2EEHelper.deriveSharedSecret(my_key_pair.getPrivate(), sender_ephemeral_key);
-                        session_keys_.put(sender_id, new_session_key);
+
+                        AppRepository.getInstance().getUserDetails(recipient_id)
+                                .thenAccept(response ->
+                                        {
+                                            session_keys_.put(sender_id, new KeyCache(response.getPayload().is_online(),
+                                                    new_session_key));
+                                        });
 
                         content = E2EEHelper.decrypt(ciphertext, new_session_key);
                         content_type = "TEXT";
@@ -889,7 +901,7 @@ public class AppRepository
                     }
                 } else
                 {
-                    content = E2EEHelper.decrypt(content, session_key);
+                    content = E2EEHelper.decrypt(content, session_key.key());
                 }
             } catch (Exception e)
             {
