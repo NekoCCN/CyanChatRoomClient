@@ -10,7 +10,7 @@
             last_message_time = excluded.last_message_time;
     </insert>
 
-    <select id="findAllConversationsByUserId" resultType="cc.nekocc.cyanchatroom.model.Conversation">
+    <select id="findAllConversationsByUserId" resultType="cc.nekocc.cyanchatroom.model.entity.Conversation">
         SELECT * FROM conversations
         WHERE sender_id = #{user_id}
         ORDER BY last_message_time DESC;
