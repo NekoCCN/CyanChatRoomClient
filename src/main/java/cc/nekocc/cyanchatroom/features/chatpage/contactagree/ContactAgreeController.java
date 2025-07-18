@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 public class ContactAgreeController
 {
-
     @FXML
     private TextField userid_input_;
     @FXML
@@ -66,6 +65,16 @@ public class ContactAgreeController
         search_button_.setOnAction(event ->
         {
             handleSearch();
+        });
+
+        refresh_button_.setOnAction(event ->
+        {
+            refreshUserRequest();
+        });
+
+        send_request_button_.setOnAction(event ->
+        {
+            handleSendRequest();
         });
     }
 

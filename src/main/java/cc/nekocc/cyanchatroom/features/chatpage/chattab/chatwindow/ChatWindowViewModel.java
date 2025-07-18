@@ -53,10 +53,14 @@ public class ChatWindowViewModel
 
         AppRepository.getInstance().sendMessage("USER", opposite_id_, "TEXT", false, text.trim()).exceptionally(e ->
         {
-            Platform.runLater(() -> ViewTool.showAlert(
-                    javafx.scene.control.Alert.AlertType.ERROR,
-                    "消息发送失败",
-                    "无法发送消息: " + e.getMessage())
+            Platform.runLater(() ->
+            {
+                ViewTool.showAlert(
+                        javafx.scene.control.Alert.AlertType.ERROR,
+                        "消息发送失败",
+                        "无法发送消息: " + e.getMessage());
+                messages_.remove(optimistic_message);
+            }
             );
 
             return null;
@@ -87,6 +91,7 @@ public class ChatWindowViewModel
                             "E2EE 失败",
                             "E2EE 消息发送失败: " + e.getMessage())
                     );
+                    messages_.remove(optimistic_message);
 
                     return null;
                 });

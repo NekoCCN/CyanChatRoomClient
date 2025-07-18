@@ -44,6 +44,8 @@ public class ContactAgreeViewModel
                 }
             });
         });
+
+
     }
 
     private void handleRequestAction(FriendRequestViewModel processedVm)
