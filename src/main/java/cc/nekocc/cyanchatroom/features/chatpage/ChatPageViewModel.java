@@ -102,7 +102,8 @@ public class ChatPageViewModel
                         .map(friendship ->
                         {
                             UUID oppositeId = friendship.getUserOneId().equals(currentUserId) ? friendship.getUserTwoId() : friendship.getUserOneId();
-                            return chat_tab_map_.computeIfAbsent(oppositeId, id -> new ChatTabViewModel(id, ConversationType.USER, contact_list_view_model_::addOrUpdateContact));
+                            return chat_tab_map_.computeIfAbsent(oppositeId, id ->
+                                    new ChatTabViewModel(id, ConversationType.USER, contact_list_view_model_::addOrUpdateContact));
                         })
                         .collect(Collectors.toList());
                 Platform.runLater(() -> chat_tabs_.setAll(newTabs));

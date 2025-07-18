@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 public class ChatPageController implements Initializable
 {
-
     @FXML
     public Button refresh_user_list_button_;
     @FXML
@@ -106,7 +105,6 @@ public class ChatPageController implements Initializable
             contact_list_node_ = contact_loader.load();
             contact_list_controller_ = contact_loader.getController();
             contact_list_controller_.setViewModel(view_model_.getContactListViewModel());
-
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -130,14 +128,24 @@ public class ChatPageController implements Initializable
     private void setupBindings()
     {
         username_label_.textProperty().bind(view_model_.currentUsernameProperty());
-        username_title_label_.textProperty().bind(Bindings.createStringBinding(
-                () ->
+        username_title_label_.textProperty().bind(Bindings.createStringBinding(() ->
                 {
                     String name = view_model_.currentUsernameProperty().get();
                     return (name == null || name.isEmpty()) ? "" : name.substring(0, 1).toUpperCase();
                 },
                 view_model_.currentUsernameProperty()
         ));
+
+        user_status_.setOnAction(e ->
+        {
+            Status selectedStatus = user_status_.getValue();
+            if (selectedStatus != null)
+            {
+                view_model_.updateUserStatus(selectedStatus);
+            }
+        });
+
+        refresh_user_list_button_.setOnAction(e -> view_model_.loadActiveFriendships());
 
         user_status_.setItems(FXCollections.observableArrayList(Status.values()));
         user_status_.valueProperty().bindBidirectional(view_model_.currentUserStatusProperty());
@@ -161,8 +169,6 @@ public class ChatPageController implements Initializable
 
     private void setupEventListeners()
     {
-
-
 
         initIconEffect(talk_icon_);
         talk_icon_.setOnMouseClicked(e -> switchSidePane(ChatPageViewModel.SidePane.TALK, talk_icon_));
