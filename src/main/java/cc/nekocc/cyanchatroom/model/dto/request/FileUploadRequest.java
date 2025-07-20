@@ -13,5 +13,5 @@ Example JSON for REQUEST_FILE_UPLOAD:
 }
  */
 public record FileUploadRequest(String file_name, Long file_size,
-                                Integer expires_in_hours, String client_id)
+                                Integer expires_in_hours, String client_request_id)
 {  }

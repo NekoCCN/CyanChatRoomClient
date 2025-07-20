@@ -40,6 +40,11 @@
                   <Font name="Arial Narrow Bold" size="12.0" />
                </font>
             </Button>
+            <Button fx:id="file_enter_button_" layoutX="539.0" layoutY="14.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="70.0" text="文件">
+               <font>
+                  <Font name="Arial Narrow Bold" size="12.0" />
+               </font>
+            </Button>
             </AnchorPane>
         </AnchorPane>
         <HBox fx:id="user_tool_pane_" style="-fx-border-color: #CDCDCD; -fx-border-width: 2; -fx-background-radius: 5; -fx-border-radius: 5;">

@@ -256,7 +256,7 @@ public class AppRepository
         User current_user = current_user_.get();
 
         Message local_message = new Message(recipient_id, current_user.getId(), true,
-                "TEXT", content);
+                content_type, content);
 
         UUID conversation_id = recipient_id;
 

@@ -187,10 +187,29 @@ public class ChatWindowsController implements Initializable
         fileIcon.setFitWidth(40);
 
         Label file_name_label = new Label(fileName);
-        Button download_button = new Button("下载");
+        file_name_label.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 15));
+        file_name_label.setStyle("-fx-text-fill: #333;");
 
-        HBox file_box = new HBox(10, fileIcon, new VBox(file_name_label, download_button));
+        Button download_button = new Button("下载");
+        download_button.setStyle(
+                "-fx-background-color: #2196F3;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-padding: 4 12;"
+        );
+
+        VBox file_info_box = new VBox(file_name_label, download_button);
+        file_info_box.setSpacing(6);
+
+        HBox file_box = new HBox(12, fileIcon, file_info_box);
         file_box.setAlignment(Pos.CENTER_LEFT);
+        file_box.setStyle(
+                "-fx-background-color: #F5F5F5;" +
+                        "-fx-background-radius: 12;" +
+                        "-fx-padding: 10;" +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 6, 0, 1, 2);"
+        );
 
         download_button.setOnAction(e ->
         {
