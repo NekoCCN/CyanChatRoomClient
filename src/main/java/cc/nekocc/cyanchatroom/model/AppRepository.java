@@ -359,10 +359,12 @@ public class AppRepository
                             String encrypted_content = E2EEHelper.encrypt(plain_text, session_key.key());
                             res.complete(sendChatMessageRequestAsync("USER",
                                     recipient_id, "TEXT", true, encrypted_content));
+                            return;
                         } catch (Exception e)
                         {
                             last_error_message_.set("加密失败: " + e.getMessage());
                             res.complete(CompletableFuture.failedFuture(e));
+                            return;
                         }
                     }
 
