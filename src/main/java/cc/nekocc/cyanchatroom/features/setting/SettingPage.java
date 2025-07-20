@@ -3,6 +3,8 @@ package cc.nekocc.cyanchatroom.features.setting;
 import atlantafx.base.controls.PasswordTextField;
 import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.model.AppRepository;
+import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
+import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -14,6 +16,7 @@ import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class SettingPage implements Initializable {
 
@@ -109,8 +112,59 @@ public class SettingPage implements Initializable {
             }
         }));
 
+        new_nickname_button_.setOnAction(_ ->
+        {
+            UUID user_id = AppRepository.getInstance().currentUserProperty().get().getId();
+            Thread.startVirtualThread(() ->
+            {
+                ProtocolMessage<GetUserDetailsResponse> details =
+                        AppRepository.getInstance().getUserDetails(user_id).join();
 
+                var status = AppRepository.getInstance().updateProfile(
+                        new_nickname_input_.getText().trim(),
+                        details.getPayload().signature(),
+                        "",
+                        details.getPayload().status()).join();
 
+                Platform.runLater(() ->
+                {
+                    if (status.getPayload().status())
+                    {
+                        ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已修改昵称");
+                    } else
+                    {
+                        ViewTool.showAlert(Alert.AlertType.ERROR, "错误", status.getPayload().message());
+                    }
+                });
+            });
+        });
+
+        new_words_button_.setOnAction(_ ->
+        {
+            UUID user_id = AppRepository.getInstance().currentUserProperty().get().getId();
+            Thread.startVirtualThread(() ->
+            {
+                ProtocolMessage<GetUserDetailsResponse> details =
+                        AppRepository.getInstance().getUserDetails(user_id).join();
+
+                var status = AppRepository.getInstance().updateProfile(
+                        new_nickname_input_.getText().trim(),
+                        details.getPayload().signature(),
+                        "",
+                        details.getPayload().status()).join();
+
+                Platform.runLater(() ->
+                {
+                    if (status.getPayload().status())
+                    {
+                        ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已修改签名");
+                    } else
+                    {
+                        ViewTool.showAlert(Alert.AlertType.ERROR, "错误", status.getPayload().message());
+                    }
+                });
+            });
+        });
 
         turn_false_.setOnAction(_->{
             turn_on_.setSelected(false);
@@ -128,7 +182,7 @@ public class SettingPage implements Initializable {
         default_color_plan_.setOnAction(_->{
             black_color_plan_.setSelected(false);
         });
-        clear_chat_data_.setOnAction(_->{
+        clear_chat_data_.setOnAction(_ -> {
             Alert alert = ViewTool.showAlert(Alert.AlertType.WARNING, "警告：该过程不可逆", "确定要清除所有聊天数据吗？\n该过程不可逆",false);
             alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
             alert.showAndWait().ifPresent(response -> {
