@@ -53,6 +53,7 @@ public class ContactListViewModel
 
     public void onSelectedContact(TreeItem<String> username)
     {
+        System.out.println("Selected contact: " + username.getValue());
         if (on_data_ready_callback_ != null && username != null)
         {
             on_data_ready_callback_.accept(username.getValue());

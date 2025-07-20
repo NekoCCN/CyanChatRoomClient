@@ -68,19 +68,15 @@ public class ContactListController implements Initializable
         do_not_disturb_root_.setGraphic(createStatusText("勿打扰", Status.DO_NOT_DISTURB.getColor()));
         offline_root_.setGraphic(createStatusText("离线", Status.OFFLINE.getColor()));
 
-        root_list_.selectionModelProperty().addListener((obs, oldVal, newVal) ->
-        {
-            if (newVal != null && newVal.getSelectedItem() != null)
-            {
-                return;
+        root_list_.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1) {
+                TreeItem<String> selectedItem = root_list_.getSelectionModel().getSelectedItem();
+                if (selectedItem != null &&
+                        (selectedItem.getParent() != contact_root_ &&
+                                selectedItem.getParent() != group_root_)) {
+                    view_model_.onSelectedContact(selectedItem);
+                }
             }
-
-            if (newVal.getSelectedItem().getParent() == contact_root_ || newVal.getSelectedItem().getParent() == group_root_)
-            {
-                return;
-            }
-
-            view_model_.onSelectedContact(newVal.getSelectedItem());
         });
     }
 
@@ -103,7 +99,11 @@ public class ContactListController implements Initializable
             {
                 if (c.wasAdded())
                 {
-                    c.getAddedSubList().forEach(name -> treeItem.getChildren().add(new TreeItem<>(name)));
+
+                    c.getAddedSubList().forEach(name -> {
+                        TreeItem<String> item = new TreeItem<>(name);
+                        treeItem.getChildren().add(item);
+                    });
                 }
                 if (c.wasRemoved())
                 {

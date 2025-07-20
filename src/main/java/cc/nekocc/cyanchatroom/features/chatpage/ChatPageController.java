@@ -116,8 +116,15 @@ public class ChatPageController implements Initializable
             var vm = view_model_.getContactListViewModel();
             vm.setOnDataReadyCallback(str ->
             {
-                user_info_controller_.loadUserInfo(str);
-                user_info_window_.getChildren().setAll(user_info_controller_.getRootPane());
+
+                Platform.runLater(()->{
+                    user_info_controller_.loadUserInfo(str);
+                    AnchorPane.setLeftAnchor(user_info_controller_.getRootPane(),0.0);
+                    AnchorPane.setRightAnchor(user_info_controller_.getRootPane(),0.0);
+                    AnchorPane.setTopAnchor(user_info_controller_.getRootPane(),0.0);
+                    AnchorPane.setBottomAnchor(user_info_controller_.getRootPane(),0.0);
+                    user_info_window_.getChildren().setAll(user_info_controller_.getRootPane());
+                });
             });
             contact_list_controller_.setViewModel(vm);
 

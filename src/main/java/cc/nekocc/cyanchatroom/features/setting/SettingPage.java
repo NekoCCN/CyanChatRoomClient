@@ -5,6 +5,7 @@ import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -63,6 +64,36 @@ public class SettingPage implements Initializable {
                 return null;  // 拒绝修改
             }
         }));
+
+        new_username_button_.setOnAction(_-> {
+            Alert alert = ViewTool.showAlert(Alert.AlertType.WARNING, "警告", "用户名是账号登录的重要部分？\n是否确认修改",false);
+            alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+            alert.showAndWait().ifPresent(response->{
+                if(response == ButtonType.YES){
+                    Alert password_alert = ViewTool.showAlert(Alert.AlertType.WARNING, "警告:请输入密码", "",false);
+                    PasswordTextField password_input = new PasswordTextField();
+                    password_input.setPromptText("请输入密码");
+                    password_alert.getDialogPane().setContent(password_input);
+                    password_alert.getButtonTypes().setAll(ButtonType.YES);
+                    password_alert.showAndWait().ifPresent(responses -> {
+                        AppRepository.getInstance().changeUsername(password_input.getPassword().trim(),new_username_input_.getText().trim()).thenAccept(responsees->{
+                            if(responsees.getPayload().status()) {
+                                ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已修改用户名\n程序即将关闭",false).showAndWait().ifPresent(res->{
+                                    Platform.exit();
+                                    AppRepository.getInstance().onClose();
+                                    System.exit(0);
+                                });
+                            }
+                            else{
+                                ViewTool.showAlert(Alert.AlertType.ERROR, "错误", responsees.getPayload().message());
+                            }
+                        });
+                    });
+                }
+            });
+
+        });
+
 
         new_nickname_input_.setTextFormatter(new TextFormatter<>(change -> {
             String newText = change.getControlNewText();  // 获取输入后的完整文本

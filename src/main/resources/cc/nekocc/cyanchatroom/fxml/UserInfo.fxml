@@ -7,25 +7,34 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="root_pane_" prefHeight="420.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.userinfo.UserInfoController">
-    <StackPane fx:id="avator_stackpane_" layoutX="20.0" layoutY="14.0" prefHeight="98.0" prefWidth="97.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="483.3333333333333" AnchorPane.topAnchor="14.0" />
-    <Text layoutX="37.0" layoutY="147.0" strokeType="OUTSIDE" strokeWidth="0.0" text="用户名：" wrappingWidth="86.9068603515625" AnchorPane.leftAnchor="37.0">
+<AnchorPane fx:id="root_pane_" prefHeight="420.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.userinfo.UserInfoController">
+    <StackPane fx:id="avator_stackpane_" layoutX="20.0" layoutY="14.0" prefHeight="98.0" prefWidth="97.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="14.0" />
+    <Text layoutX="58.0" layoutY="147.0" strokeType="OUTSIDE" strokeWidth="0.0" text="用户名：" wrappingWidth="86.9068603515625" AnchorPane.leftAnchor="58.0" AnchorPane.topAnchor="120.0">
         <font>
           <Font name="Microsoft YaHei Bold" size="20.0" />
         </font>
     </Text>
-    <Label fx:id="username_label_" layoutX="133.0" layoutY="120.0" minWidth="40.0" prefHeight="39.0" AnchorPane.leftAnchor="133.0" AnchorPane.topAnchor="120.0" />
-    <Text layoutX="37.0" layoutY="204.0" strokeType="OUTSIDE" strokeWidth="0.0" text="昵称：" wrappingWidth="86.90686035156239" AnchorPane.leftAnchor="37.0" AnchorPane.topAnchor="183.0">
+    <Label fx:id="username_label_" layoutX="147.0" layoutY="113.0" minWidth="40.0" prefHeight="39.0" prefWidth="114.0" AnchorPane.leftAnchor="147.0" AnchorPane.topAnchor="113.0">
+      <font>
+         <Font name="System Bold" size="20.0" />
+      </font></Label>
+    <Text layoutX="54.0" layoutY="204.0" strokeType="OUTSIDE" strokeWidth="0.0" text="昵称：" wrappingWidth="86.90686035156239" AnchorPane.leftAnchor="54.0" AnchorPane.topAnchor="182.837890625">
         <font>
           <Font name="Microsoft YaHei Bold" size="20.0" />
         </font>
     </Text>
-    <Text layoutX="37.0" layoutY="261.0" strokeType="OUTSIDE" strokeWidth="0.0" text="个人签名：" wrappingWidth="120.90686035156239">
+    <Text layoutX="54.0" layoutY="262.0" strokeType="OUTSIDE" strokeWidth="0.0" text="个人签名：" wrappingWidth="120.90686035156239">
         <font>
           <Font name="Microsoft YaHei Bold" size="20.0" />
         </font>
     </Text>
-    <Label fx:id="nickname_label_" layoutX="138.0" layoutY="177.0" minWidth="40.0" prefHeight="39.0" />
-    <Label fx:id="userwords_label_" layoutX="145.0" layoutY="247.0" AnchorPane.leftAnchor="145.0" AnchorPane.topAnchor="247.0" />
-   <Button fx:id="dele_friendship_" layoutX="431.0" layoutY="352.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="114.0" text="删除好友" />
+    <Label fx:id="nickname_label_" layoutX="155.0" layoutY="176.0" minWidth="40.0" prefHeight="39.0" prefWidth="114.0">
+      <font>
+         <Font name="Microsoft JhengHei UI Bold" size="20.0" />
+      </font></Label>
+    <Label fx:id="userwords_label_" layoutX="145.0" layoutY="247.0" AnchorPane.leftAnchor="160.0" AnchorPane.topAnchor="247.0">
+      <font>
+         <Font size="17.0" />
+      </font></Label>
+   <Button fx:id="dele_friendship_" layoutX="305.0" layoutY="366.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="114.0" text="删除好友" AnchorPane.bottomAnchor="14.666666666666686" AnchorPane.leftAnchor="305.0" />
 </AnchorPane>

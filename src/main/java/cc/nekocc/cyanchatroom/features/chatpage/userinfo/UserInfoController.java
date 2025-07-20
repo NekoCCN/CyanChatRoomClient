@@ -1,7 +1,9 @@
 package cc.nekocc.cyanchatroom.features.chatpage.userinfo;
 
 import atlantafx.base.theme.Styles;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -42,9 +44,16 @@ public class UserInfoController implements Initializable {
     }
 
     public void loadUserInfo(String username ) {
-        avator_stackpane_.getChildren().setAll(ViewTool.getDefaultAvatar(nickname_property_.get()));
-
-        
+           Thread.startVirtualThread(() -> {
+            var uuid = AppRepository.getInstance().getUuidByUsername(username).join();
+            var details = AppRepository.getInstance().getUserDetails(uuid.getPayload().user_id()).join();
+            Platform.runLater(() -> {
+                username_property_.set(username);
+                nickname_property_.set(details.getPayload().nick_name());
+                userwords_property_.set(details.getPayload().signature());
+                avator_stackpane_.getChildren().setAll(ViewTool.getDefaultAvatar(nickname_property_.get()));
+            });
+        });
     }
     
     private void setupBinding() {
