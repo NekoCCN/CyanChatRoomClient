@@ -974,6 +974,8 @@ public class AppRepository
                                                     new_session_key));
                                         });
 
+                        session_keys_.put(sender_id, new KeyCache(true, new_session_key));
+
                         content = E2EEHelper.decrypt(ciphertext, new_session_key);
                         content_type = "TEXT";
                     } else
