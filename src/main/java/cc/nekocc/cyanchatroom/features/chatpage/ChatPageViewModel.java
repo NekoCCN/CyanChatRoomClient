@@ -2,6 +2,7 @@ package cc.nekocc.cyanchatroom.features.chatpage;
 
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
+import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeViewModel;
@@ -209,6 +210,19 @@ public class ChatPageViewModel
         if (controller != null)
         {
             controller.refreshUserRequest();
+        }
+    }
+
+    public void uploadAndSendFile()
+    {
+        ChatTabViewModel selected_tab = selected_chat_tab_.get();
+        if (selected_tab != null)
+        {
+            ChatWindowViewModel chat_window = selected_tab.getChatWindowViewModel();
+            chat_window.sendFile();
+        } else
+        {
+            ViewTool.showAlert(Alert.AlertType.WARNING, "未选择聊天", "请先选择一个聊天窗口再发送文件。");
         }
     }
 

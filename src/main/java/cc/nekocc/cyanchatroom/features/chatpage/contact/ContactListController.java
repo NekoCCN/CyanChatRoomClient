@@ -32,16 +32,12 @@ public class ContactListController implements Initializable
     private final TreeItem<String> away_root_ = new TreeItem<>("");
     private final TreeItem<String> do_not_disturb_root_ = new TreeItem<>("");
     private final TreeItem<String> offline_root_ = new TreeItem<>("");
-    private Consumer<String> on_data_ready_callback_;
 
 
     public void setViewModel(ContactListViewModel viewModel)
     {
         this.view_model_ = viewModel;
         bindLists();
-    }
-    public void setOnDataReadyCallback_(Consumer<String>  callback) {
-        this.on_data_ready_callback_ = callback;
     }
 
     @Override
@@ -71,6 +67,21 @@ public class ContactListController implements Initializable
         away_root_.setGraphic(createStatusText("离开", Status.AWAY.getColor()));
         do_not_disturb_root_.setGraphic(createStatusText("勿打扰", Status.DO_NOT_DISTURB.getColor()));
         offline_root_.setGraphic(createStatusText("离线", Status.OFFLINE.getColor()));
+
+        root_list_.selectionModelProperty().addListener((obs, oldVal, newVal) ->
+        {
+            if (newVal != null && newVal.getSelectedItem() != null)
+            {
+                return;
+            }
+
+            if (newVal.getSelectedItem().getParent() == contact_root_ || newVal.getSelectedItem().getParent() == group_root_)
+            {
+                return;
+            }
+
+            view_model_.onSelectedContact(newVal.getSelectedItem());
+        });
     }
 
     private void bindLists()
@@ -80,8 +91,6 @@ public class ContactListController implements Initializable
         bindListToTreeItem(view_model_.getAwayContacts(), away_root_);
         bindListToTreeItem(view_model_.getDoNotDisturbContacts(), do_not_disturb_root_);
         bindListToTreeItem(view_model_.getOfflineContacts(), offline_root_);
-
-
     }
 
     private void bindListToTreeItem(ObservableList<String> list, TreeItem<String> treeItem)

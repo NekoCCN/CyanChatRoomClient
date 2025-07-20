@@ -5,6 +5,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
+
+import java.util.function.Consumer;
 
 public class ContactListViewModel
 {
@@ -14,6 +17,7 @@ public class ContactListViewModel
     private final ObservableList<String> do_not_disturb_contacts_ = FXCollections.observableArrayList();
     private final ObservableList<String> offline_contacts_ = FXCollections.observableArrayList();
     private final StringProperty selected_contact_ = new SimpleStringProperty();
+    private Consumer<String> on_data_ready_callback_;
 
     public void addOrUpdateContact(String username, Status status)
     {
@@ -47,9 +51,17 @@ public class ContactListViewModel
         return busy_contacts_;
     }
 
-    public void onSelectedContact(String username)
+    public void onSelectedContact(TreeItem<String> username)
     {
-        selected_contact_.set(username);
+        if (on_data_ready_callback_ != null && username != null)
+        {
+            on_data_ready_callback_.accept(username.getValue());
+        }
+    }
+
+    public void setOnDataReadyCallback(Consumer<String> callback)
+    {
+        this.on_data_ready_callback_ = callback;
     }
 
     public ObservableList<String> getAwayContacts()

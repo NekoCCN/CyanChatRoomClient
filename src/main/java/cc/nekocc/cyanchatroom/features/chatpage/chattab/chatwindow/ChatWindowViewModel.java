@@ -8,6 +8,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.stage.FileChooser;
+
+import java.io.File;
 import java.util.UUID;
 
 public class ChatWindowViewModel
@@ -82,6 +85,32 @@ public class ChatWindowViewModel
            });
         });
         message_input_text_.set("");
+    }
+
+    public void sendFile()
+    {
+        FileChooser file_chooser = new FileChooser();
+        file_chooser.setTitle("选择要发送的文件");
+        File selected_file = file_chooser.showOpenDialog(null);
+
+        if (selected_file != null)
+        {
+            AppRepository.getInstance().uploadFile(selected_file, 24)
+                    .thenAccept(id ->
+                    {
+                        String content = selected_file.getName() + "|" + id;
+                        AppRepository.getInstance().sendMessage("USER", opposite_id_, "FILE", false, content);
+                    })
+                    .exceptionally(e ->
+                    {
+                        Platform.runLater(() -> ViewTool.showAlert(
+                                javafx.scene.control.Alert.AlertType.ERROR,
+                                "文件上传失败",
+                                "无法上传文件: " + e.getMessage())
+                        );
+                        return null;
+                    });
+        }
     }
 
     public void receiveMessage(Message message)

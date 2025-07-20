@@ -93,8 +93,6 @@ public class ChatPageController implements Initializable
         setupTabListListener();
     }
 
-
-
     private void loadSubViews()
     {
         try
@@ -115,12 +113,13 @@ public class ChatPageController implements Initializable
             FXMLLoader contact_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ContactList.fxml"));
             contact_list_node_ = contact_loader.load();
             contact_list_controller_ = contact_loader.getController();
-            contact_list_controller_.setViewModel(view_model_.getContactListViewModel());
-            contact_list_controller_.setOnDataReadyCallback_(str->{
+            var vm = view_model_.getContactListViewModel();
+            vm.setOnDataReadyCallback(str ->
+            {
                 user_info_controller_.loadUserInfo(str);
                 user_info_window_.getChildren().setAll(user_info_controller_.getRootPane());
-
             });
+            contact_list_controller_.setViewModel(vm);
 
 
 
