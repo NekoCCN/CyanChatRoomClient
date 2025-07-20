@@ -75,6 +75,8 @@ public class AppRepository
     private final HttpService http_service_;
     private final LocalPersistenceService persistence_service_;
 
+    private final GlobalConfig config_ = new GlobalConfig();
+
     private final LocalKeyStorageService key_storage_service_;
     private final Map<UUID, KeyCache> session_keys_ = new ConcurrentHashMap<>();
 
@@ -104,6 +106,13 @@ public class AppRepository
         this.network_service_ = new NetworkService(this::onMessageReceived, this::onConnectionOpened,
                 this::onConnectionClosed, this::onReconnecting, this::onReconnectionFailed);
         this.key_storage_service_ = new LocalKeyStorageService();
+    }
+
+    public void onClose()
+    {
+        network_service_.disconnect();
+        if (current_user_.get() != null)
+            config_.save(server_address_, current_user_.get().getId().toString());
     }
 
     public static AppRepository getInstance()
@@ -148,6 +157,8 @@ public class AppRepository
             return;
         }
         current_user_.set(user);
+
+        config_.load(server_address_, user.getId().toString());
     }
 
     /*
@@ -1019,5 +1030,9 @@ public class AppRepository
                 conversation_messages_.get(conversation.getId()).clear();
             }
         }
+    }
+    public GlobalConfig getConfig()
+    {
+        return config_;
     }
 }
