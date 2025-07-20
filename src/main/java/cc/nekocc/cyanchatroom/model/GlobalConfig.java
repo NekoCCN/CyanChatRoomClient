@@ -10,12 +10,7 @@ public class GlobalConfig
 {
     private int max_config_history_message_size = 1000;
     private boolean enable_shift_enter_hotkey = true;
-
-    private int heartbeat_interval = 5000;
-
-    private int reconnect_interval = 1000;
-
-    private int max_reconnect_attempts = 4;
+    private String theme = "LIGHT";
 
     public Path getSafePath(String server_address, String user_id)
     {
@@ -67,9 +62,7 @@ public class GlobalConfig
                 GlobalConfig config = JsonUtil.deserialize(json_content, GlobalConfig.class);
                 this.max_config_history_message_size = config.max_config_history_message_size;
                 this.enable_shift_enter_hotkey = config.enable_shift_enter_hotkey;
-                this.heartbeat_interval = config.heartbeat_interval;
-                this.reconnect_interval = config.reconnect_interval;
-                this.max_reconnect_attempts = config.max_reconnect_attempts;
+                this.theme = config.theme;
             }
             else
             {
@@ -105,29 +98,12 @@ public class GlobalConfig
     {
         this.enable_shift_enter_hotkey = enable_shift_enter_hotkey;
     }
-    public int getHeartbeatInterval()
+    public String getTheme()
     {
-        return heartbeat_interval;
+        return theme;
     }
-    public void setHeartbeatInterval(int heartbeat_interval)
+    public void setTheme(String theme)
     {
-        this.heartbeat_interval = heartbeat_interval;
+        this.theme = theme;
     }
-    public int getReconnectInterval()
-    {
-        return reconnect_interval;
-    }
-    public void setReconnectInterval(int reconnect_interval)
-    {
-        this.reconnect_interval = reconnect_interval;
-    }
-    public int getMaxReconnectAttempts()
-    {
-        return max_reconnect_attempts;
-    }
-    public void setMaxReconnectAttempts(int max_reconnect_attempts)
-    {
-        this.max_reconnect_attempts = max_reconnect_attempts;
-    }
-
 }
