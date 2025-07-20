@@ -99,7 +99,8 @@ public class ChatWindowViewModel
                     .thenAccept(id ->
                     {
                         String content = selected_file.getName() + "|" + id;
-                        AppRepository.getInstance().sendMessage("USER", opposite_id_, "FILE", false, content);
+                        AppRepository.getInstance().sendMessage("USER",
+                                opposite_id_, "FILE", false, content);
                     })
                     .exceptionally(e ->
                     {

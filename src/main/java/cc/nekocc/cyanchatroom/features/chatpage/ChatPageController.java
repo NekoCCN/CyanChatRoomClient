@@ -50,6 +50,8 @@ public class ChatPageController implements Initializable
     @FXML
     private ImageView contact_icon_;
     @FXML
+    private Button file_enter_button_;
+    @FXML
     private ImageView setting_icon_;
     @FXML
     private AnchorPane scroll_root_pane_;
@@ -119,11 +121,8 @@ public class ChatPageController implements Initializable
                 user_info_controller_.loadUserInfo(str);
                 user_info_window_.getChildren().setAll(user_info_controller_.getRootPane());
             });
+
             contact_list_controller_.setViewModel(vm);
-
-
-
-
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -223,6 +222,14 @@ public class ChatPageController implements Initializable
             if (view_model_.selectedChatTabProperty().get() != null)
             {
                 view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendE2EEMessage();
+            }
+        });
+
+        file_enter_button_.setOnAction(e ->
+        {
+            if (view_model_.selectedChatTabProperty().get() != null)
+            {
+                view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendFile();
             }
         });
 
