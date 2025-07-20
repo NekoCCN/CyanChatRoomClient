@@ -710,7 +710,17 @@ public class AppRepository
         RejectFriendshipRequest payload = new RejectFriendshipRequest(client_request_id, request_id);
         return sendRequestWithFuture(MessageType.REJECT_FRIENDSHIP_REQUEST, payload, client_request_id, StatusResponse.class);
     }
-
+    /**
+     * 删除好友关系。
+     * @param friendship_id 好友关系的唯一标识符
+     * @return 一个CompletableFuture，完成时包含状态响应
+     */
+    public CompletableFuture<ProtocolMessage<StatusResponse>> deleteFriendship(UUID friendship_id)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        DeleteFriendshipRequest payload = new DeleteFriendshipRequest(client_request_id, friendship_id, current_user_.get().getId());
+        return sendRequestWithFuture(MessageType.DELETE_FRIENDSHIP_REQUEST, payload, client_request_id, StatusResponse.class);
+    }
     /**
      * 获取指定用户的所有好友关系列表（包括待处理的）。
      * @param user_id 用户的唯一标识符

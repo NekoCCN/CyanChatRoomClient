@@ -28,6 +28,7 @@ public final class MessageType
     public static final String REMOVE_MEMBER_REQUEST = "REMOVE_MEMBER_REQUEST";
     public static final String SET_MEMBER_ROLE_REQUEST = "SET_MEMBER_ROLE_REQUEST";
     public static final String CHANGE_GROUP_JOIN_MODE_REQUEST = "CHANGE_GROUP_JOIN_MODE_REQUEST";
+    public static final String DELETE_FRIENDSHIP_REQUEST = "DELETE_FRIENDSHIP_REQUEST";
 
     public static final String GET_UUID_BY_USERNAME_REQUEST = "GET_UUID_BY_USERNAME_REQUEST";
     public static final String GET_UUID_BY_USERNAME_RESPONSE = "GET_UUID_BY_USERNAME_RESPONSE";
