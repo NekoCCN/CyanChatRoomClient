@@ -254,8 +254,38 @@ public class AppRepository
                                                                           boolean is_encrypted, String content)
     {
         User current_user = current_user_.get();
-        Message local_message = new Message(recipient_id, current_user.getId(), true, "TEXT", content);
+
+        Message local_message = new Message(recipient_id, current_user.getId(), true,
+                "TEXT", content);
+
+        UUID conversation_id = recipient_id;
+
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
+
+        final UUID final_conversation_id = conversation_id;
+
+        Platform.runLater(() -> {
+            ObservableList<Message> messageList = getObservableMessagesForConversation(final_conversation_id);
+            messageList.add(local_message);
+        });
+
+        String iso_time = Instant.now().toString();
+
+        conversations_.add(new Conversation(
+                conversation_id,
+                current_user.getId(),
+                ConversationType.valueOf(recipient_type),
+                OffsetDateTime.parse(iso_time).toString()));
+
+        persistence_service_.upsertConversation(
+                server_address_,
+                current_user.getId(),
+                conversation_id,
+                ConversationType.valueOf(recipient_type),
+                recipient_id,
+                OffsetDateTime.parse(iso_time)
+        );
+
         return sendChatMessageRequestAsync(recipient_type, recipient_id, content_type, is_encrypted, content);
     }
 
@@ -265,7 +295,8 @@ public class AppRepository
      * @param plain_text 明文内容
      * @return 一个 CompletableFuture，完成时包含发送状态的响应
      */
-    public CompletableFuture<CompletableFuture<ProtocolMessage<StatusResponse>>> sendEncryptedTextMessage(UUID recipient_id, String plain_text)
+    public CompletableFuture<CompletableFuture<ProtocolMessage<StatusResponse>>> sendEncryptedTextMessage(UUID recipient_id,
+                                                                                                          String plain_text)
     {
         User current_user = current_user_.get();
         if (current_user == null)
@@ -281,7 +312,34 @@ public class AppRepository
 
         Message local_message = new Message(recipient_id, current_user.getId(), true,
                 "TEXT", plain_text);
+
+        UUID conversation_id = recipient_id;
+
         persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
+
+        final UUID final_conversation_id = conversation_id;
+
+        Platform.runLater(() -> {
+            ObservableList<Message> messageList = getObservableMessagesForConversation(final_conversation_id);
+            messageList.add(local_message);
+        });
+
+        String iso_time = Instant.now().toString();
+
+        conversations_.add(new Conversation(
+                conversation_id,
+                current_user.getId(),
+                ConversationType.USER,
+                OffsetDateTime.parse(iso_time).toString()));
+
+        persistence_service_.upsertConversation(
+                server_address_,
+                current_user.getId(),
+                conversation_id,
+                ConversationType.USER,
+                recipient_id,
+                OffsetDateTime.parse(iso_time)
+        );
 
         AppRepository.getInstance().getUserDetails(recipient_id)
                 .thenAccept(response ->
@@ -1021,14 +1079,6 @@ public class AppRepository
             int conversion_message_size = persistence_service_.countMessagesInConversation(server_address_, current_user_.get().getId(), conversation.getId());
             persistence_service_.deleteOldestMessages(server_address_, current_user_.get().getId(), conversation.getId(), conversion_message_size);
             conversation_messages_.remove(conversation.getId());
-        }
-
-        for (Conversation conversation : conversations_)
-        {
-            if (conversation_messages_.containsKey(conversation.getId()))
-            {
-                conversation_messages_.get(conversation.getId()).clear();
-            }
         }
     }
     public GlobalConfig getConfig()

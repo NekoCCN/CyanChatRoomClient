@@ -44,13 +44,6 @@ public class ChatWindowViewModel
             return;
         }
 
-        Message optimistic_message = new Message(
-                opposite_id_,
-                AppRepository.getInstance().currentUserProperty().get().getId(),
-                true, "TEXT", text.trim()
-        );
-        messages_.add(optimistic_message);
-
         AppRepository.getInstance().sendMessage("USER", opposite_id_, "TEXT", false, text.trim()).exceptionally(e ->
         {
             Platform.runLater(() ->
@@ -59,7 +52,6 @@ public class ChatWindowViewModel
                         javafx.scene.control.Alert.AlertType.ERROR,
                         "消息发送失败",
                         "无法发送消息: " + e.getMessage());
-                messages_.remove(optimistic_message);
             }
             );
 
@@ -77,13 +69,6 @@ public class ChatWindowViewModel
             return;
         }
 
-        Message optimistic_message = new Message(
-                opposite_id_,
-                AppRepository.getInstance().currentUserProperty().get().getId(),
-                true, "TEXT", text.trim()
-        );
-        messages_.add(optimistic_message);
-
         AppRepository.getInstance().sendEncryptedTextMessage(opposite_id_, text.trim()).thenAccept(future -> {
            future.exceptionally(e ->
            {
@@ -92,7 +77,6 @@ public class ChatWindowViewModel
                        "E2EE 失败",
                        "E2EE 消息发送失败: " + e.getMessage())
                );
-               messages_.remove(optimistic_message);
 
                return null;
            });
