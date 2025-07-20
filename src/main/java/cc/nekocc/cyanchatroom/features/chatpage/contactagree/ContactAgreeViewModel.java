@@ -105,7 +105,7 @@ public class ContactAgreeViewModel
                     refreshRequests();
                 } else
                 {
-                    ViewTool.showAlert(Alert.AlertType.ERROR, "失败", "发送好友请求失败，请检查网络");
+                    ViewTool.showAlert(Alert.AlertType.ERROR, "失败", "发送好友请求失败:"+response.getPayload().message());
                 }
             });
         });

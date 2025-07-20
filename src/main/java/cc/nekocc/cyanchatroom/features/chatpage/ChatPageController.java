@@ -145,7 +145,9 @@ public class ChatPageController implements Initializable
             }
         });
 
-        refresh_user_list_button_.setOnAction(e -> view_model_.loadActiveFriendships());
+        refresh_user_list_button_.setOnAction(e ->{
+            user_list_vbox_.getChildren().clear();
+            view_model_.loadActiveFriendships();});
 
         user_status_.setItems(FXCollections.observableArrayList(Status.values()));
         user_status_.valueProperty().bindBidirectional(view_model_.currentUserStatusProperty());
