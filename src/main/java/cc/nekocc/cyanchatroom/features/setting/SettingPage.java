@@ -40,6 +40,22 @@ public class SettingPage implements Initializable {
 
     }
     private void setupEvent() {
+        turn_false_.setOnAction(_->{
+            turn_on_.setSelected(false);
+            turn_false_.setDisable(true);
+            turn_on_.setDisable(false);
+        });
+        turn_on_.setOnAction(_->{
+            turn_false_.setSelected(false);
+            turn_on_.setDisable(true);
+            turn_false_.setDisable(false);
+        });
+        black_color_plan_.setOnAction(_->{
+            default_color_plan_.setSelected(false);
+        });
+        default_color_plan_.setOnAction(_->{
+            black_color_plan_.setSelected(false);
+        });
         clear_chat_data_.setOnAction(_->{
             Alert alert = ViewTool.showAlert(Alert.AlertType.WARNING, "警告：该过程不可逆", "确定要清除所有聊天数据吗？\n该过程不可逆",false);
             alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);

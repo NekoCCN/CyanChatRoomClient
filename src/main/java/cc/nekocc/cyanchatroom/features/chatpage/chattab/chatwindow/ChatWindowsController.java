@@ -21,8 +21,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
@@ -79,17 +77,13 @@ public class ChatWindowsController implements Initializable
 
     private void addMessageNode(Message message)
     {
+
+
+
+
         boolean is_outgoing = message.isOutgoing();
-
-
-
         VBox message_container = new VBox();
-
-
         HBox message_box = new HBox(10);
-
-
-
         Label message_label = new Label(message.getVal());
         message_label.setWrapText(true);
 
@@ -116,7 +110,9 @@ public class ChatWindowsController implements Initializable
 
         VBox message_bubble = new VBox(username_text, message_label, time_text);
 
+
         StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
+
 
         if (is_outgoing)
         {
@@ -127,7 +123,9 @@ public class ChatWindowsController implements Initializable
         }
 
         message_container.getChildren().add(message_box);
-        message_label.setContextMenu(setupMessageMenu(message_label, message_container, is_outgoing));
+        message_label.setContextMenu(setupMessageMenu(message_label, message_container));
+
+
 
         message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
@@ -154,6 +152,7 @@ public class ChatWindowsController implements Initializable
         message_bubble.setSpacing(2);
         message_bubble.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
 
+
         Platform.runLater(() ->{
 
 
@@ -161,7 +160,7 @@ public class ChatWindowsController implements Initializable
             container_pane_.getChildren().add(message_container);});
     }
 
-    private ContextMenu setupMessageMenu(Label label, VBox container, boolean can_withdraw)
+    private ContextMenu setupMessageMenu(Label label, VBox container)
     {
         ContextMenu menu = new ContextMenu();
         MenuItem copy_item = new MenuItem("复制");
@@ -177,12 +176,7 @@ public class ChatWindowsController implements Initializable
         delete_item.setOnAction(_ -> container_pane_.getChildren().remove(container));
 
         menu.getItems().addAll(copy_item, new SeparatorMenuItem());
-        if (can_withdraw)
-        {
-            MenuItem withdraw_item = new MenuItem("撤回");
-            withdraw_item.setDisable(true);
-            menu.getItems().add(withdraw_item);
-        }
+
         menu.getItems().add(delete_item);
         return menu;
     }
