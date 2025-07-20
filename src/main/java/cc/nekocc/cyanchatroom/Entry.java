@@ -1,5 +1,6 @@
 package cc.nekocc.cyanchatroom;
 
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
@@ -18,7 +19,7 @@ public class Entry extends Application
         Navigator.navigateTo("fxml/LoginServer.fxml");
         stage.setOnCloseRequest(_->{
             Platform.exit();
-            System.exit(0);
+            AppRepository.getInstance().onClose();
         });
         stage.setResizable(false);
         stage.getIcons().add((new Image(String.valueOf(getClass().getResource("/Image/ICON.png")))));
