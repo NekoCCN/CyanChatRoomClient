@@ -61,6 +61,15 @@ public class ViewTool {
         alert.showAndWait();
     }
 
+
+    /**
+     * 显示一个提示框
+     * @param alert_type 提示框类型
+     * @param title 提示框标题
+     * @param content 提示框内容
+     * @param need_show 是否显示
+     * @return 提示框
+     */
     public static Alert showAlert(Alert.AlertType alert_type, String title, String content,Boolean need_show)
     {
         Alert alert = new Alert(alert_type);

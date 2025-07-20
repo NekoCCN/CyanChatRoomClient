@@ -7,6 +7,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
@@ -16,7 +17,7 @@
     <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="常规设置">
             <ScrollPane hbarPolicy="NEVER" minHeight="370.0" minWidth="600.0" prefHeight="370.0" prefWidth="600.0">
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="403.0" prefWidth="600.0">
+                <AnchorPane prefHeight="367.0" prefWidth="600.0">
                     <Text layoutX="26.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="配色方案" wrappingWidth="90.24021530151367" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
                         <font>
                             <Font name="Microsoft YaHei" size="20.0" />
@@ -35,9 +36,58 @@
                 </AnchorPane>
             </ScrollPane>
         </Tab>
+        <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="个人资料设置">
+            <ScrollPane hbarPolicy="NEVER" minHeight="370.0" minWidth="600.0" prefHeight="370.0" prefWidth="600.0">
+                <AnchorPane prefHeight="559.0" prefWidth="599.0">
+                    <Text layoutX="33.0" layoutY="45.0" strokeType="OUTSIDE" strokeWidth="0.0" text="用户名修改" wrappingWidth="127.57355117797852" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
+                        <font>
+                            <Font name="Microsoft YaHei" size="20.0" />
+                        </font>
+                    </Text>
+                    <TextField fx:id="new_username_input_" layoutX="57.0" layoutY="56.0" prefHeight="34.0" prefWidth="327.0" promptText="输入新的用户名" AnchorPane.topAnchor="56.0">
+                        <font>
+                            <Font size="15.0" />
+                        </font>
+                    </TextField>
+                    <Button fx:id="new_username_button_" layoutX="384.0" layoutY="101.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="111.0" text="应用用户名" AnchorPane.leftAnchor="384.0" AnchorPane.topAnchor="101.0" />
+                    <Text layoutX="68.0" layoutY="202.0" strokeType="OUTSIDE" strokeWidth="0.0" text="昵称修改" wrappingWidth="127.57355117797852" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="120.0">
+                        <font>
+                            <Font name="Microsoft YaHei" size="20.0" />
+                        </font>
+                    </Text>
+                    <TextField fx:id="new_nickname_input_" layoutX="60.0" layoutY="182.0" prefHeight="34.0" prefWidth="327.0" promptText="输入新的昵称" AnchorPane.topAnchor="182.0">
+                        <font>
+                            <Font size="15.0" />
+                        </font>
+                    </TextField>
+                    <Button fx:id="new_nickname_button_" layoutX="387.0" layoutY="228.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="110.0" text="应用昵称" />
+                    <Text layoutX="25.0" layoutY="296.0" strokeType="OUTSIDE" strokeWidth="0.0" text="个人签名修改" wrappingWidth="127.57355117797852" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="275.0">
+                        <font>
+                            <Font name="Microsoft YaHei" size="20.0" />
+                        </font>
+                    </Text>
+                    <TextArea fx:id="new_userwords_input_" layoutX="60.0" layoutY="316.0" prefHeight="124.0" prefWidth="328.0" promptText="输入新的个人签名" wrapText="true">
+                        <font>
+                            <Font size="15.0" />
+                        </font>
+                    </TextArea>
+                    <Button fx:id="new_words_button_" layoutX="387.0" layoutY="454.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="117.0" text="应用个人签名" AnchorPane.leftAnchor="387.0" AnchorPane.topAnchor="454.0" />
+               <Label fx:id="new_username_warning_" layoutX="400.0" layoutY="41.0" prefHeight="63.0" prefWidth="142.0" text="用户名不得超出12个字且不能包含特殊符号" textFill="RED" visible="false" wrapText="true" AnchorPane.topAnchor="41.0">
+                  <font>
+                     <Font name="System Bold" size="13.0" />
+                  </font>
+               </Label>
+               <Label fx:id="new_nickname_warning_" layoutX="400.0" layoutY="167.0" prefHeight="63.0" prefWidth="142.0" text="用户名不得超出12个字且不能包含特殊符号" textFill="RED" visible="false" wrapText="true" AnchorPane.topAnchor="167.0">
+                  <font>
+                     <Font size="13.0" />
+                  </font>
+               </Label>
+                </AnchorPane>
+            </ScrollPane>
+        </Tab>
         <Tab text="安全设置">
             <ScrollPane hbarPolicy="NEVER">
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="373.0" prefWidth="600.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="600.0">
                     <Text layoutX="31.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="修改密码" wrappingWidth="108.90698623657227" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
                         <font>
                             <Font name="Microsoft YaHei UI" size="20.0" />
@@ -91,20 +141,16 @@
             </ScrollPane>
         </Tab>
         <Tab text="聊天记录管理">
-         <ScrollPane hbarPolicy="NEVER">
-            <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="373.0" prefWidth="600.0">
-                  <children>
-                     <Text layoutX="22.0" layoutY="53.0" strokeType="OUTSIDE" strokeWidth="0.0" text="一键清空所有聊天记录" wrappingWidth="230.90690231323242" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="32.0">
+            <ScrollPane hbarPolicy="NEVER">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="359.0" prefWidth="600.0">
+                    <Text layoutX="22.0" layoutY="53.0" strokeType="OUTSIDE" strokeWidth="0.0" text="一键清空所有聊天记录" wrappingWidth="230.90690231323242" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="32.0">
                         <font>
-                           <Font name="Microsoft YaHei" size="20.0" />
+                            <Font name="Microsoft YaHei" size="20.0" />
                         </font>
-                     </Text>
-                     <Button fx:id="clear_chat_data_" layoutX="311.0" layoutY="59.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="71.0" text="清空" AnchorPane.leftAnchor="311.0" AnchorPane.topAnchor="59.0" />
-                  </children>
-               </AnchorPane>
-            </content>
-         </ScrollPane>
+                    </Text>
+                    <Button fx:id="clear_chat_data_" layoutX="311.0" layoutY="59.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="71.0" text="清空" AnchorPane.leftAnchor="311.0" AnchorPane.topAnchor="59.0" />
+                </AnchorPane>
+            </ScrollPane>
         </Tab>
     </TabPane>
 </AnchorPane>

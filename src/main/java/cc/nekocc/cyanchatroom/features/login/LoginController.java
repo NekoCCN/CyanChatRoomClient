@@ -6,9 +6,7 @@ import atlantafx.base.util.Animations;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
@@ -17,9 +15,9 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
-import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -108,7 +106,7 @@ public class LoginController implements Initializable
     private void setupWarning(){  // 检测用户名和密码的输入格式检错
         login_username_.setTextFormatter(new TextFormatter<>(change -> {
             String newText = change.getControlNewText();  // 获取输入后的完整文本
-            if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
+            if ((newText.matches("^[a-zA-Z0-9]+$") && newText.length()<= 12) || newText.isEmpty()) {
                 username_warning_message_.setVisible(false);
                 login_username_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                 return change;
@@ -121,7 +119,7 @@ public class LoginController implements Initializable
         }));
         register_username_.setTextFormatter(new TextFormatter<>(change -> {
             String newText = change.getControlNewText();  // 获取输入后的完整文本
-            if (newText.matches("^[a-zA-Z0-9]+$") || newText.isEmpty()) {
+            if ((newText.matches("^[a-zA-Z0-9]+$") && newText.length()<= 12) || newText.isEmpty()) {
                 username_register_error_.setVisible(false);
                 register_username_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
                 return change;

@@ -4,10 +4,12 @@ import atlantafx.base.controls.PasswordTextField;
 import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.util.ViewTool;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -29,6 +31,14 @@ public class SettingPage implements Initializable {
     public CheckBox turn_false_;
     public CheckBox turn_on_;
     public Button clear_chat_data_;
+    public TextField new_username_input_;
+    public Button new_username_button_;
+    public Button new_nickname_button_;
+    public TextField new_nickname_input_;
+    public TextArea new_userwords_input_;
+    public Button new_words_button_;
+    public Label new_username_warning_;
+    public Label new_nickname_warning_;
 
     public SettingPage() {}
     public void initialize(URL url, ResourceBundle resource_bundle) {
@@ -40,6 +50,37 @@ public class SettingPage implements Initializable {
 
     }
     private void setupEvent() {
+        new_username_input_.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if ((newText.matches("^[a-zA-Z0-9]+$") || newText.length()>= 13) || newText.isEmpty()) {
+                new_username_warning_.setVisible(false);
+                new_username_input_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                return change;
+            }
+            else{
+                new_username_warning_.setVisible(true);
+                new_username_input_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return null;  // 拒绝修改
+            }
+        }));
+
+        new_nickname_input_.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();  // 获取输入后的完整文本
+            if ((newText.matches("^[a-zA-Z0-9]+$") && newText.length() <= 12) || newText.isEmpty()) {
+                new_nickname_warning_.setVisible(false);
+                new_nickname_input_.pseudoClassStateChanged(Styles.STATE_DANGER, false);
+                return change;
+            }
+            else{
+                new_nickname_warning_.setVisible(true);
+                new_nickname_input_.pseudoClassStateChanged(Styles.STATE_DANGER, true);
+                return null;  // 拒绝修改
+            }
+        }));
+
+
+
+
         turn_false_.setOnAction(_->{
             turn_on_.setSelected(false);
             turn_false_.setDisable(true);
@@ -62,6 +103,7 @@ public class SettingPage implements Initializable {
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.YES) {
                     AppRepository.getInstance().deleteAllConversations();
+                    ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已清除所有聊天数据\n重启生效");
                 }
             });
 
@@ -107,11 +149,19 @@ public class SettingPage implements Initializable {
             });
 
         });
-        refresh_key_button_.setOnAction(_ -> {
+        PauseTransition refresh_delay_ = new PauseTransition(Duration.millis(500));
+        refresh_delay_.setOnFinished(event -> {
             refreshKey();
+            refresh_key_button_.setDisable(false);
+        });
+        refresh_key_button_.setOnAction(_ -> {
+            situation_label_.setText("正在获取密钥...");
+            refresh_key_button_.setDisable(true);
+            refresh_delay_.play();
         });
     }
     private void setupStyler() {
+
 
     }
     private void refreshKey(){
@@ -122,7 +172,4 @@ public class SettingPage implements Initializable {
     }
 
 
-    public AnchorPane getRootPane() {
-        return root_pane_;
-    }
 }

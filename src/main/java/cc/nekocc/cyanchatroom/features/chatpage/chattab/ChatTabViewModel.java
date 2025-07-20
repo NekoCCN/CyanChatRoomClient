@@ -38,6 +38,7 @@ public class ChatTabViewModel
                 if (response != null && response.getPayload().request_status())
                 {
                     String nickname = response.getPayload().nick_name();
+                    String username = response.getPayload().username();
                     Status status = StatusFactory.fromUser(response.getPayload());
 
                     opposite_user_name_.set(nickname);
@@ -46,7 +47,7 @@ public class ChatTabViewModel
 
                     if (on_data_ready_callback_ != null)
                     {
-                        on_data_ready_callback_.accept(nickname, status);
+                        on_data_ready_callback_.accept(username, status);
                     }
                 } else
                 {

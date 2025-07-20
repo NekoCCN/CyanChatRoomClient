@@ -1,14 +1,18 @@
 package cc.nekocc.cyanchatroom.features.chatpage;
 
+import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabController;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
-import atlantafx.base.theme.Styles;
+import cc.nekocc.cyanchatroom.features.chatpage.userinfo.UserInfoController;
 import cc.nekocc.cyanchatroom.model.entity.ConversationType;
+import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -25,7 +29,6 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.beans.binding.Bindings;
 
 import java.io.IOException;
 import java.net.URL;
@@ -38,6 +41,8 @@ public class ChatPageController implements Initializable
 {
     @FXML
     public Button refresh_user_list_button_;
+    @FXML
+    private AnchorPane user_info_window_;
     @FXML
     private TextArea message_input;
     @FXML
@@ -70,8 +75,9 @@ public class ChatPageController implements Initializable
     private ChatPageViewModel view_model_;
     private ChatWindowsController chat_window_controller_;
     private ContactListController contact_list_controller_;
+    private SimpleObjectProperty<Node> current_selected_tab_controller_ = new SimpleObjectProperty<>();
     private Node contact_list_node_;
-
+    private UserInfoController user_info_controller_ = new UserInfoController();
     private final Map<ChatTabViewModel, Node> tab_node_map_ = new HashMap<>();
     private final DropShadow glow_effect_ = new DropShadow();
     private Node current_active_icon_;
@@ -87,6 +93,8 @@ public class ChatPageController implements Initializable
         setupTabListListener();
     }
 
+
+
     private void loadSubViews()
     {
         try
@@ -101,10 +109,22 @@ public class ChatPageController implements Initializable
             chat_windows_pane_.getChildren().add(chat_window_node);
             chat_window_node.setVisible(false);
 
+            FXMLLoader user_info_loader = ViewTool.loadFXML("fxml/UserInfo.fxml");
+            user_info_controller_ = user_info_loader.getController();
+
             FXMLLoader contact_loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ContactList.fxml"));
             contact_list_node_ = contact_loader.load();
             contact_list_controller_ = contact_loader.getController();
             contact_list_controller_.setViewModel(view_model_.getContactListViewModel());
+            contact_list_controller_.setOnDataReadyCallback_(str->{
+                user_info_controller_.loadUserInfo(str);
+                user_info_window_.getChildren().setAll(user_info_controller_.getRootPane());
+
+            });
+
+
+
+
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -136,7 +156,7 @@ public class ChatPageController implements Initializable
                 view_model_.currentUsernameProperty()
         ));
 
-        user_status_.setOnAction(e ->
+        user_status_.setOnAction(_ ->
         {
             Status selectedStatus = user_status_.getValue();
             if (selectedStatus != null)
@@ -145,9 +165,7 @@ public class ChatPageController implements Initializable
             }
         });
 
-        refresh_user_list_button_.setOnAction(e ->{
-            user_list_vbox_.getChildren().clear();
-            view_model_.loadActiveFriendships();});
+        refresh_user_list_button_.setOnAction(_ -> view_model_.loadActiveFriendships());
 
         user_status_.setItems(FXCollections.observableArrayList(Status.values()));
         user_status_.valueProperty().bindBidirectional(view_model_.currentUserStatusProperty());
@@ -221,11 +239,14 @@ public class ChatPageController implements Initializable
             {
                 scroll_root_pane_.getChildren().setAll(list_scrollPane_);
                 chat_windows_pane_.setVisible(true);
+                user_info_window_.setVisible(false);
                 updateChatWindow(null, view_model_.selectedChatTabProperty().get());
             } else
             {
                 scroll_root_pane_.getChildren().setAll(contact_list_node_);
                 chat_windows_pane_.setVisible(false);
+                user_info_window_.getChildren().clear();
+                user_info_window_.setVisible(true);
             }
         });
     }
@@ -261,6 +282,16 @@ public class ChatPageController implements Initializable
         {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ChatTab.fxml"));
             Node tab_node = loader.load();
+            tab_node.setOnMouseEntered(e ->{
+                if(current_selected_tab_controller_.isNotEqualTo(tab_node).get()){
+                    tab_node.setStyle("-fx-background-color: #F0F0F0;");
+                }
+            });
+            tab_node.setOnMouseExited(e ->{
+                if(current_selected_tab_controller_.isNotEqualTo(tab_node).get()){
+                    tab_node.setStyle("-fx-background-color: transparent");
+                }
+            });
             ChatTabController tabController = loader.getController();
             tabController.setData(vm, () ->
             {
@@ -289,12 +320,14 @@ public class ChatPageController implements Initializable
 
     private void updateTabSelectionStyles(ChatTabViewModel selectedViewModel)
     {
+
         tab_node_map_.forEach((vm, node) ->
         {
             if (node != null)
             {
                 if (vm.equals(selectedViewModel))
                 {
+                    current_selected_tab_controller_.set(node);
                     node.setStyle("-fx-background-color: #3574F0; -fx-background-radius: 8;");
                 } else
                 {

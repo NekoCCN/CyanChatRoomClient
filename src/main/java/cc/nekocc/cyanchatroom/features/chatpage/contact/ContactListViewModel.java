@@ -1,6 +1,8 @@
 package cc.nekocc.cyanchatroom.features.chatpage.contact;
 
 import cc.nekocc.cyanchatroom.domain.userstatus.Status;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -11,6 +13,7 @@ public class ContactListViewModel
     private final ObservableList<String> away_contacts_ = FXCollections.observableArrayList();
     private final ObservableList<String> do_not_disturb_contacts_ = FXCollections.observableArrayList();
     private final ObservableList<String> offline_contacts_ = FXCollections.observableArrayList();
+    private final StringProperty selected_contact_ = new SimpleStringProperty();
 
     public void addOrUpdateContact(String username, Status status)
     {
@@ -42,6 +45,11 @@ public class ContactListViewModel
     public ObservableList<String> getBusyContacts()
     {
         return busy_contacts_;
+    }
+
+    public void onSelectedContact(String username)
+    {
+        selected_contact_.set(username);
     }
 
     public ObservableList<String> getAwayContacts()

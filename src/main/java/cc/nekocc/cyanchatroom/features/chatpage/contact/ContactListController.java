@@ -13,6 +13,7 @@ import javafx.scene.text.Text;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ContactListController implements Initializable
@@ -31,11 +32,16 @@ public class ContactListController implements Initializable
     private final TreeItem<String> away_root_ = new TreeItem<>("");
     private final TreeItem<String> do_not_disturb_root_ = new TreeItem<>("");
     private final TreeItem<String> offline_root_ = new TreeItem<>("");
+    private Consumer<String> on_data_ready_callback_;
+
 
     public void setViewModel(ContactListViewModel viewModel)
     {
         this.view_model_ = viewModel;
         bindLists();
+    }
+    public void setOnDataReadyCallback_(Consumer<String>  callback) {
+        this.on_data_ready_callback_ = callback;
     }
 
     @Override
@@ -58,10 +64,8 @@ public class ContactListController implements Initializable
         TreeItem<String> root = new TreeItem<>();
         root_list_.setRoot(root);
         root.getChildren().addAll(contact_root_, group_root_);
-
         contact_root_.setExpanded(true);
         contact_root_.getChildren().addAll(online_root_, busy_root_, away_root_, do_not_disturb_root_, offline_root_);
-
         online_root_.setGraphic(createStatusText("在线", Status.ONLINE.getColor()));
         busy_root_.setGraphic(createStatusText("忙碌", Status.BUSY.getColor()));
         away_root_.setGraphic(createStatusText("离开", Status.AWAY.getColor()));
@@ -76,6 +80,8 @@ public class ContactListController implements Initializable
         bindListToTreeItem(view_model_.getAwayContacts(), away_root_);
         bindListToTreeItem(view_model_.getDoNotDisturbContacts(), do_not_disturb_root_);
         bindListToTreeItem(view_model_.getOfflineContacts(), offline_root_);
+
+
     }
 
     private void bindListToTreeItem(ObservableList<String> list, TreeItem<String> treeItem)
