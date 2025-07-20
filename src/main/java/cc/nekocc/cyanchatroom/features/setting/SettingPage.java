@@ -166,6 +166,7 @@ public class SettingPage implements Initializable {
             });
         });
 
+
         turn_false_.setOnAction(_->{
             turn_on_.setSelected(false);
             turn_false_.setDisable(true);

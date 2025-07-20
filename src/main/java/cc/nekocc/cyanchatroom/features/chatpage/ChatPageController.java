@@ -50,7 +50,7 @@ public class ChatPageController implements Initializable
     @FXML
     private ImageView contact_icon_;
     @FXML
-    private Button file_enter_button_;
+    private ImageView file_enter_button_;
     @FXML
     private ImageView setting_icon_;
     @FXML
@@ -232,7 +232,9 @@ public class ChatPageController implements Initializable
             }
         });
 
-        file_enter_button_.setOnAction(e ->
+        initIconEffect(file_enter_button_);
+
+        file_enter_button_.setOnMouseClicked(e ->
         {
             if (view_model_.selectedChatTabProperty().get() != null)
             {

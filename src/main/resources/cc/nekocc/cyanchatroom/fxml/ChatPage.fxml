@@ -20,12 +20,12 @@
 <AnchorPane fx:id="root_pane_" prefHeight="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.ChatPageController">
 
     <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <AnchorPane HBox.hgrow="ALWAYS">
+        <AnchorPane prefWidth="540.0" HBox.hgrow="ALWAYS">
          <AnchorPane fx:id="user_info_window_" layoutX="10.0" layoutY="10.0" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
          <AnchorPane fx:id="chat_windows_pane_" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
 
-            <AnchorPane fx:id="Input_box_" layoutY="400.0" maxHeight="175.0" minHeight="175.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1 0 0 0; -fx-background-color: #CDCDCD;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <AnchorPane fx:id="Input_box_" layoutY="400.0" maxHeight="175.0" minHeight="175.0" prefWidth="580.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1 0 0 0; -fx-background-color: #CDCDCD;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                 <TextArea fx:id="message_input" maxHeight="300.0" style="-fx-border-color: #bbbbbb; -fx-border-width: 1; -fx-border-radius: 5;" wrapText="true" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0">
                <padding>
                   <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
@@ -40,11 +40,11 @@
                   <Font name="Arial Narrow Bold" size="12.0" />
                </font>
             </Button>
-            <Button fx:id="file_enter_button_" layoutX="539.0" layoutY="14.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="70.0" text="文件">
-               <font>
-                  <Font name="Arial Narrow Bold" size="12.0" />
-               </font>
-            </Button>
+            <ImageView fx:id="file_enter_button_" fitHeight="30.0" fitWidth="30.0" layoutX="460.0" layoutY="27.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="118.33333333333334" AnchorPane.rightAnchor="54.26877403259277">
+               <image>
+                  <Image url="@../../../../Image/file_send_icon.png" />
+               </image>
+            </ImageView>
             </AnchorPane>
         </AnchorPane>
         <HBox fx:id="user_tool_pane_" style="-fx-border-color: #CDCDCD; -fx-border-width: 2; -fx-background-radius: 5; -fx-border-radius: 5;">

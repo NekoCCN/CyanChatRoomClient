@@ -7,7 +7,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="root_pane_" prefHeight="420.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.userinfo.UserInfoController">
+<AnchorPane fx:id="root_pane_" prefHeight="420.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.chatpage.userinfo.UserInfoController">
     <StackPane fx:id="avator_stackpane_" layoutX="20.0" layoutY="14.0" prefHeight="98.0" prefWidth="97.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="14.0" />
     <Text layoutX="58.0" layoutY="147.0" strokeType="OUTSIDE" strokeWidth="0.0" text="用户名：" wrappingWidth="86.9068603515625" AnchorPane.leftAnchor="58.0" AnchorPane.topAnchor="120.0">
         <font>
@@ -36,5 +36,5 @@
       <font>
          <Font size="17.0" />
       </font></Label>
-   <Button fx:id="dele_friendship_" layoutX="305.0" layoutY="366.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="114.0" text="删除好友" AnchorPane.bottomAnchor="14.666666666666686" AnchorPane.leftAnchor="305.0" />
+   <Button fx:id="dele_friendship_" layoutX="305.0" layoutY="366.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="114.0" text="删除好友" AnchorPane.bottomAnchor="14.666666666666686" AnchorPane.rightAnchor="81.0" />
 </AnchorPane>

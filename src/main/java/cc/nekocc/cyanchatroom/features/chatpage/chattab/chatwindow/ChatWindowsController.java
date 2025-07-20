@@ -81,19 +81,29 @@ public class ChatWindowsController implements Initializable
 
     private void addMessageNode(Message message)
     {
-        boolean is_outgoing = message.isOutgoing();
-
-        Node content_node;
         if ("FILE".equals(message.getType()))
         {
-            content_node = createFileContentNode(message.getVal());
+            createFileContentNode(message);
         } else
         {
-            content_node = createTextContentNode(message.getVal(), message);
+            createTextContentNode(message);
         }
 
+    }
+    private void createTextContentNode(Message message)
+    {
+        boolean is_outgoing = message.isOutgoing();
         VBox message_container = new VBox();
         HBox message_box = new HBox(10);
+        Label message_label = new Label(message.getVal());
+        message_label.setWrapText(true);
+        if (is_outgoing)
+        {
+            message_label.setStyle("-fx-padding: 8; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 12 12 0 12;");
+        } else
+        {
+            message_label.setStyle("-fx-padding: 8; -fx-background-color: #FFFFFF; -fx-text-fill: black; -fx-background-radius: 12 12 12 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 1, 2);");
+        }
 
         String sender_nickname = is_outgoing
                 ? AppRepository.getInstance().currentUserProperty().get().getNickname()
@@ -105,7 +115,7 @@ public class ChatWindowsController implements Initializable
         Text time_text = new Text(OffsetDateTime.parse(message.getTime()).format(time_formatter_));
         time_text.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 10));
 
-        VBox message_bubble = new VBox(username_text, content_node, time_text);
+        VBox message_bubble = new VBox(username_text, message_label, time_text);
 
         StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
 
@@ -116,68 +126,51 @@ public class ChatWindowsController implements Initializable
         {
             message_box.getChildren().addAll(avatar, message_bubble);
         }
-
         message_container.getChildren().add(message_box);
-
+        message_label.setContextMenu(setupMessageMenu(message_label));
         message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_container.setMaxWidth(Double.MAX_VALUE);
         message_container.setMaxHeight(Double.MAX_VALUE);
         message_container.setAlignment(is_outgoing ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
-
         message_box.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
         message_box.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_box.setMaxWidth(Double.MAX_VALUE);
         message_box.setMaxHeight(Double.MAX_VALUE);
-
-        if (content_node instanceof Label)
-        {
-            ((Label) content_node).maxWidthProperty().bind(container_pane_.widthProperty().multiply(0.6));
-        }
-
+        message_label.maxWidthProperty().bind(container_pane_.widthProperty().multiply(0.6));
+        message_label.setMaxHeight(Double.MAX_VALUE);
+        message_label.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_label.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 18));
         message_bubble.setPrefHeight(Control.USE_COMPUTED_SIZE);
         message_bubble.setPrefWidth(Control.USE_COMPUTED_SIZE);
         message_bubble.setMaxWidth(Double.MAX_VALUE);
         message_bubble.setMaxHeight(Double.MAX_VALUE);
         message_bubble.setSpacing(2);
         message_bubble.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
-
-        if (is_outgoing)
-        {
-            message_bubble.setStyle("-fx-padding: 8; -fx-background-color: #4CAF50; -fx-background-radius: 12 12 0 12;");
-        } else
-        {
-            message_bubble.setStyle("-fx-padding: 8; -fx-background-color: #FFFFFF; -fx-background-radius: 12 12 12 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 1, 2);");
-        }
-
-        Platform.runLater(() ->
-        {
-            container_pane_.getChildren().add(message_container);
-        });
+        Platform.runLater(() ->{
+            container_pane_.getChildren().add(message_container);});
     }
 
-    private Node createTextContentNode(String text, Message message)
+    private void createFileContentNode(Message message)
     {
-        Label message_label = new Label(text);
-        message_label.setWrapText(true);
-        message_label.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 18));
+        boolean is_outgoing = message.isOutgoing();
+        VBox message_container = new VBox();
+        HBox message_box = new HBox(10);
+        String sender_nickname = is_outgoing
+                ? AppRepository.getInstance().currentUserProperty().get().getNickname()
+                : view_model_.oppositeUsernameProperty().get();
 
-        if (message.isOutgoing()) {
-            message_label.setStyle("-fx-text-fill: white;");
-        } else
-        {
-            message_label.setStyle("-fx-text-fill: black;");
-        }
+        Text username_text = new Text(sender_nickname);
+        username_text.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 14));
 
-        VBox parentContainer = (VBox) message_label.getParent();
+        Text time_text = new Text(OffsetDateTime.parse(message.getTime()).format(time_formatter_));
+        time_text.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 10));
 
-        message_label.setContextMenu(setupMessageMenu(message_label));
-        return message_label;
-    }
 
-    private HBox createFileContentNode(String content)
-    {
+
+        String content = message.getVal();
         String[] parts = content.split("\\|");
         String fileName = parts.length > 0 ? parts[0] : "未知文件";
         String fileId = parts.length > 1 ? parts[1] : "";
@@ -205,7 +198,7 @@ public class ChatWindowsController implements Initializable
         HBox file_box = new HBox(12, fileIcon, file_info_box);
         file_box.setAlignment(Pos.CENTER_LEFT);
         file_box.setStyle(
-                "-fx-background-color: #F5F5F5;" +
+                "-fx-background-color: #F0F0F0;" +
                         "-fx-background-radius: 12;" +
                         "-fx-padding: 10;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 6, 0, 1, 2);"
@@ -232,8 +225,39 @@ public class ChatWindowsController implements Initializable
                         }));
             }
         });
+        VBox message_bubble = new VBox(username_text, file_box, time_text);
+        StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
+        if (is_outgoing)
+        {
+            message_box.getChildren().addAll(message_bubble, avatar);
+        } else
+        {
+            message_box.getChildren().addAll(avatar, message_bubble);
+        }
+        message_container.getChildren().add(message_box);
+        message_container.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_container.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_container.setMaxWidth(Double.MAX_VALUE);
+        message_container.setMaxHeight(Double.MAX_VALUE);
+        message_container.setAlignment(is_outgoing ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        message_box.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+        message_box.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_box.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_box.setMaxWidth(Double.MAX_VALUE);
+        message_box.setMaxHeight(Double.MAX_VALUE);
+        message_bubble.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        message_bubble.setPrefWidth(Control.USE_COMPUTED_SIZE);
+        message_bubble.setMaxWidth(Double.MAX_VALUE);
+        message_bubble.setMaxHeight(Double.MAX_VALUE);
+        message_bubble.setSpacing(2);
+        message_bubble.setAlignment(is_outgoing ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+        Platform.runLater(() ->{
+            container_pane_.getChildren().add(message_container);});
 
-        return file_box;
+
+
+
+
     }
 
     private ContextMenu setupMessageMenu(Label label)

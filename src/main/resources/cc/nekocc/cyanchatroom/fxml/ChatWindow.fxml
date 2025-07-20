@@ -20,7 +20,7 @@
               </font>
           </Label>
       </AnchorPane>
-    <ScrollPane fx:id="scroll_pane_" fitToWidth="true" hbarPolicy="NEVER" prefHeight="354.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
+    <ScrollPane fx:id="scroll_pane_" fitToWidth="true" hbarPolicy="NEVER" prefHeight="354.0" prefWidth="550.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
       <VBox fx:id="container_pane_" prefWidth="597.0" spacing="20.0">
          <opaqueInsets>
             <Insets />

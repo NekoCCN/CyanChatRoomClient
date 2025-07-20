@@ -13,7 +13,6 @@ import javafx.scene.text.Text;
 
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ContactListController implements Initializable
@@ -68,15 +67,13 @@ public class ContactListController implements Initializable
         do_not_disturb_root_.setGraphic(createStatusText("勿打扰", Status.DO_NOT_DISTURB.getColor()));
         offline_root_.setGraphic(createStatusText("离线", Status.OFFLINE.getColor()));
 
-        root_list_.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 1) {
+        root_list_.setOnMouseClicked(_ -> {
                 TreeItem<String> selectedItem = root_list_.getSelectionModel().getSelectedItem();
                 if (selectedItem != null &&
                         (selectedItem.getParent() != contact_root_ &&
-                                selectedItem.getParent() != group_root_)) {
+                                selectedItem.getParent() != group_root_) && selectedItem != contact_root_ && selectedItem != group_root_) {
                     view_model_.onSelectedContact(selectedItem);
                 }
-            }
         });
     }
 
