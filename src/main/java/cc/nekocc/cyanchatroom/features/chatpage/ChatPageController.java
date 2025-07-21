@@ -116,11 +116,11 @@ public class ChatPageController implements Initializable
             contact_list_node_ = contact_loader.load();
             contact_list_controller_ = contact_loader.getController();
             var vm = view_model_.getContactListViewModel();
-            vm.setOnDataReadyCallback(str ->
+            vm.setOnDataReadyCallback((str,callback) ->
             {
 
                 Platform.runLater(()->{
-                    user_info_controller_.loadUserInfo(str);
+                    user_info_controller_.loadUserInfo(str,callback);
                     AnchorPane.setLeftAnchor(user_info_controller_.getRootPane(),0.0);
                     AnchorPane.setRightAnchor(user_info_controller_.getRootPane(),0.0);
                     AnchorPane.setTopAnchor(user_info_controller_.getRootPane(),0.0);
@@ -149,6 +149,7 @@ public class ChatPageController implements Initializable
         enter_button_.getStyleClass().addAll(Styles.ROUNDED, Styles.ACCENT);
         e2ee_enter_button_.getStyleClass().addAll(Styles.ROUNDED, Styles.ACCENT);
     }
+
 
     private void setupBindings()
     {
@@ -255,11 +256,13 @@ public class ChatPageController implements Initializable
                 scroll_root_pane_.getChildren().setAll(list_scrollPane_);
                 chat_windows_pane_.setVisible(true);
                 user_info_window_.setVisible(false);
+                file_enter_button_.setVisible(true);
                 updateChatWindow(null, view_model_.selectedChatTabProperty().get());
             } else
             {
                 scroll_root_pane_.getChildren().setAll(contact_list_node_);
                 chat_windows_pane_.setVisible(false);
+                file_enter_button_.setVisible(false);
                 user_info_window_.getChildren().clear();
                 user_info_window_.setVisible(true);
             }
