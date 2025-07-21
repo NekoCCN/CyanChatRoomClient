@@ -11,6 +11,7 @@ public class GlobalConfig
     private int max_config_history_message_size = 1000;
     private boolean enable_shift_enter_hotkey = true;
     private String theme = "LIGHT";
+    private static String background = "";
 
     public Path getSafePath(String server_address, String user_id)
     {

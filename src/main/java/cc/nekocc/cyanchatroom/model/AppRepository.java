@@ -666,6 +666,39 @@ public class AppRepository
                 new SetMemberRoleRequest(client_request_id, group_id, target_user_id, new_role.name()), client_request_id,
                 StatusResponse.class);
     }
+    /**
+     * 根据用户UUID获取该用户所在的所有群组ID。
+     * @param user_id 用户的唯一标识符
+     * @return 一个CompletableFuture，完成时包含群组ID列表的响应
+     */
+    public CompletableFuture<ProtocolMessage<GetGroupIdsByUserIdResponse>> getGroupIdsByUserId(UUID user_id)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.GET_GROUP_IDS_BY_USERID_REQUESTS,
+                new GetGroupIdsByUserIdRequest(client_request_id, user_id), client_request_id, GetGroupIdsByUserIdResponse.class);
+    }
+    /**
+     * 获取指定群组的详细信息。
+     * @param group_id 群组的唯一标识符
+     * @return 一个CompletableFuture，完成时包含群组详细信息的响应
+     */
+    public CompletableFuture<ProtocolMessage<GroupResponse>> getGroupDetails(UUID group_id)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.GET_GROUP_BY_ID_REQUEST,
+                new GetGroupByIdRequest(client_request_id, group_id), client_request_id, GroupResponse.class);
+    }
+    /**
+     * 获取指定群组的所有成员列表。
+     * @param group_id 群组的唯一标识符
+     * @return 一个CompletableFuture，完成时包含群组成员列表的响应
+     */
+    public CompletableFuture<ProtocolMessage<GetGroupMembersResponse>> getGroupMemberList(UUID group_id)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.GET_GROUP_MEMBERS_REQUEST,
+                new GetGroupMembersRequest(client_request_id, group_id), client_request_id, GetGroupMembersResponse.class);
+    }
 
     /*
      * 好友相关
@@ -875,6 +908,7 @@ public class AppRepository
                     future.complete(JsonUtil.deserializeProtocolMessage(json_message, UserOperatorResponse.class));
                     break;
                 case MessageType.CREATE_GROUP_RESPONSE:
+                case MessageType.GET_GROUP_BY_ID_RESPONSE:
                     future.complete(JsonUtil.deserializeProtocolMessage(json_message, GroupResponse.class));
                     break;
                 case "RESPONSE_FILE_UPLOAD":
@@ -895,6 +929,12 @@ public class AppRepository
                     break;
                 case MessageType.CHECK_FRIENDSHIP_EXISTS_RESPONSE:
                     future.complete(JsonUtil.deserializeProtocolMessage(json_message, CheckFriendshipExistsResponse.class));
+                    break;
+                case MessageType.GET_GROUP_IDS_BY_USERID_RESPONSE:
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, GetGroupIdsByUserIdResponse.class));
+                    break;
+                case MessageType.GET_GROUP_MEMBERS_RESPONSE:
+                    future.complete(JsonUtil.deserializeProtocolMessage(json_message, GetGroupMembersResponse.class));
                     break;
                 case "ERROR_RESPONSE":
                     ErrorResponse error_payload = JsonUtil.deserializeProtocolMessage(json_message, ErrorResponse.class).getPayload();
@@ -995,8 +1035,6 @@ public class AppRepository
 
         Message local_message = new Message(conversation_id, sender_id, is_outgoing, content_type, content);
 
-        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
-
         conversation_messages_.computeIfAbsent(conversation_id, id ->
         {
             List<Message> history = persistence_service_.getAllMessagesForConversation(server_address_, current_user_.get().getId(),
@@ -1010,10 +1048,12 @@ public class AppRepository
             messageList.add(local_message);
         });
 
-        for (Consumer<Message> listener : message_listeners_)
-        {
-            Platform.runLater(() -> listener.accept(local_message));
-        }
+//        for (Consumer<Message> listener : message_listeners_)
+//        {
+//            Platform.runLater(() -> listener.accept(local_message));
+//        }
+
+        persistence_service_.saveMessage(server_address_, current_user.getId(), local_message);
 
         conversations_.add(new Conversation(
                 conversation_id,

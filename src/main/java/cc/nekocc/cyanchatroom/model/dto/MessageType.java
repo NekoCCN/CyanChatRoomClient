@@ -33,6 +33,15 @@ public final class MessageType
     public static final String GET_UUID_BY_USERNAME_REQUEST = "GET_UUID_BY_USERNAME_REQUEST";
     public static final String GET_UUID_BY_USERNAME_RESPONSE = "GET_UUID_BY_USERNAME_RESPONSE";
 
+    public static final String GET_GROUP_IDS_BY_USERID_REQUESTS = "GET_GROUP_IDS_BY_USERID_REQUESTS";
+    public static final String GET_GROUP_IDS_BY_USERID_RESPONSE = "GET_GROUP_IDS_BY_USERID_RESPONSE";
+
+    public static final String GET_GROUP_BY_ID_REQUEST = "GET_GROUP_BY_ID_REQUEST";
+    public static final String GET_GROUP_BY_ID_RESPONSE = "GET_GROUP_BY_ID_RESPONSE";
+
+    public static final String GET_GROUP_MEMBERS_REQUEST = "GET_GROUP_MEMBERS_REQUEST";
+    public static final String GET_GROUP_MEMBERS_RESPONSE = "GET_GROUP_MEMBERS_RESPONSE";
+
     public static final String REQUEST_FILE_UPLOAD = "REQUEST_FILE_UPLOAD";
 
     public static final String PUBLISH_KEYS_REQUEST = "PUBLISH_KEYS_REQUEST";
