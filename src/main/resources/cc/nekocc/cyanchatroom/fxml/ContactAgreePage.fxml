@@ -23,7 +23,7 @@
             </font>
          </Button>
             <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutY="38.0" prefHeight="519.0" prefWidth="301.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
-                <VBox fx:id="scroll_contain_pane" prefHeight="556.0" prefWidth="289.0" />
+                <VBox fx:id="scroll_contain_pane" prefHeight="556.0" prefWidth="289.0" spacing="10.0" />
             </ScrollPane>
         </AnchorPane>
     </Tab>
@@ -58,16 +58,18 @@
                 </VBox>
             </AnchorPane>
             <Button fx:id="search_button_" layoutX="191.0" layoutY="79.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="83.0" text="查找用户" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="79.0" />
-         <ImageView fitHeight="28.0" fitWidth="21.0" layoutX="250.0" layoutY="45.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="45.0">
-            <image>
-               <Image url="@../../../../Image/search_icon.png" />
-            </image>
-         </ImageView>
+            <ImageView fitHeight="28.0" fitWidth="21.0" layoutX="250.0" layoutY="45.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="45.0">
+                <Image url="@../../../../Image/search_icon.png" />
+            </ImageView>
         </AnchorPane>
     </Tab>
-   <Tab text="群聊管理">
-     <content>
-       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-     </content>
-   </Tab>
+    <Tab text="群聊创建">
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <ScrollPane hbarPolicy="NEVER" layoutY="38.0" prefHeight="480.0" prefWidth="301.0" AnchorPane.bottomAnchor="38.66666666666663" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="38.0">
+                <VBox fx:id="user_list_vbox_" prefWidth="300.0" />
+            </ScrollPane>
+            <Button fx:id="create_button_" layoutX="207.0" layoutY="519.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="80.0" text="创建群聊" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="14.333333333333314" />
+            <Button fx:id="refresh_friendship_button_" layoutX="118.0" layoutY="14.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="101.0" text="刷新好友列表" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="6.0" />
+        </AnchorPane>
+    </Tab>
 </TabPane>

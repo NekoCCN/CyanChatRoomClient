@@ -7,6 +7,7 @@ import cc.nekocc.cyanchatroom.features.chatpage.chattab.ChatTabViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.chattab.chatwindow.ChatWindowsController;
 import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListController;
 import cc.nekocc.cyanchatroom.features.chatpage.userinfo.UserInfoController;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.entity.ConversationType;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
@@ -41,6 +42,8 @@ public class ChatPageController implements Initializable
 {
     @FXML
     public Button refresh_user_list_button_;
+    @FXML
+    private ImageView exit_button_;
     @FXML
     private AnchorPane user_info_window_;
     @FXML
@@ -128,7 +131,6 @@ public class ChatPageController implements Initializable
                     user_info_window_.getChildren().setAll(user_info_controller_.getRootPane());
                 });
             });
-
             contact_list_controller_.setViewModel(vm);
         } catch (IOException e)
         {
@@ -207,6 +209,27 @@ public class ChatPageController implements Initializable
 
         initIconEffect(setting_icon_);
         setting_icon_.setOnMouseClicked(e -> view_model_.showSetting());
+
+        initIconEffect(exit_button_);
+        exit_button_.setOnMouseClicked(e ->
+        {
+            Alert alert = ViewTool.showAlert(Alert.AlertType.CONFIRMATION,"提示","确认要退出吗",false);
+            alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+            alert.showAndWait().ifPresent(response ->
+            {
+                if (response == ButtonType.YES)
+                {
+                    AppRepository.getInstance().disconnect();
+                    Platform.exit();
+                    System.exit(0);
+                }
+                else{
+                    alert.close();
+                }
+            });
+
+        });
+
 
         final KeyCodeCombination sendMessageCombination = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHIFT_DOWN);
         message_input.setOnKeyPressed(e ->

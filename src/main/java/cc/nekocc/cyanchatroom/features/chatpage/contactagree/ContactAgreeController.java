@@ -1,9 +1,11 @@
 package cc.nekocc.cyanchatroom.features.chatpage.contactagree;
 
 import atlantafx.base.theme.Styles;
+import cc.nekocc.cyanchatroom.features.chatpage.contactagree.usertablite.UserTabLite;
 import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,6 +23,12 @@ import java.util.stream.Collectors;
 
 public class ContactAgreeController
 {
+    @FXML
+    private VBox user_list_vbox_;
+    @FXML
+    private Button create_button_;
+    @FXML
+    private Button refresh_friendship_button_;
     @FXML
     private TextField userid_input_;
     @FXML
@@ -53,7 +61,9 @@ public class ContactAgreeController
         this.view_model_ = viewModel;
         userid_input_.textProperty().bindBidirectional(view_model_.searchUsernameProperty());
         setupRequestListListener();
+        setupFriendShipListener();
         view_model_.refreshRequests();
+        view_model_.refreshUserList();
     }
 
     @FXML
@@ -75,6 +85,32 @@ public class ContactAgreeController
         send_request_button_.setOnAction(event ->
         {
             handleSendRequest();
+        });
+
+        refresh_friendship_button_.setOnAction(event ->
+        {
+            refreshUserList();
+        });
+
+        create_button_.setOnAction(event ->
+        {
+            handleCreateButton();
+        });
+    }
+    private void setupFriendShipListener(){
+        view_model_.getUserTabLites().addListener((ListChangeListener<UserTabLite>) c ->{
+            while(c.next()){
+                if(c.wasAdded()){
+                    c.getAddedSubList().forEach(vm->{
+                       user_list_vbox_.getChildren().add(vm.getRootPane());
+                    });
+                }
+                if(c.wasRemoved()){
+                    c.getRemoved().forEach(vm->{
+                        user_list_vbox_.getChildren().remove(vm.getRootPane());
+                    });
+                }
+            }
         });
     }
 
@@ -173,9 +209,15 @@ public class ContactAgreeController
         }
     }
 
-    @FXML
     public void refreshUserRequest()
     {
         if (view_model_ != null) view_model_.refreshRequests();
     }
+    public void refreshUserList(){if(view_model_ != null) view_model_.refreshUserList();}
+    public void handleCreateButton (){
+
+    }
+
+
+
 }

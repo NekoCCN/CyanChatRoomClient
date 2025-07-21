@@ -1,11 +1,9 @@
 package cc.nekocc.cyanchatroom.features.login;
 
 import cc.nekocc.cyanchatroom.Navigator;
-import cc.nekocc.cyanchatroom.domain.client.AbstractClient;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.dto.response.UserOperatorResponse;
 import cc.nekocc.cyanchatroom.model.entity.User;
-import cc.nekocc.cyanchatroom.model.entity.UserStatus;
 import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
 import javafx.beans.property.*;
 import javafx.scene.control.Alert;
@@ -26,7 +24,6 @@ public class LoginViewModel
     private final StringProperty register_password_ = new SimpleStringProperty("");
     private final StringProperty register_nickname_ = new SimpleStringProperty("");
     private final StringProperty register_signature_ = new SimpleStringProperty("");
-    private final ObjectProperty<AbstractClient> register_client_type_ = new SimpleObjectProperty<>();
 
     private final BooleanProperty login_button_disabled_ = new SimpleBooleanProperty(true);
     private final BooleanProperty register_next_button_disabled_ = new SimpleBooleanProperty(true);

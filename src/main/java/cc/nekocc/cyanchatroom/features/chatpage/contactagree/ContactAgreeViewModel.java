@@ -1,5 +1,6 @@
 package cc.nekocc.cyanchatroom.features.chatpage.contactagree;
 
+import cc.nekocc.cyanchatroom.features.chatpage.contactagree.usertablite.UserTabLite;
 import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
 import cc.nekocc.cyanchatroom.util.ViewTool;
@@ -18,7 +19,9 @@ public class ContactAgreeViewModel
 
     private final StringProperty search_username_ = new SimpleStringProperty("");
     private final ObservableList<FriendRequestViewModel> friend_requests_ = FXCollections.observableArrayList();
+    private final ObservableList<UserTabLite> user_tab_lites_ = FXCollections.observableArrayList();
     private final Runnable on_action_callback_;
+    private final UUID current_user_uuid = AppRepository.getInstance().currentUserProperty().get().getId();
 
     public ContactAgreeViewModel(Runnable onActionCallback)
     {
@@ -27,7 +30,6 @@ public class ContactAgreeViewModel
 
     public void refreshRequests()
     {
-        UUID current_user_uuid = AppRepository.getInstance().currentUserProperty().get().getId();
         AppRepository.getInstance().getFriendshipList(current_user_uuid).thenAccept(response ->
         {
             Platform.runLater(() ->
@@ -46,6 +48,25 @@ public class ContactAgreeViewModel
         });
 
 
+    }
+
+    public void refreshUserList() {
+        AppRepository.getInstance().getActiveFriendshipList(current_user_uuid).thenAccept(response->
+        {
+            Platform.runLater(() ->
+            {
+                if (response != null && response.getPayload().status())
+                {
+                    var newRequest = response.getPayload().friendships().stream()
+                            .map(friendship -> new UserTabLite((friendship.getUserOneId().equals(current_user_uuid) ? friendship.getUserTwoId() : friendship.getUserOneId())))
+                            .collect(Collectors.toList());
+                    user_tab_lites_.setAll(newRequest);
+                } else
+                {
+                    ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "无法获取好友列表");
+                }
+            });
+        });
     }
 
     private void handleRequestAction(FriendRequestViewModel processedVm)
@@ -105,7 +126,7 @@ public class ContactAgreeViewModel
                     refreshRequests();
                 } else
                 {
-                    ViewTool.showAlert(Alert.AlertType.ERROR, "失败", "发送好友请求失败:"+response.getPayload().message());
+                    ViewTool.showAlert(Alert.AlertType.ERROR, "失败",  response.getPayload().message());
                 }
             });
         });
@@ -119,5 +140,9 @@ public class ContactAgreeViewModel
     public ObservableList<FriendRequestViewModel> getFriendRequests()
     {
         return friend_requests_;
+    }
+
+    public ObservableList<UserTabLite> getUserTabLites() {
+        return user_tab_lites_;
     }
 }

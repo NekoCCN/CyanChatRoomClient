@@ -88,6 +88,15 @@
                 <ImageView fx:id="setting_icon_" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
                     <Image url="@../../../../Image/setting_icon.png" />
                 </ImageView>
+            <AnchorPane prefHeight="348.0" prefWidth="55.0">
+               <children>
+                  <ImageView fx:id="exit_button_" fitHeight="35.0" fitWidth="35.0" layoutX="14.0" layoutY="299.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="6.333333333333336">
+                     <image>
+                        <Image url="@../../../../Image/exit_icon.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </AnchorPane>
             </VBox>
         </HBox>
     </HBox>

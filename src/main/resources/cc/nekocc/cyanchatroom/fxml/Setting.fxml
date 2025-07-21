@@ -2,7 +2,6 @@
 
 <?import atlantafx.base.controls.PasswordTextField?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
@@ -15,27 +14,6 @@
 
 <AnchorPane fx:id="root_pane_" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cc.nekocc.cyanchatroom.features.setting.SettingPage">
     <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="常规设置">
-            <ScrollPane hbarPolicy="NEVER" minHeight="370.0" minWidth="600.0" prefHeight="370.0" prefWidth="600.0">
-                <AnchorPane prefHeight="367.0" prefWidth="600.0">
-                    <Text layoutX="26.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="配色方案" wrappingWidth="90.24021530151367" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="10.0">
-                        <font>
-                            <Font name="Microsoft YaHei" size="20.0" />
-                        </font>
-                    </Text>
-                    <CheckBox fx:id="default_color_plan_" layoutX="43.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" selected="true" text="默认" AnchorPane.leftAnchor="43.0" AnchorPane.topAnchor="51.0" />
-                    <CheckBox fx:id="black_color_plan_" layoutX="168.0" layoutY="51.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="黑色" AnchorPane.leftAnchor="168.0" AnchorPane.topAnchor="51.0" />
-               <Button layoutX="273.0" layoutY="51.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="101.0" text="应用配色方案" AnchorPane.leftAnchor="273.0" AnchorPane.topAnchor="51.0" />
-               <Text layoutX="25.0" layoutY="133.0" strokeType="OUTSIDE" strokeWidth="0.0" text="启用shift+enter发送消息" wrappingWidth="270.90683364868164">
-                  <font>
-                     <Font name="Microsoft YaHei" size="20.0" />
-                  </font>
-               </Text>
-               <CheckBox fx:id="turn_false_" layoutX="168.0" layoutY="157.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="关闭" />
-               <CheckBox fx:id="turn_on_" layoutX="43.0" layoutY="157.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" selected="true" text="开启" />
-                </AnchorPane>
-            </ScrollPane>
-        </Tab>
         <Tab style="-fx-border: 0; -fx-background-radius: 5,5,5,5;" text="个人资料设置">
             <ScrollPane hbarPolicy="NEVER" minHeight="370.0" minWidth="600.0" prefHeight="370.0" prefWidth="600.0">
                 <AnchorPane prefHeight="559.0" prefWidth="599.0">

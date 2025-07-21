@@ -30,10 +30,6 @@ public class SettingPage implements Initializable {
     public Label old_password_warning_;
     public Label new_password_warning_;
     public Button password_fresh_;
-    public CheckBox black_color_plan_;
-    public CheckBox default_color_plan_;
-    public CheckBox turn_false_;
-    public CheckBox turn_on_;
     public Button clear_chat_data_;
     public TextField new_username_input_;
     public Button new_username_button_;
@@ -130,6 +126,7 @@ public class SettingPage implements Initializable {
                 {
                     if (status.getPayload().status())
                     {
+                        new_nickname_input_.clear();
                         ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已修改昵称");
                     } else
                     {
@@ -157,6 +154,7 @@ public class SettingPage implements Initializable {
                 {
                     if (status.getPayload().status())
                     {
+                        new_userwords_input_.clear();
                         ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "已修改签名");
                     } else
                     {
@@ -164,24 +162,6 @@ public class SettingPage implements Initializable {
                     }
                 });
             });
-        });
-
-
-        turn_false_.setOnAction(_->{
-            turn_on_.setSelected(false);
-            turn_false_.setDisable(true);
-            turn_on_.setDisable(false);
-        });
-        turn_on_.setOnAction(_->{
-            turn_false_.setSelected(false);
-            turn_on_.setDisable(true);
-            turn_false_.setDisable(false);
-        });
-        black_color_plan_.setOnAction(_->{
-            default_color_plan_.setSelected(false);
-        });
-        default_color_plan_.setOnAction(_->{
-            black_color_plan_.setSelected(false);
         });
         clear_chat_data_.setOnAction(_ -> {
             Alert alert = ViewTool.showAlert(Alert.AlertType.WARNING, "警告：该过程不可逆", "确定要清除所有聊天数据吗？\n该过程不可逆",false);
