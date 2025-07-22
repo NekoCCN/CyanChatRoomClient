@@ -43,6 +43,8 @@ public class ChatWindowsController implements Initializable
     @FXML
     private Label username_label_;
 
+    private Runnable personal_icon_action;
+
     private ChatWindowViewModel view_model_;
     private ListChangeListener<Message> message_listener_;
     private final DateTimeFormatter time_formatter_ = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -51,6 +53,14 @@ public class ChatWindowsController implements Initializable
     public void initialize(URL url, ResourceBundle resourceBundle)
     {
         container_pane_.heightProperty().addListener((obs, oldVal, newVal) -> scroll_pane_.setVvalue(1.0));
+
+        personal_icon_.setOnMouseClicked(event ->
+        {
+            if (personal_icon_action != null)
+            {
+                personal_icon_action.run();
+            }
+        });
     }
 
     public void setViewModel(ChatWindowViewModel newViewModel)
@@ -315,6 +325,11 @@ public class ChatWindowsController implements Initializable
 
         menu.getItems().addAll(copy_item, new SeparatorMenuItem(), delete_item);
         return menu;
+    }
+
+    public void setPersonalIconAction(Runnable action)
+    {
+        this.personal_icon_action = action;
     }
 
     public AnchorPane getRootPane()

@@ -318,6 +318,29 @@ public class ChatPageController implements Initializable
         });
     }
 
+    private void updateChatWindow(ChatTabViewModel oldTab, ChatTabViewModel newTab)
+    {
+        if (newTab == null)
+        {
+            chat_window_controller_.getRootPane().setVisible(false);
+        } else
+        {
+            if (oldTab != null)
+            {
+                message_input.textProperty().unbindBidirectional(oldTab.getChatWindowViewModel().messageInputTextProperty());
+            }
+            message_input.textProperty().bindBidirectional(newTab.getChatWindowViewModel().messageInputTextProperty());
+            message_input.clear();
+
+            chat_window_controller_.setViewModel(newTab.getChatWindowViewModel());
+
+            chat_window_controller_.setPersonalIconAction(view_model_.getOnPersonalIconClick());
+
+            chat_window_controller_.getRootPane().setVisible(true);
+        }
+    }
+
+
     private void createTabNode(ChatTabViewModel vm)
     {
         try
@@ -377,25 +400,6 @@ public class ChatPageController implements Initializable
                 }
             }
         });
-    }
-
-    private void updateChatWindow(ChatTabViewModel oldTab, ChatTabViewModel newTab)
-    {
-        if (newTab == null)
-        {
-            chat_window_controller_.getRootPane().setVisible(false);
-        } else
-        {
-            if (oldTab != null)
-            {
-                message_input.textProperty().unbindBidirectional(oldTab.getChatWindowViewModel().messageInputTextProperty());
-            }
-            message_input.textProperty().bindBidirectional(newTab.getChatWindowViewModel().messageInputTextProperty());
-            message_input.clear();
-
-            chat_window_controller_.setViewModel(newTab.getChatWindowViewModel());
-            chat_window_controller_.getRootPane().setVisible(true);
-        }
     }
 
     private void switchSidePane(ChatPageViewModel.SidePane pane, ImageView icon)

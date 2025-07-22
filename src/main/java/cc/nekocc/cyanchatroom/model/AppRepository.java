@@ -749,6 +749,16 @@ public class AppRepository
         return sendRequestWithFuture(MessageType.GET_GROUP_MEMBERS_REQUEST,
                 new GetGroupMembersRequest(client_request_id, group_id), client_request_id, GetGroupMembersResponse.class);
     }
+    /**
+     * 改变群聊加入模式
+     * @return 一个CompletableFuture，完成时包含群组列表的响应
+     */
+    public CompletableFuture<ProtocolMessage<StatusResponse>> changeGroupJoinMode(UUID group_id, GroupJoinMode mode)
+    {
+        UUID client_request_id = UUID.randomUUID();
+        return sendRequestWithFuture(MessageType.CHANGE_GROUP_JOIN_MODE_REQUEST,
+                new ChangeGroupJoinModeRequest(client_request_id, group_id, mode), client_request_id, StatusResponse.class);
+    }
 
     /*
      * 好友相关

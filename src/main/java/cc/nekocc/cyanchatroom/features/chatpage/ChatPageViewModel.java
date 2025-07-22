@@ -59,6 +59,10 @@ public class ChatPageViewModel
     private Stage contact_agree_stage_;
     private final ContactListViewModel contact_list_view_model_ = new ContactListViewModel();
 
+    private Stage group_management_stage_;
+    private final BooleanProperty group_management_shown_ = new SimpleBooleanProperty(false);
+    private Runnable onPersonalIconClick;
+
     public ChatPageViewModel()
     {
         setupListeners();
@@ -74,7 +78,10 @@ public class ChatPageViewModel
                 current_username_.set(newUser.getNickname());
                 AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
                 {
-                    currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
+                    if (response.getPayload().request_status())
+                    {
+                        currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
+                    }
                 });
                 loadActiveConversations();
             } else
@@ -86,6 +93,44 @@ public class ChatPageViewModel
             }
         }));
         app_repository_.addMessageListener(this::handleIncomingMessage);
+
+        selected_chat_tab_.addListener((obs, oldTab, newTab) ->
+        {
+            if (newTab == null)
+            {
+                onPersonalIconClick = null;
+            } else if (newTab.getConversationType() == ConversationType.GROUP)
+            {
+                onPersonalIconClick = this::showGroupManagement;
+            } else
+            {
+                onPersonalIconClick = null;
+            }
+        });
+    }
+
+    public void showGroupManagement()
+    {
+        if (group_management_stage_ == null)
+        {
+            try
+            {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/GroupManagement.fxml"));
+                Scene scene = new Scene(loader.load());
+
+                group_management_stage_ = new Stage();
+                group_management_stage_.setTitle("群组管理");
+                group_management_stage_.getIcons().add((new Image(Objects.requireNonNull(getClass().getResource("/Image/contack_icon.png")).toExternalForm())));
+                group_management_stage_.setScene(scene);
+                group_management_shown_.bind(group_management_stage_.showingProperty());
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        group_management_stage_.show();
+        group_management_stage_.toFront();
     }
 
     private void loadInitialData()
@@ -329,6 +374,11 @@ public class ChatPageViewModel
     public ObjectProperty<SidePane> activeSidePaneProperty()
     {
         return active_side_pane_;
+    }
+
+    public Runnable getOnPersonalIconClick()
+    {
+        return onPersonalIconClick;
     }
 
     public ContactListViewModel getContactListViewModel()
