@@ -149,7 +149,8 @@ public class ChatPageViewModel
     public void loadActiveConversations()
     {
         UUID currentUserId = app_repository_.currentUserProperty().get().getId();
-        if (currentUserId == null) return;
+        if (currentUserId == null)
+            return;
 
         CompletableFuture<List<GetUserDetailsResponse>> friendsDetailsFuture = app_repository_.getActiveFriendshipList(currentUserId)
                 .thenCompose(response ->
@@ -164,7 +165,7 @@ public class ChatPageViewModel
                                 UUID oppositeId = friendship.getUserOneId().equals(currentUserId) ? friendship.getUserTwoId() : friendship.getUserOneId();
                                 return app_repository_.getUserDetails(oppositeId).thenApply(ProtocolMessage::getPayload);
                             })
-                            .collect(Collectors.toList());
+                            .toList();
                     return CompletableFuture.allOf(detailFutures.toArray(new CompletableFuture[0]))
                             .thenApply(v -> detailFutures.stream().map(CompletableFuture::join).collect(Collectors.toList()));
                 });
