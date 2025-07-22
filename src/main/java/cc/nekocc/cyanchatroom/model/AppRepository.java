@@ -24,6 +24,7 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import cc.nekocc.cyanchatroom.model.util.JsonUtil;
 import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
+import cc.nekocc.cyanchatroom.util.ViewTool;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
@@ -34,22 +35,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
+import javafx.scene.control.Alert;
 
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
  * 应用程序级别的存储库，负责管理应用状态、网络连接和数据交互。
  * TODO: 把这个构思的巨型类拆分为多个模块 让这个类型成为一个注册表
- * TODO: 极度欠缺测试
+ * COMPLETE: 极度欠缺测试
  * TODO: 应该可以利用反射书写一个类型书面值从而使得类型安全性更高一点
  */
 public class AppRepository
@@ -95,6 +96,8 @@ public class AppRepository
     private ResponseCallback message_recrived_callback_ = null;
 
     private final List<Consumer<Message>> message_listeners_ = new CopyOnWriteArrayList<>();
+
+    private final Map<UUID, String> user_nickname_cache_ = new ConcurrentHashMap<>();
 
     private final Set<Conversation> conversations_backing_ = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final ObservableSet<Conversation> conversations_ = FXCollections.observableSet(conversations_backing_);
@@ -158,6 +161,8 @@ public class AppRepository
         }
         current_user_.set(user);
 
+        user_nickname_cache_.put(user.getId(), user.getNickname());
+
         config_.load(server_address_, user.getId().toString());
     }
 
@@ -215,7 +220,9 @@ public class AppRepository
         {
             System.out.println("缓存未命中，正在为对话 " + id + " 从数据库加载历史消息...");
             List<Message> history = persistence_service_.getAllMessagesForConversation(server_address_, current_user.getId(), id);
+
             System.out.println("为对话 " + id + " 加载了 " + history.size() + " 条历史消息。");
+
             return FXCollections.observableArrayList(history);
         });
     }
@@ -369,6 +376,15 @@ public class AppRepository
                     }
 
                     System.out.println("没有找到会话密钥, 开始密钥交换...");
+                    Platform.runLater(() ->
+                            ViewTool.showAlert(
+                                    Alert.AlertType.WARNING,
+                                    "发生密钥交换！",
+                                    "这很大概率是由于会话临时密钥失效，对方的在线状态变化或是发出第一条消息导致的\n" +
+                                            "但也可能是中间人攻击，对于极端隐私场合，请核对对方状态。"
+                            )
+                    );
+
                     res.complete(fetchKeys(recipient_id).thenComposeAsync(responseMsg ->
                     {
                         FetchKeysResponse payload = responseMsg.getPayload();
@@ -579,7 +595,41 @@ public class AppRepository
     {
         UUID client_request_id = UUID.randomUUID();
         return sendRequestWithFuture(MessageType.GET_USER_DETAILS_REQUEST,
-                new GetUserDetailsRequest(client_request_id, user_id), client_request_id, GetUserDetailsResponse.class);
+                new GetUserDetailsRequest(client_request_id, user_id), client_request_id, GetUserDetailsResponse.class)
+                .thenApply(response ->
+                {
+                    if (response != null && response.getPayload().request_status())
+                    {
+                        user_nickname_cache_.put(user_id, response.getPayload().nick_name());
+                    }
+                    return response;
+                });
+    }
+    /**
+     * 根据用户ID获取其昵称，优先从缓存读取。
+     * @param user_id 用户的唯一标识符
+     * @return 一个 CompletableFuture，完成时包含用户的昵称
+     */
+    public CompletableFuture<String> getNicknameForUser(UUID user_id)
+    {
+        if (user_nickname_cache_.containsKey(user_id))
+        {
+            return CompletableFuture.completedFuture(user_nickname_cache_.get(user_id));
+        }
+
+        return getUserDetails(user_id).thenApply(response ->
+        {
+            if (response != null && response.getPayload().request_status())
+            {
+                String nickname = response.getPayload().nick_name();
+                user_nickname_cache_.put(user_id, nickname);
+                return nickname;
+            }
+            else
+            {
+                return "未知用户";
+            }
+        }).exceptionally(ex -> "加载失败");
     }
 
     /*
@@ -952,7 +1002,8 @@ public class AppRepository
     private void handleBroadcastMessage(String json_message)
     {
         User current_user = current_user_.get();
-        if (current_user == null) return;
+        if (current_user == null)
+            return;
 
         Type type = new TypeToken<ProtocolMessage<Map<String, Object>>>()
         {
@@ -966,14 +1017,35 @@ public class AppRepository
         String recipient_type = (String) payload.get("recipient_type");
 
         UUID conversation_id;
-        UUID recipient_id = UUID.fromString((String) payload.get("receiver_id"));
 
+        UUID recipient_id_for_db;
         if ("USER".equals(recipient_type))
         {
-            conversation_id = is_outgoing ? recipient_id : sender_id;
-        } else
+            String receiver_id_str = (String) payload.get("receiver_id");
+            if (receiver_id_str == null)
+            {
+                System.err.println("CRITICAL ERROR: Received USER message with null receiver_id. Message: " + json_message);
+                return;
+            }
+            UUID receiver_id = UUID.fromString(receiver_id_str);
+            conversation_id = is_outgoing ? receiver_id : sender_id;
+            recipient_id_for_db = receiver_id;
+        }
+        else if ("GROUP".equals(recipient_type))
         {
-            conversation_id = UUID.fromString((String) payload.get("group_id"));
+            String group_id_str = (String) payload.get("group_id");
+            if (group_id_str == null)
+            {
+                System.err.println("CRITICAL ERROR: Received GROUP message with null group_id. Message: " + json_message);
+                return;
+            }
+            conversation_id = UUID.fromString(group_id_str);
+            recipient_id_for_db = conversation_id;
+        }
+        else
+        {
+            System.err.println("Unknown recipient_type: " + recipient_type);
+            return;
         }
 
         String content_type = (String) payload.get("content_type");
@@ -995,6 +1067,15 @@ public class AppRepository
                     {
                         System.out.println("收到E2EE初始化消息, 开始计算会话密钥...");
 
+                        Platform.runLater(() ->
+                                ViewTool.showAlert(
+                                        Alert.AlertType.WARNING,
+                                        "发生密钥交换！",
+                                        "这很大概率是由于会话临时密钥失效，对方的在线状态变化或是发出第一条消息导致的\n" +
+                                                "但也可能是中间人攻击，对于极端隐私场合，请核对对方状态。"
+                                )
+                        );
+
                         JsonObject init_payload = JsonParser.parseString(content).getAsJsonObject();
 
                         String ephemeral_pub_key_base64 = init_payload.get("ephemeral_pub_key").getAsString();
@@ -1007,7 +1088,7 @@ public class AppRepository
 
                         SecretKey new_session_key = E2EEHelper.deriveSharedSecret(my_key_pair.getPrivate(), sender_ephemeral_key);
 
-                        AppRepository.getInstance().getUserDetails(recipient_id)
+                        AppRepository.getInstance().getUserDetails(recipient_id_for_db)
                                 .thenAccept(response ->
                                         {
                                             session_keys_.put(sender_id, new KeyCache(response.getPayload().is_online(),
@@ -1066,7 +1147,7 @@ public class AppRepository
                 current_user.getId(),
                 conversation_id,
                 ConversationType.valueOf(recipient_type),
-                recipient_id,
+                recipient_id_for_db,
                 OffsetDateTime.parse(iso_time)
         );
     }

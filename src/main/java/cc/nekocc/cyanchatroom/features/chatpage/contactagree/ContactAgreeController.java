@@ -2,10 +2,10 @@ package cc.nekocc.cyanchatroom.features.chatpage.contactagree;
 
 import atlantafx.base.theme.Styles;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.usertablite.UserTabLite;
+import cc.nekocc.cyanchatroom.model.AppRepository;
 import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,8 +16,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -72,47 +75,42 @@ public class ContactAgreeController
         user_info_send_requset_.setVisible(false);
         search_button_.getStyleClass().addAll(Styles.BOTTOM);
 
-        search_button_.setOnAction(event ->
-        {
-            handleSearch();
-        });
-
-        refresh_button_.setOnAction(event ->
-        {
-            refreshUserRequest();
-        });
-
-        send_request_button_.setOnAction(event ->
-        {
-            handleSendRequest();
-        });
-
-        refresh_friendship_button_.setOnAction(event ->
-        {
-            refreshUserList();
-        });
-
-        create_button_.setOnAction(event ->
-        {
-            handleCreateButton();
-        });
+        search_button_.setOnAction(event -> handleSearch());
+        refresh_button_.setOnAction(event -> refreshUserRequest());
+        send_request_button_.setOnAction(event -> handleSendRequest());
+        refresh_friendship_button_.setOnAction(event -> refreshUserList());
+        create_button_.setOnAction(event -> handleCreateButton());
     }
-    private void setupFriendShipListener(){
-        view_model_.getUserTabLites().addListener((ListChangeListener<UserTabLite>) c ->{
-            while(c.next()){
-                if(c.wasAdded()){
-                    c.getAddedSubList().forEach(vm->{
-                       user_list_vbox_.getChildren().add(vm.getRootPane());
+
+    private void setupFriendShipListener()
+    {
+        view_model_.getUserTabLites().addListener((ListChangeListener<UserTabLite>) c ->
+        {
+            while (c.next())
+            {
+                if (c.wasAdded())
+                {
+                    c.getAddedSubList().forEach(vm ->
+                    {
+                        Node rootPane = vm.getRootPane();
+                        // 将 UserTabLite 实例本身存储在UI节点的 userData 属性中
+                        rootPane.setUserData(vm);
+                        user_list_vbox_.getChildren().add(rootPane);
                     });
                 }
-                if(c.wasRemoved()){
-                    c.getRemoved().forEach(vm->{
-                        user_list_vbox_.getChildren().remove(vm.getRootPane());
+                if (c.wasRemoved())
+                {
+                    c.getRemoved().forEach(vm ->
+                    {
+                        // 从VBox中移除对应的UI节点
+                        user_list_vbox_.getChildren().removeIf(node -> vm.equals(node.getUserData()));
                     });
                 }
             }
         });
     }
+    // 修改结束
+
 
     private void setupRequestListListener()
     {
@@ -213,11 +211,63 @@ public class ContactAgreeController
     {
         if (view_model_ != null) view_model_.refreshRequests();
     }
-    public void refreshUserList(){if(view_model_ != null) view_model_.refreshUserList();}
-    public void handleCreateButton (){
 
+    public void refreshUserList()
+    {
+        if (view_model_ != null) view_model_.refreshUserList();
     }
 
+    public void handleCreateButton()
+    {
+        List<UUID> selectedMemberIds = user_list_vbox_.getChildren().stream()
+                .map(node -> (UserTabLite) node.getUserData())
+                .filter(UserTabLite::isActive)
+                .map(UserTabLite::getUserID)
+                .collect(Collectors.toList());
 
+        if (selectedMemberIds.isEmpty())
+        {
+            ViewTool.showAlert(Alert.AlertType.WARNING, "提示", "请至少选择一个好友加入群聊。");
+            return;
+        }
 
+        TextInputDialog dialog = new TextInputDialog("新的群聊");
+        dialog.setTitle("创建群聊");
+        dialog.setHeaderText("请输入群聊的名称");
+        dialog.setContentText("名称:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(groupName ->
+        {
+            if (groupName.trim().isEmpty())
+            {
+                ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "群聊名称不能为空。");
+                return;
+            }
+
+            AppRepository.getInstance().createGroup(groupName.trim(), selectedMemberIds)
+                    .thenAccept(response ->
+                    {
+                        Platform.runLater(() ->
+                        {
+                            if (response.getPayload().success())
+                            {
+                                ViewTool.showAlert(Alert.AlertType.INFORMATION, "成功", "群聊 '" + groupName + "' 已成功创建！");
+
+                                if (view_model_ != null)
+                                {
+                                    view_model_.refreshUserList();
+                                }
+                            } else
+                            {
+                                ViewTool.showAlert(Alert.AlertType.ERROR, "失败", "创建群聊失败: " + response.getPayload());
+                            }
+                        });
+                    }).exceptionally(ex ->
+                    {
+                        Platform.runLater(() -> ViewTool.showAlert(Alert.AlertType.ERROR, "异常", "创建群聊时发生错误: " + ex.getMessage()));
+                        return null;
+                    });
+        });
+    }
 }

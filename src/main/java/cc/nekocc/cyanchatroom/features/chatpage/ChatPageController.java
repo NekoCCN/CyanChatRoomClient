@@ -173,7 +173,7 @@ public class ChatPageController implements Initializable
             }
         });
 
-        refresh_user_list_button_.setOnAction(_ -> view_model_.loadActiveFriendships());
+        refresh_user_list_button_.setOnAction(_ -> view_model_.loadActiveConversations());
 
         user_status_.setItems(FXCollections.observableArrayList(Status.values()));
         user_status_.valueProperty().bindBidirectional(view_model_.currentUserStatusProperty());
@@ -242,9 +242,9 @@ public class ChatPageController implements Initializable
 
         enter_button_.setOnAction(e ->
         {
-            if (view_model_.selectedChatTabProperty().get() != null)
-            {
-                view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendMessage();
+            ChatTabViewModel selectedTab = view_model_.selectedChatTabProperty().get();
+            if (selectedTab != null) {
+                selectedTab.getChatWindowViewModel().sendMessage(selectedTab.getConversationType());
             }
         });
 
@@ -260,9 +260,10 @@ public class ChatPageController implements Initializable
 
         file_enter_button_.setOnMouseClicked(e ->
         {
-            if (view_model_.selectedChatTabProperty().get() != null)
+            ChatTabViewModel selectedTab = view_model_.selectedChatTabProperty().get();
+            if (selectedTab != null)
             {
-                view_model_.selectedChatTabProperty().get().getChatWindowViewModel().sendFile();
+                selectedTab.getChatWindowViewModel().sendFile(selectedTab.getConversationType());
             }
         });
 

@@ -7,9 +7,13 @@ import cc.nekocc.cyanchatroom.features.chatpage.contact.ContactListViewModel;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeController;
 import cc.nekocc.cyanchatroom.features.chatpage.contactagree.ContactAgreeViewModel;
 import cc.nekocc.cyanchatroom.model.AppRepository;
+import cc.nekocc.cyanchatroom.model.dto.response.GetUserDetailsResponse;
 import cc.nekocc.cyanchatroom.model.entity.ConversationType;
+import cc.nekocc.cyanchatroom.model.entity.Friendship;
 import cc.nekocc.cyanchatroom.model.entity.Message;
 import cc.nekocc.cyanchatroom.model.factories.StatusFactory;
+import cc.nekocc.cyanchatroom.model.dto.response.GroupResponse;
+import cc.nekocc.cyanchatroom.protocol.ProtocolMessage;
 import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
 import javafx.beans.property.*;
@@ -22,10 +26,16 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 public class ChatPageViewModel
 {
@@ -66,12 +76,13 @@ public class ChatPageViewModel
                 {
                     currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
                 });
-                loadActiveFriendships();
+                loadActiveConversations();
             } else
             {
                 chat_tabs_.clear();
                 chat_tab_map_.clear();
                 current_username_.set("");
+                contact_list_view_model_.clearContacts();
             }
         }));
         app_repository_.addMessageListener(this::handleIncomingMessage);
@@ -86,28 +97,85 @@ public class ChatPageViewModel
             {
                 currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
             });
-            loadActiveFriendships();
+            loadActiveConversations();
         }
     }
 
-    public void loadActiveFriendships()
+    public void loadActiveConversations()
     {
         UUID currentUserId = app_repository_.currentUserProperty().get().getId();
-        app_repository_.getActiveFriendshipList(currentUserId).thenAccept(response ->
+        if (currentUserId == null) return;
+
+        CompletableFuture<List<GetUserDetailsResponse>> friendsDetailsFuture = app_repository_.getActiveFriendshipList(currentUserId)
+                .thenCompose(response ->
+                {
+                    if (response == null || response.getPayload() == null || response.getPayload().friendships() == null)
+                    {
+                        return CompletableFuture.completedFuture(new ArrayList<>());
+                    }
+                    List<CompletableFuture<GetUserDetailsResponse>> detailFutures = response.getPayload().friendships().stream()
+                            .map(friendship ->
+                            {
+                                UUID oppositeId = friendship.getUserOneId().equals(currentUserId) ? friendship.getUserTwoId() : friendship.getUserOneId();
+                                return app_repository_.getUserDetails(oppositeId).thenApply(ProtocolMessage::getPayload);
+                            })
+                            .collect(Collectors.toList());
+                    return CompletableFuture.allOf(detailFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> detailFutures.stream().map(CompletableFuture::join).collect(Collectors.toList()));
+                });
+
+        CompletableFuture<List<GroupResponse>> groupsDetailsFuture = app_repository_.getGroupIdsByUserId(currentUserId)
+                .thenCompose(response ->
+                {
+                    if (response == null || response.getPayload() == null || response.getPayload().group_ids() == null || response.getPayload().group_ids().length == 0)
+                    {
+                        return CompletableFuture.completedFuture(new ArrayList<>());
+                    }
+                    List<CompletableFuture<GroupResponse>> detailFutures = Stream.of(response.getPayload().group_ids())
+                            .map(groupId -> app_repository_.getGroupDetails(groupId).thenApply(ProtocolMessage::getPayload))
+                            .collect(Collectors.toList());
+                    return CompletableFuture.allOf(detailFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> detailFutures.stream().map(CompletableFuture::join).filter(GroupResponse::success).collect(Collectors.toList()));
+                });
+
+        friendsDetailsFuture.thenCombine(groupsDetailsFuture, (friendDetails, groupDetails) ->
         {
-            if (response != null && response.getPayload().friendships() != null)
+            Platform.runLater(() ->
             {
-                // Java 流比 C++ Ranges 舒服不少看起来
-                var newTabs = response.getPayload().friendships().stream()
-                        .map(friendship ->
+                contact_list_view_model_.clearContacts();
+
+                List<ChatTabViewModel> allTabs = new ArrayList<>();
+
+                for (GetUserDetailsResponse detail : friendDetails)
+                {
+                    if (detail.request_status())
+                    {
+                        contact_list_view_model_.addOrUpdateContact(detail.username(), StatusFactory.fromUser(detail));
+                        ChatTabViewModel tab = chat_tab_map_.computeIfAbsent(detail.user_id(), id -> new ChatTabViewModel(id, ConversationType.USER, (name, status) ->
                         {
-                            UUID oppositeId = friendship.getUserOneId().equals(currentUserId) ? friendship.getUserTwoId() : friendship.getUserOneId();
-                            return chat_tab_map_.compute(oppositeId,(id, _)->
-                                    new ChatTabViewModel(oppositeId, ConversationType.USER, contact_list_view_model_::addOrUpdateContact));
-                        })
-                        .collect(Collectors.toList());
-                Platform.runLater(() -> chat_tabs_.setAll(newTabs));
-            }
+                        }));
+                        tab.updateDetails(detail.nick_name(), StatusFactory.fromUser(detail));
+                        allTabs.add(tab);
+                    }
+                }
+
+                for (GroupResponse group : groupDetails)
+                {
+                    contact_list_view_model_.addGroupContact(group.name());
+                    ChatTabViewModel tab = chat_tab_map_.computeIfAbsent(group.id(), id -> new ChatTabViewModel(id, ConversationType.GROUP, (name, status) ->
+                    {
+                    }));
+                    tab.updateDetails(group.name(), Status.ONLINE);
+                    allTabs.add(tab);
+                }
+
+                chat_tabs_.setAll(allTabs);
+            });
+            return null;
+        }).exceptionally(ex ->
+        {
+            Platform.runLater(() -> ViewTool.showAlert(Alert.AlertType.ERROR, "加载失败", "加载联系人列表时出错: " + ex.getMessage()));
+            return null;
         });
     }
 
@@ -123,7 +191,6 @@ public class ChatPageViewModel
                 currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
             }));
             ViewTool.showAlert(Alert.AlertType.INFORMATION, "离线切换失败", "你要切换离线状态直接退出程序就行。");
-
             return;
         }
 
@@ -158,13 +225,14 @@ public class ChatPageViewModel
     {
         if (message.isOutgoing())
             return;
-        ChatTabViewModel targetTab = chat_tab_map_.get(message.getConversationId());
-        if (targetTab != null)
+
+        ChatTabViewModel target_tab = chat_tab_map_.get(message.getConversationId());
+        if (target_tab != null)
         {
-            targetTab.getChatWindowViewModel().receiveMessage(message);
+            target_tab.getChatWindowViewModel().receiveMessage(message);
         } else
         {
-            loadActiveFriendships();
+            loadActiveConversations();
         }
     }
 
@@ -191,7 +259,8 @@ public class ChatPageViewModel
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/cc/nekocc/cyanchatroom/fxml/ContactAgreePage.fxml"));
                 Scene scene = new Scene(loader.load());
                 ContactAgreeController controller = loader.getController();
-                controller.setViewModel(new ContactAgreeViewModel(this::loadActiveFriendships));
+
+                controller.setViewModel(new ContactAgreeViewModel(this::loadActiveConversations));
 
                 contact_agree_stage_ = new Stage();
                 contact_agree_stage_.setTitle("好友管理");
@@ -210,6 +279,7 @@ public class ChatPageViewModel
         if (controller != null)
         {
             controller.refreshUserRequest();
+            controller.refreshUserList();
         }
     }
 
@@ -219,7 +289,7 @@ public class ChatPageViewModel
         if (selected_tab != null)
         {
             ChatWindowViewModel chat_window = selected_tab.getChatWindowViewModel();
-            chat_window.sendFile();
+            chat_window.sendFile(selected_tab.getConversationType());
         } else
         {
             ViewTool.showAlert(Alert.AlertType.WARNING, "未选择聊天", "请先选择一个聊天窗口再发送文件。");

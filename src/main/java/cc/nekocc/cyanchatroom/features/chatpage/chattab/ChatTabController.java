@@ -1,5 +1,6 @@
 package cc.nekocc.cyanchatroom.features.chatpage.chattab;
 
+import cc.nekocc.cyanchatroom.model.entity.ConversationType;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -32,15 +33,24 @@ public class ChatTabController
                 viewModel.oppositeUserNameProperty()
         ));
 
-        statusLabel.textProperty().bind(Bindings.createStringBinding(
-                () -> viewModel.oppositeStatusProperty().get().toDisplayString(),
-                viewModel.oppositeStatusProperty()
-        ));
+        if (viewModel.getConversationType() == ConversationType.GROUP)
+        {
+            statusLabel.textProperty().unbind();
+            statusLabel.textFillProperty().unbind();
+            statusLabel.setText("群聊");
+            statusLabel.setTextFill(Color.GRAY);
+        } else
+        {
+            statusLabel.textProperty().bind(Bindings.createStringBinding(
+                    () -> viewModel.oppositeStatusProperty().get().toDisplayString(),
+                    viewModel.oppositeStatusProperty()
+            ));
 
-        statusLabel.textFillProperty().bind(Bindings.createObjectBinding(
-                () -> Color.web(viewModel.oppositeStatusProperty().get().getColor()),
-                viewModel.oppositeStatusProperty()
-        ));
+            statusLabel.textFillProperty().bind(Bindings.createObjectBinding(
+                    () -> Color.web(viewModel.oppositeStatusProperty().get().getColor()),
+                    viewModel.oppositeStatusProperty()
+            ));
+        }
 
         tabRootPane.setOnMouseClicked(e -> onClickAction.run());
     }

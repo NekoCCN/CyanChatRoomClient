@@ -28,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class ChatWindowsController implements Initializable
 {
@@ -105,19 +106,33 @@ public class ChatWindowsController implements Initializable
             message_label.setStyle("-fx-padding: 8; -fx-background-color: #FFFFFF; -fx-text-fill: black; -fx-background-radius: 12 12 12 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 1, 2);");
         }
 
-        String sender_nickname = is_outgoing
-                ? AppRepository.getInstance().currentUserProperty().get().getNickname()
-                : view_model_.oppositeUsernameProperty().get();
-
-        Text username_text = new Text(sender_nickname);
+        Text username_text = new Text();
         username_text.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 14));
+        StackPane avatar = new StackPane();
+
+        if (is_outgoing)
+        {
+            String my_nickname = AppRepository.getInstance().currentUserProperty().get().getNickname();
+            username_text.setText(my_nickname);
+            avatar.getChildren().setAll(ViewTool.getDefaultAvatar(my_nickname));
+        } else
+        {
+            username_text.setText("...");
+            UUID senderId = message.getSenderId();
+            AppRepository.getInstance().getNicknameForUser(senderId).thenAccept(nickname ->
+            {
+                Platform.runLater(() ->
+                {
+                    username_text.setText(nickname);
+                    avatar.getChildren().setAll(ViewTool.getDefaultAvatar(nickname));
+                });
+            });
+        }
 
         Text time_text = new Text(OffsetDateTime.parse(message.getTime()).format(time_formatter_));
         time_text.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 10));
 
         VBox message_bubble = new VBox(username_text, message_label, time_text);
-
-        StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
 
         if (is_outgoing)
         {
@@ -158,12 +173,28 @@ public class ChatWindowsController implements Initializable
         boolean is_outgoing = message.isOutgoing();
         VBox message_container = new VBox();
         HBox message_box = new HBox(10);
-        String sender_nickname = is_outgoing
-                ? AppRepository.getInstance().currentUserProperty().get().getNickname()
-                : view_model_.oppositeUsernameProperty().get();
 
-        Text username_text = new Text(sender_nickname);
+        Text username_text = new Text();
         username_text.setFont(Font.font("Microsoft YaHei", FontWeight.BOLD, 14));
+        StackPane avatar = new StackPane();
+
+        if (is_outgoing)
+        {
+            String my_nickname = AppRepository.getInstance().currentUserProperty().get().getNickname();
+            username_text.setText(my_nickname);
+            avatar.getChildren().setAll(ViewTool.getDefaultAvatar(my_nickname));
+        } else
+        {
+            username_text.setText("...");
+            UUID senderId = message.getSenderId();
+            AppRepository.getInstance().getNicknameForUser(senderId).thenAccept(nickname -> {
+                Platform.runLater(() ->
+                {
+                    username_text.setText(nickname);
+                    avatar.getChildren().setAll(ViewTool.getDefaultAvatar(nickname));
+                });
+            });
+        }
 
         Text time_text = new Text(OffsetDateTime.parse(message.getTime()).format(time_formatter_));
         time_text.setFont(Font.font("Microsoft YaHei", FontWeight.NORMAL, 10));
@@ -226,7 +257,7 @@ public class ChatWindowsController implements Initializable
             }
         });
         VBox message_bubble = new VBox(username_text, file_box, time_text);
-        StackPane avatar = ViewTool.getDefaultAvatar(sender_nickname);
+
         if (is_outgoing)
         {
             message_box.getChildren().addAll(message_bubble, avatar);

@@ -25,7 +25,7 @@ public class ContactListController implements Initializable
 
     private ContactListViewModel view_model_;
     private final TreeItem<String> contact_root_ = new TreeItem<>("好友");
-    private final TreeItem<String> group_root_ = new TreeItem<>("");
+    private final TreeItem<String> group_root_ = new TreeItem<>("群组");
     private final TreeItem<String> online_root_ = new TreeItem<>("");
     private final TreeItem<String> busy_root_ = new TreeItem<>("");
     private final TreeItem<String> away_root_ = new TreeItem<>("");
@@ -84,6 +84,7 @@ public class ContactListController implements Initializable
         bindListToTreeItem(view_model_.getAwayContacts(), away_root_);
         bindListToTreeItem(view_model_.getDoNotDisturbContacts(), do_not_disturb_root_);
         bindListToTreeItem(view_model_.getOfflineContacts(), offline_root_);
+        bindListToTreeItem(view_model_.getGroupContacts(), group_root_);
     }
 
     private void bindListToTreeItem(ObservableList<String> list, TreeItem<String> treeItem)

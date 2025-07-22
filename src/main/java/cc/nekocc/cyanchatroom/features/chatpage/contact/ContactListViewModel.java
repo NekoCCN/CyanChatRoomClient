@@ -8,7 +8,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class ContactListViewModel
 {
@@ -17,6 +16,8 @@ public class ContactListViewModel
     private final ObservableList<String> away_contacts_ = FXCollections.observableArrayList();
     private final ObservableList<String> do_not_disturb_contacts_ = FXCollections.observableArrayList();
     private final ObservableList<String> offline_contacts_ = FXCollections.observableArrayList();
+    private final ObservableList<String> group_contacts_ = FXCollections.observableArrayList();
+
     private final StringProperty selected_contact_ = new SimpleStringProperty();
     private BiConsumer<String, TreeItem<String>> on_data_ready_callback_;
 
@@ -42,6 +43,29 @@ public class ContactListViewModel
         offline_contacts_.remove(username);
     }
 
+    public void addGroupContact(String groupName)
+    {
+        if (!group_contacts_.contains(groupName))
+        {
+            group_contacts_.add(groupName);
+        }
+    }
+
+    public ObservableList<String> getGroupContacts()
+    {
+        return group_contacts_;
+    }
+
+    public void clearContacts()
+    {
+        online_contacts_.clear();
+        busy_contacts_.clear();
+        away_contacts_.clear();
+        do_not_disturb_contacts_.clear();
+        offline_contacts_.clear();
+        group_contacts_.clear();
+    }
+
     public ObservableList<String> getOnlineContacts()
     {
         return online_contacts_;
@@ -57,7 +81,7 @@ public class ContactListViewModel
         System.out.println("Selected contact: " + username.getValue());
         if (on_data_ready_callback_ != null && username != null)
         {
-            on_data_ready_callback_.accept(username.getValue(),username);
+            on_data_ready_callback_.accept(username.getValue(), username);
         }
     }
 

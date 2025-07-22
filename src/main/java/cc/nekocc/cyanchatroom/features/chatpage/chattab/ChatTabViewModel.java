@@ -31,30 +31,67 @@ public class ChatTabViewModel
 
     private void loadDetails()
     {
-        AppRepository.getInstance().getUserDetails(opposite_user_id_).thenAccept(response ->
+        if (conversation_type_ == ConversationType.USER)
         {
-            Platform.runLater(() ->
+            AppRepository.getInstance().getUserDetails(opposite_user_id_).thenAccept(response ->
             {
-                if (response != null && response.getPayload().request_status())
+                Platform.runLater(() ->
                 {
-                    String nickname = response.getPayload().nick_name();
-                    String username = response.getPayload().username();
-                    Status status = StatusFactory.fromUser(response.getPayload());
-
-                    opposite_user_name_.set(nickname);
-                    opposite_status_.set(status);
-                    chat_window_view_model_.setOppositeUsername(nickname);
-
-                    if (on_data_ready_callback_ != null)
+                    if (response != null && response.getPayload().request_status())
                     {
-                        on_data_ready_callback_.accept(username, status);
+                        String nickname = response.getPayload().nick_name();
+                        String username = response.getPayload().username();
+                        Status status = StatusFactory.fromUser(response.getPayload());
+
+                        opposite_user_name_.set(nickname);
+                        opposite_status_.set(status);
+                        chat_window_view_model_.setOppositeUsername(nickname);
+
+                        if (on_data_ready_callback_ != null)
+                        {
+                            on_data_ready_callback_.accept(username, status);
+                        }
+                    } else
+                    {
+                        opposite_user_name_.set("未知用户");
                     }
-                } else
-                {
-                    opposite_user_name_.set("未知用户");
-                }
+                });
             });
-        });
+        } else if (conversation_type_ == ConversationType.GROUP)
+        {
+            AppRepository.getInstance().getGroupDetails(opposite_user_id_).thenAccept(response ->
+            {
+                Platform.runLater(() ->
+                {
+                    if (response != null && response.getPayload().success())
+                    {
+                        String group_name = response.getPayload().name();
+                        opposite_user_name_.set(group_name);
+
+                        opposite_status_.set(Status.ONLINE);
+                        chat_window_view_model_.setOppositeUsername(group_name);
+
+                        if (on_data_ready_callback_ != null)
+                        {
+                            on_data_ready_callback_.accept(group_name, null);
+                        }
+                    } else
+                    {
+                        opposite_user_name_.set("未知群组");
+                    }
+                });
+            });
+        }
+    }
+
+    public void updateDetails(String name, Status status)
+    {
+        opposite_user_name_.set(name);
+        if (status != null)
+        {
+            opposite_status_.set(status);
+        }
+        chat_window_view_model_.setOppositeUsername(name);
     }
 
     public String getOppositeUserName()

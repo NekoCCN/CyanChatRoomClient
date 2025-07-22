@@ -6,6 +6,7 @@ import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import cc.nekocc.cyanchatroom.model.entity.ConversationType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.stage.FileChooser;
@@ -87,7 +88,33 @@ public class ChatWindowViewModel
         message_input_text_.set("");
     }
 
-    public void sendFile()
+    public void sendMessage(ConversationType type)
+    {
+        String text = message_input_text_.get();
+        if (text == null || text.trim().isEmpty())
+        {
+            return;
+        }
+
+        String recipientType = type.name();
+
+        AppRepository.getInstance().sendMessage(recipientType, opposite_id_, "TEXT", false, text.trim()).exceptionally(e ->
+        {
+            Platform.runLater(() ->
+                    {
+                        ViewTool.showAlert(
+                                javafx.scene.control.Alert.AlertType.ERROR,
+                                "消息发送失败",
+                                "无法发送消息: " + e.getMessage());
+                    }
+            );
+            return null;
+        });
+
+        message_input_text_.set("");
+    }
+
+    public void sendFile(ConversationType type)
     {
         FileChooser file_chooser = new FileChooser();
         file_chooser.setTitle("选择要发送的文件");
@@ -95,11 +122,12 @@ public class ChatWindowViewModel
 
         if (selected_file != null)
         {
+            String recipientType = type.name();
             AppRepository.getInstance().uploadFile(selected_file, 24)
                     .thenAccept(id ->
                     {
                         String content = selected_file.getName() + "|" + id;
-                        AppRepository.getInstance().sendMessage("USER",
+                        AppRepository.getInstance().sendMessage(recipientType,
                                 opposite_id_, "FILE", false, content);
                     })
                     .exceptionally(e ->
