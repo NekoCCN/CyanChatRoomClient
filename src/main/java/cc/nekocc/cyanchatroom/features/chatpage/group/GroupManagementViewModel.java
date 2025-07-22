@@ -28,7 +28,7 @@ public class GroupManagementViewModel
     private final StringProperty join_group_id_ = new SimpleStringProperty("");
     private final StringProperty join_message_ = new SimpleStringProperty("");
     private final ObjectProperty<GroupJoinMode> selected_group_join_mode_ = new SimpleObjectProperty<>();
-
+    private final StringProperty selected_group_id_ = new SimpleStringProperty("000-000000-000000-00000");
     public GroupManagementViewModel()
     {
         refreshMyGroups();
@@ -60,12 +60,14 @@ public class GroupManagementViewModel
         if (selected_group == null)
         {
             selected_group_name_.set("请先在左侧选择一个群组");
+            selected_group_id_.set("000-000000-000000-00000");
             selected_group_members_.clear();
             join_requests_.clear();
             selected_group_join_mode_.set(null);
             return;
         }
         selected_group_name_.set("群组名称: " + selected_group.name());
+        selected_group_id_.set(selected_group.id().toString());
         app_repository_.getGroupMemberList(selected_group.id()).thenAccept(membersResponse ->
         {
             if (membersResponse != null && membersResponse.getPayload().group_members() != null)
@@ -214,5 +216,9 @@ public class GroupManagementViewModel
     public ObjectProperty<GroupJoinMode> selectedGroupJoinModeProperty()
     {
         return selected_group_join_mode_;
+    }
+
+    public StringProperty selectedUUIDProperty() {
+        return selected_group_id_;
     }
 }

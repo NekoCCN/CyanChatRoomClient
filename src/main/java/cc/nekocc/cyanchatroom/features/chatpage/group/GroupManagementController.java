@@ -5,13 +5,17 @@ import cc.nekocc.cyanchatroom.model.dto.response.GroupResponse;
 import cc.nekocc.cyanchatroom.model.entity.GroupJoinMode;
 import cc.nekocc.cyanchatroom.model.entity.GroupMember;
 import cc.nekocc.cyanchatroom.model.entity.GroupMemberRole;
+import cc.nekocc.cyanchatroom.util.ViewTool;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 public class GroupManagementController
 {
 
+    public Label Group_uuid_label_;
     @FXML
     private ListView<GroupResponse> my_groups_list_;
     @FXML
@@ -58,6 +62,14 @@ public class GroupManagementController
         my_groups_list_.setItems(view_model_.getMyGroups());
         group_members_list_.setItems(view_model_.getSelectedGroupMembers());
         group_name_label_.textProperty().bind(view_model_.selectedGroupNameProperty());
+        Group_uuid_label_.textProperty().bind(view_model_.selectedUUIDProperty());
+        Group_uuid_label_.setOnMouseClicked(event ->{
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(Group_uuid_label_.getText());
+            clipboard.setContent(content);
+            ViewTool.showAlert(Alert.AlertType.INFORMATION, "复制成功", "群组ID已复制到剪贴板\n"+Group_uuid_label_.getText());
+        });
         join_group_id_field_.textProperty().bindBidirectional(view_model_.joinGroupIdProperty());
         join_message_area_.textProperty().bindBidirectional(view_model_.joinMessageProperty());
         join_requests_list_.setItems(view_model_.getJoinRequests());
