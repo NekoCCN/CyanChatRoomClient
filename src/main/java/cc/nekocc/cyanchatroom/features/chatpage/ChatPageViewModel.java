@@ -225,13 +225,11 @@ public class ChatPageViewModel
         });
     }
 
-    public void updateUserStatus(Status new_status)
-    {
+    public void updateUserStatus(Status new_status) {
         if (new_status == null || new_status.equals(current_user_status_.get()))
             return;
 
-        if (new_status == Status.OFFLINE)
-        {
+        if (new_status == Status.OFFLINE) {
             Platform.runLater(() -> AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
             {
                 currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
@@ -239,34 +237,25 @@ public class ChatPageViewModel
             ViewTool.showAlert(Alert.AlertType.INFORMATION, "离线切换失败", "你要切换离线状态直接退出程序就行。");
             return;
         }
-
-        UUID currentUserId = app_repository_.currentUserProperty().get().getId();
-        app_repository_.getUserDetails(currentUserId)
-                .thenCompose(response -> app_repository_.updateProfile(
-                        response.getPayload().nick_name(),
-                        response.getPayload().signature(),
-                        response.getPayload().avatar_url(),
+        AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response->{
+           if(response.getPayload().request_status()){
+               AppRepository.getInstance().updateProfile(
+                       response.getPayload().nick_name(),
+                       response.getPayload().signature(),
+                       response.getPayload().avatar_url(),
                         StatusFactory.fromStatus(new_status)
-                ))
-                .thenAccept(updateResponse ->
-                {
-                    if (updateResponse != null && updateResponse.getPayload().status())
-                    {
-                        Platform.runLater(() -> current_user_status_.set(new_status));
-                    } else
-                    {
-                        Platform.runLater(() ->
-                        {
-                            AppRepository.getInstance().getUserDetails(AppRepository.getInstance().currentUserProperty().get().getId()).thenAccept(response ->
-                            {
-                                currentUserStatusProperty().set(StatusFactory.fromUser(response.getPayload()));
-                            });
-                            ViewTool.showAlert(Alert.AlertType.ERROR, "更新状态失败", "发生错误:账户状态修改事件无法正常执行，请检查网络是否链接或者服务器是否还在运行");
-                        });
-                    }
-                });
-    }
+               ).thenAccept(res->{
+                   if(!res.getPayload().status()){
+                   ViewTool.showAlert(Alert.AlertType.ERROR, "更新状态失败", "发生错误:账户状态修改事件无法正常执行，请检查网路是否链接或者服务器是否还在运行");
+               }
+               });
+           }
+           else{
+               ViewTool.showAlert(Alert.AlertType.ERROR, "错误", "无法获取用户信息");
+           }
+        });
 
+    }
     private void handleIncomingMessage(Message message)
     {
         if (message.isOutgoing())
